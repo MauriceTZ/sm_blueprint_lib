@@ -1,9 +1,9 @@
 from typing import Sequence
 from numpy import ndarray
-from sm_blueprint_lib import check_pos, connect
-from sm_blueprint_lib.blueprint import Blueprint
-from sm_blueprint_lib.parts.logicgate import LogicGate
-from sm_blueprint_lib.pos import Pos
+from utils import check_pos, connect
+from blueprint import Blueprint
+from parts.logicgate import LogicGate
+from pos import Pos
 
 
 def comparator(bp: Blueprint,

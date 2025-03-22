@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from sm_blueprint_lib.bases.controllers.baselogiccontroller import BaseLogicController
+from bases.controllers.baselogiccontroller import BaseLogicController
 
 
 @dataclass

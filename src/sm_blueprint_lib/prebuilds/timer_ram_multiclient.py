@@ -1,14 +1,14 @@
 from typing import Sequence
 from numpy import ndarray
-from sm_blueprint_lib import get_bits_required, check_pos, connect
-from sm_blueprint_lib.blueprint import Blueprint
-from sm_blueprint_lib.parts.logicgate import LogicGate
-from sm_blueprint_lib.parts.timer import Timer
-from sm_blueprint_lib.pos import Pos
-from sm_blueprint_lib.prebuilds.clock40hz import clock40hz
-from sm_blueprint_lib.prebuilds.decoder import decoder
-from sm_blueprint_lib.prebuilds.ram import ram
-from sm_blueprint_lib.prebuilds.register import register
+from utils import get_bits_required, check_pos, connect
+from blueprint import Blueprint
+from parts.logicgate import LogicGate
+from parts.timer import Timer
+from pos import Pos
+from prebuilds.clock40hz import clock40hz
+from prebuilds.decoder import decoder
+from prebuilds.ram import ram
+from prebuilds.register import register
 
 
 def timer_ram_multiclient(bp: Blueprint, bit_length: int, num_address: int, num_clients=1, pos: Pos | Sequence = (0, 0, 0)):

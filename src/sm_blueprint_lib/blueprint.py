@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 
-from sm_blueprint_lib.bases.parts.basepart import BasePart
-from sm_blueprint_lib.body import Body
-from sm_blueprint_lib.constants import VERSION
+from bases.parts.basepart import BasePart
+from body import Body
+from constants import VERSION
 
 
 @dataclass

@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
-from sm_blueprint_lib.bases.parts.basepart import BasePart
-from sm_blueprint_lib.constants import SHAPEID
+from bases.parts.basepart import BasePart
+from constants import SHAPEID
 
 
 @dataclass

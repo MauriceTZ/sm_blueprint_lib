@@ -2,12 +2,12 @@ from itertools import batched, cycle
 from math import ceil
 from typing import Sequence
 from numpy import ndarray
-from sm_blueprint_lib import get_bits_required, check_pos, connect, num_to_bit_list
-from sm_blueprint_lib.blueprint import Blueprint
-from sm_blueprint_lib.parts.logicgate import LogicGate
-from sm_blueprint_lib.prebuilds.decoder import decoder
-from sm_blueprint_lib.parts.timer import Timer
-from sm_blueprint_lib.pos import Pos
+from utils import get_bits_required, check_pos, connect, num_to_bit_list
+from blueprint import Blueprint
+from parts.logicgate import LogicGate
+from prebuilds.decoder import decoder
+from parts.timer import Timer
+from pos import Pos
 
 
 def rom(

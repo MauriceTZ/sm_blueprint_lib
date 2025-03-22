@@ -1,10 +1,10 @@
 from typing import Sequence
 from numpy import ndarray
-from sm_blueprint_lib import check_pos
-from sm_blueprint_lib.blueprint import Blueprint
-from sm_blueprint_lib.parts.logicgate import LogicGate
-from sm_blueprint_lib.pos import Pos
-from sm_blueprint_lib.prebuilds.counter import counter, counter_decrement
+from utils import check_pos
+from blueprint import Blueprint
+from parts.logicgate import LogicGate
+from pos import Pos
+from prebuilds.counter import counter, counter_decrement
 
 
 def register(bp: Blueprint,
