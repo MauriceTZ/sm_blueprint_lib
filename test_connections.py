@@ -2,7 +2,7 @@ from pprint import pp
 
 from numpy import ndarray
 
-from sm_blueprint_lib import Timer, LogicGate, BarrierBlock, Blueprint, save_blueprint, dump_string, connect
+from src.sm_blueprint_lib import Timer, LogicGate, BarrierBlock, Blueprint, save_blueprint, dump_string_from_blueprint, connect
 
 size = 10
 l0 = [
@@ -62,4 +62,4 @@ bp.add(l0, l1, l2, base, zero, l3)
 
 print(len(bp.bodies[0].childs))
 path = r"C:\Users\mauri\AppData\Roaming\Axolot Games\Scrap Mechanic\User\User_76561198400983548\Blueprints\c35f6e4e-52cb-4b00-8afa-f0ffd3fbb012\blueprint.json"
-save_blueprint(path, bp)
+save_blueprint(bp, path)

@@ -2,7 +2,7 @@ import json
 from pprint import pp
 
 
-from sm_blueprint_lib import load_blueprint, save_blueprint, load_string
+from src.sm_blueprint_lib import load_blueprint, save_blueprint, load_blueprint_from_string
 # from sm.bases.controllers.basecontroller import BaseController
 # from sm.bases.controllers.baselogiccontroller import BaseLogicController
 # from sm.bases.parts.baselogicpart import BaseLogicPart
@@ -13,8 +13,8 @@ from sm_blueprint_lib import load_blueprint, save_blueprint, load_string
 # import sm.parts.barrierblock
 # from dataclasses import asdict
 
-from sm_blueprint_lib.constants import SHAPEID
-from sm_blueprint_lib.parts.sensor import Sensor5
+from src.sm_blueprint_lib.constants import SHAPEID
+from src.sm_blueprint_lib.parts.sensor import Sensor5
 # from sm.bases.parts.baseinteractablepart import BaseInteractablePart
 # from sm.parts.logicgate import LogicGate
 
@@ -61,7 +61,7 @@ with open(path) as fp:
 
 
 j = '{"bodies":[{"childs":[{"bounds":{"x":2,"y":2,"z":1},"color":"CE9E0C","pos":{"x":-13,"y":-7,"z":2},"shapeId":"09ca2713-28ee-4119-9622-e85490034758","xaxis":1,"zaxis":3},{"color":"DF7F01","controller":{"active":false,"controllers":[{"id":7227441}],"id":7227439,"joints":null,"seconds":2,"ticks":1},"pos":{"x":-12,"y":-5,"z":3},"shapeId":"8f7fd0e7-c46e-4944-a414-7ce2437bb30f","xaxis":1,"zaxis":-2},{"color":"DF7F01","controller":{"active":true,"controllers":[{"id":7227439}],"id":7227440,"joints":null,"mode":3},"pos":{"x":-12,"y":-6,"z":3},"shapeId":"9f0f56e8-2c31-4d83-996c-d00a9b296c3f","xaxis":1,"zaxis":-2},{"color":"DF7F01","controller":{"active":false,"controllers":[{"id":7227440}],"id":7227441,"joints":null,"mode":0},"pos":{"x":-13,"y":-6,"z":3},"shapeId":"9f0f56e8-2c31-4d83-996c-d00a9b296c3f","xaxis":1,"zaxis":-2}]}],"version":4}'
-bp = load_string(j)
+bp = load_blueprint_from_string(j)
 pp(bp)
 
 pp(Sensor5((1,2,3), (255,255,255), (False, True, (255,0,0), False, 1)))
@@ -115,7 +115,7 @@ pp(Sensor5((1,2,3), (255,255,255), (False, True, (255,0,0), False, 1)))
 # bp = load_blueprint(path)
 # pp(bp)
 # pp(json.dumps(asdict(bp)))
-# save_blueprint(path, bp)
+# save_blueprint(bp, path)
 
 # pp(sm.constants.SHAPEID.SHAPEID_TO_CLASS)
 

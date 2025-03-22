@@ -1,6 +1,7 @@
 from dataclasses import asdict
 from json import load, dump, loads, dumps
 from math import ceil, log2
+from typing import Sequence
 
 from numpy import ndarray
 
@@ -12,7 +13,7 @@ from .parts.timer import Timer
 from .pos import Pos
 
 
-def load_blueprint(path):
+def load_blueprint(path: str):
     """Load a blueprint from a path file (normally a blueprint.json).
 
     Args:
@@ -25,7 +26,7 @@ def load_blueprint(path):
         return Blueprint(**load(fp))
 
 
-def save_blueprint(path, bp: Blueprint):
+def save_blueprint(bp: Blueprint, path: str):
     """Save a blueprint to a file (normally a blueprint.json).
 
     Args:
@@ -36,7 +37,7 @@ def save_blueprint(path, bp: Blueprint):
         return dump(asdict(bp), fp, sort_keys=True, separators=(',', ':'))
 
 
-def load_string(str):
+def load_blueprint_from_string(str: str):
     """Load a blueprint from a json string.
 
     Args:
@@ -48,7 +49,7 @@ def load_string(str):
     return Blueprint(**loads(str))
 
 
-def dump_string(bp: Blueprint):
+def dump_string_from_blueprint(bp: Blueprint):
     """Dump a blueprint into a json-formatted string.
 
     Args:
@@ -110,9 +111,17 @@ def connect(_from, _to, *, parallel=True):
                 connect(_from, subto, parallel=parallel)
 
 
-def check_pos(pos):
+def check_pos(pos: Sequence) -> Pos:
+    """Converts a Sequence into a Pos class if it wasn't already.
+
+    Args:
+        pos (Sequence): The Sequence to be converted.
+
+    Returns:
+        Pos: The converted Pos.
+    """
     if not isinstance(pos, Pos):
-        pos = Pos(*pos)
+        pos = Pos(*list(pos))
     return pos
 
 
