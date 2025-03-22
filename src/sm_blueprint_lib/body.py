@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
-from bases.parts.basepart import BasePart
-from constants import SHAPEID
+from .bases.parts.basepart import BasePart
+from .constants import SHAPEID
 
 
 @dataclass

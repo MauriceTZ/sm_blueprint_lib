@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from bases.controllers.basecontroller import BaseController
+from .basecontroller import BaseController
 
 
 @dataclass

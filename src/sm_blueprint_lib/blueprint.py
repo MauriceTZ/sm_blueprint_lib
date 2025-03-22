@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 
-from bases.parts.basepart import BasePart
-from body import Body
-from constants import VERSION
+from .bases.parts.basepart import BasePart
+from .body import Body
+from .constants import VERSION
 
 
 @dataclass

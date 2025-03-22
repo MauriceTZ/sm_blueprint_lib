@@ -1,19 +1,19 @@
 from itertools import cycle
 from typing import Sequence
 from numpy import array, clip, ndarray
-from utils import get_bits_required, check_pos, connect, num_to_bit_list
-from bases.parts.baseinteractablepart import BaseInteractablePart
-from bases.parts.baselogicpart import BaseLogicPart
-from blueprint import Blueprint
-from constants import TICKS_PER_SECOND
-from parts.logicgate import LogicGate
-from parts.timer import Timer
-from pos import Pos
-from prebuilds.clock40hz import clock40hz
-from prebuilds.counter import counter
-from prebuilds.decoder import decoder
-from prebuilds.ram import ram
-from prebuilds.register import register
+from ..utils import get_bits_required, check_pos, connect, num_to_bit_list
+from ..bases.parts.baseinteractablepart import BaseInteractablePart
+from ..bases.parts.baselogicpart import BaseLogicPart
+from ..blueprint import Blueprint
+from ..constants import TICKS_PER_SECOND
+from ..parts.logicgate import LogicGate
+from ..parts.timer import Timer
+from ..pos import Pos
+from ..prebuilds.clock40hz import clock40hz
+from ..prebuilds.counter import counter
+from ..prebuilds.decoder import decoder
+from ..prebuilds.ram import ram
+from ..prebuilds.register import register
 
 
 def timer_ram_cached(

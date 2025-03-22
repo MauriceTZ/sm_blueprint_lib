@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from bases.controllers.baselogiccontroller import BaseLogicController
+from .baselogiccontroller import BaseLogicController
 
 
 @dataclass

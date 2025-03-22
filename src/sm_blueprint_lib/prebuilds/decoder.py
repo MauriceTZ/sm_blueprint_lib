@@ -1,9 +1,9 @@
 from typing import Sequence
 from numpy import ndarray
-from utils import get_bits_required, check_pos, connect, num_to_bit_list
-from blueprint import Blueprint
-from parts.logicgate import LogicGate
-from pos import Pos
+from ..utils import get_bits_required, check_pos, connect, num_to_bit_list
+from ..blueprint import Blueprint
+from ..parts.logicgate import LogicGate
+from ..pos import Pos
 
 
 def decoder(bp: Blueprint, num_address: int, pos: Pos | Sequence = (0, 0, 0),

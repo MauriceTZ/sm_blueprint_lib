@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
-from constants import get_new_id
-from id import ID
+from ...constants import get_new_id
+from ...id import ID
 
 
 @dataclass

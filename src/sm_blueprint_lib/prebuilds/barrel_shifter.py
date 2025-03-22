@@ -1,9 +1,9 @@
 from typing import Sequence
 from numpy import ndarray
-from utils import get_bits_required, check_pos, connect, num_to_bit_list
-from blueprint import Blueprint
-from parts.logicgate import LogicGate
-from pos import Pos
+from ..utils import get_bits_required, check_pos, connect, num_to_bit_list
+from ..blueprint import Blueprint
+from ..parts.logicgate import LogicGate
+from ..pos import Pos
 
 
 def barrel_shifter(bp: Blueprint, bit_length: int, num_bit_shift: int, pos: Pos | Sequence = (0, 0, 0)):
