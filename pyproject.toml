@@ -17,7 +17,10 @@ classifiers = [
 ]
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
+dependencies = [
+    "numpy"
+]
 
 [project.urls]
-Homepage = "https://github.com/pypa/sampleproject"
-Issues = "https://github.com/pypa/sampleproject/issues"
+Homepage = "https://github.com/MauriceTZ/sm_blueprint_lib"
+Issues = "https://github.com/MauriceTZ/sm_blueprint_lib/issues"
