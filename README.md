@@ -23,7 +23,7 @@ single_self_wired_xor = sm.LogicGate(
     pos=sm.Pos(0, 4, 0),
     color="5522ff",
     # Or define it explicitly
-    controller=sm.LogicGateController(mode=2, id=2, controllers=[sm.ID(2)])
+    controller=sm.LogicGateController(mode=2, id=9999999, controllers=[sm.ID(9999999)])
 )
 
 # Create multiple gates at the same time
@@ -51,8 +51,8 @@ loop = [sm.LogicGate((4, 0, 0), "987654"),
 # Connect stuff
 # 1 to 1
 sm.connect(single_and, single_or)
-sm.connect(single_or, single_self_wired_xor)    # With parallel=True
-sm.connect(row_0, row_1)
+sm.connect(single_or, single_self_wired_xor)
+sm.connect(row_0, row_1)    # With parallel=True (ie row to row)
 # 1 to many
 sm.connect(single_self_wired_xor, row_0)
 sm.connect(row_0, matrix)
@@ -73,5 +73,9 @@ bp.add(single_and, single_or, single_self_wired_xor,
 print(sm.dump_string_from_blueprint(bp))
 path = "path/to/your/blueprint/folder/blueprint.json"
 sm.save_blueprint(bp, path)
-
 ```
+
+### Results
+[1 to 1 and loop](1to1andloop.png)
+[row to row and 1 to many](rowtorowand1tomany.png)
+[many to 1 and many to many](manytooneandmanytomany.png)
