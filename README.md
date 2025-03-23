@@ -76,6 +76,9 @@ sm.save_blueprint(bp, path)
 ```
 
 ### Results
-[1 to 1 and loop](1to1andloop.png)
-[row to row and 1 to many](rowtorowand1tomany.png)
-[many to 1 and many to many](manytooneandmanytomany.png)
+#### 1 to 1 and loop
+![1 to 1 and loop](1to1andloop.png)
+#### Row to row and 1 to many
+![row to row and 1 to many](rowtorowand1tomany.png)
+#### Many to 1 and many to many
+![many to 1 and many to many](manytooneandmanytomany.png)
