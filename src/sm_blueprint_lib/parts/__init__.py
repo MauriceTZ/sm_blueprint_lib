@@ -1,5 +1,5 @@
 from .barrierblock import *
 from .logicgate import *
 from .sensor import *
-# from .switch import * # not finished
+from .switch import *
 from .timer import *

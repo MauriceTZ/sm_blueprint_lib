@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 
-from ..bases.parts.baseinteractablepart import BaseInteractablePart
+from ..bases.parts.baselogicpart import BaseLogicPart
 from ..constants import SHAPEID
 
 
 @dataclass
-class Switch(BaseInteractablePart):
-    raise NotImplemented
+class Switch(BaseLogicPart):
+    shapeId: str = field(kw_only=True, default=SHAPEID.SWITCH)
