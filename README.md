@@ -5,6 +5,10 @@
 ```sh
 pip install sm_blueprint_lib
 ```
+## Updating version
+```sh
+pip install --upgrade sm_blueprint_lib
+```
 ## Usage
 ```python
 import numpy as np
