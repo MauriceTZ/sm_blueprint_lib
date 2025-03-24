@@ -88,22 +88,27 @@ def connect(_from, _to, *, parallel=True):
     if isinstance(_from, BaseInteractablePart) and isinstance(_to, BaseInteractablePart):
         _from.connect(_to)
         return
-    if parallel:    # Try connect things row-by-row if possible (one to one, one to many, many to many)
-        if not isinstance(_from, BaseInteractablePart) and not isinstance(_to, BaseInteractablePart):   # Assume both are sequence of parts
+    # Try connect things row-by-row if possible (one to one, one to many, many to many)
+    if parallel:
+        # Assume both are sequence of parts
+        if not isinstance(_from, BaseInteractablePart) and not isinstance(_to, BaseInteractablePart):
             for subfrom, subto in zip(_from, _to):
                 connect(subfrom, subto, parallel=parallel)
-        elif not isinstance(_from, BaseInteractablePart):   # Assume _from is a sequence of parts
+        # Assume _from is a sequence of parts
+        elif not isinstance(_from, BaseInteractablePart):
             for subfrom in _from:
                 connect(subfrom, _to, parallel=parallel)
         else:                                               # Assume _to is a sequence of parts
             for subto in _to:
                 connect(_from, subto, parallel=parallel)
     else:           # Just connect everything to everything lol
-        if not isinstance(_from, BaseInteractablePart) and not isinstance(_to, BaseInteractablePart):   # Assume both are sequence of parts
+        # Assume both are sequence of parts
+        if not isinstance(_from, BaseInteractablePart) and not isinstance(_to, BaseInteractablePart):
             for subfrom in _from:
                 for subto in _to:
                     connect(subfrom, subto, parallel=parallel)
-        elif not isinstance(_from, BaseInteractablePart):   # Assume _from is a sequence of parts
+        # Assume _from is a sequence of parts
+        elif not isinstance(_from, BaseInteractablePart):
             for subfrom in _from:
                 connect(subfrom, _to, parallel=parallel)
         else:                                               # Assume _to is a sequence of parts
