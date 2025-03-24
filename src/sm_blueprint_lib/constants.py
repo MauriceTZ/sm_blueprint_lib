@@ -4,6 +4,7 @@ class SHAPEID:
     TIMER = "8f7fd0e7-c46e-4944-a414-7ce2437bb30f"
     SENSOR5 = "20dcd41c-0a11-4668-9b00-97f278ce21af"
     SWITCH = "7cf717d7-d167-4f2d-a6e7-6b2c70aa3986"
+    BUTTON = "1e8d93a4-506b-470d-9ada-9c0a321e2db5"
     SHAPEID_TO_CLASS = {}
 
 

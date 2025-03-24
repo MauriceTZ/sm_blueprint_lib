@@ -2,7 +2,7 @@ from pprint import pp
 
 from numpy import ndarray
 
-from src.sm_blueprint_lib import Timer, LogicGate, BarrierBlock, Switch, Blueprint, save_blueprint, dump_string_from_blueprint, connect
+from src.sm_blueprint_lib import Timer, LogicGate, BarrierBlock, Switch, Button, Blueprint, save_blueprint, dump_string_from_blueprint, connect
 
 size = 10
 l0 = [
@@ -32,6 +32,7 @@ base = BarrierBlock((0, -1, -1), "000000", (size+1, size+1, 1))
 zero = BarrierBlock((0, -1, 0), "000000", (1, 1, 1))
 
 s = Switch((10, 10, 0), "ff0000")
+b = Button((9, 9, 0), "ff0000")
 
 bp = Blueprint()
 
@@ -42,7 +43,7 @@ connect(l3, l2[-1])
 connect(l1, l2, parallel=False)
 connect(l3.T, l1)
 
-bp.add(l0, l1, l2, base, zero, l3, s)
+bp.add(l0, l1, l2, base, zero, l3, s, b)
 
 # bp.add(l0)
 # bp.add(l1)
