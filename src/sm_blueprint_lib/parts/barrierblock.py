@@ -6,4 +6,6 @@ from ..constants import SHAPEID
 
 @dataclass
 class BarrierBlock(BaseBoundablePart):
+    """Class that represents a Barrier Block.
+    """
     shapeId: str = field(kw_only=True, default=SHAPEID.BARRIER_BLOCK)

@@ -7,6 +7,8 @@ from ..constants import SHAPEID
 
 @dataclass
 class Timer(BaseLogicPart):
+    """Class that represents a Timer logic part.
+    """
     controller: TimerController = field(default_factory=TimerController)
     shapeId: str = field(kw_only=True, default=SHAPEID.TIMER)
 

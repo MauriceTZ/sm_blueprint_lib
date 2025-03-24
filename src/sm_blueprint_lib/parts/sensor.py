@@ -7,6 +7,8 @@ from ..constants import SHAPEID
 
 @dataclass
 class Sensor5(BaseInteractablePart):
+    """Class that represents a Sensor 5 part.
+    """
     controller: SensorController = field(
         default_factory=SensorController)
     shapeId: str = field(kw_only=True, default=SHAPEID.SENSOR5)

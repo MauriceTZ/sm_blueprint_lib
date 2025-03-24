@@ -1,3 +1,7 @@
+"""
+Utility functions for basic uses.
+"""
+
 from dataclasses import asdict
 from json import load, dump, loads, dumps
 from math import ceil, log2

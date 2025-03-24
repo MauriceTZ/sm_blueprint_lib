@@ -6,6 +6,8 @@ from .constants import SHAPEID
 
 @dataclass
 class Body:
+    """Class that represents a Body inside a Blueprint, each Joint defines a new Body.
+    """
     childs: list[BasePart] = field(default_factory=list)
 
     def __post_init__(self):

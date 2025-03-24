@@ -9,6 +9,10 @@ from .constants import VERSION, SHAPEID
 
 @dataclass
 class Blueprint:
+    """Class that represents a Blueprint structure.
+    It is type hinted, meaning you can access its members
+    with the dot syntax instead of direcly indexing a JSON object.
+    """
     bodies: list[Body] = field(default_factory=lambda: [{}])
     joints: Optional[list[BaseJoint]] = None
     version: int = VERSION.BLUEPRINT_VERSION

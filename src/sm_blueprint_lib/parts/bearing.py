@@ -6,4 +6,6 @@ from ..constants import SHAPEID
 
 @dataclass
 class Bearing(BaseJoint):
+    """Class that represents a Bearing part.
+    """
     shapeId: str = field(kw_only=True, default=SHAPEID.BEARING)

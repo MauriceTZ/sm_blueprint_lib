@@ -6,4 +6,6 @@ from ..constants import SHAPEID
 
 @dataclass
 class Piston5(PistonJoint):
+    """Class that represents a Piston 5 part.
+    """
     shapeId: str = field(kw_only=True, default=SHAPEID.PISTON5)

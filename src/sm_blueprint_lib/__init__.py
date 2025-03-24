@@ -1,3 +1,8 @@
+"""
+# sm_blueprint_lib
+asdasdasdasds
+"""
+
 from .blueprint import *
 from .body import *
 from .bounds import *

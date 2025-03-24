@@ -7,6 +7,8 @@ from ..constants import SHAPEID
 
 @dataclass
 class LogicGate(BaseLogicPart):
+    """Class that represents a Logic Gate part.
+    """
     controller: LogicGateController = field(
         default_factory=LogicGateController)
     shapeId: str = field(kw_only=True, default=SHAPEID.LOGIC_GATE)

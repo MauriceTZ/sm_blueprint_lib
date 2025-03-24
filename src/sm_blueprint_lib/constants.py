@@ -1,4 +1,6 @@
 class SHAPEID:
+    """Shape ID constants for Blocks and Parts.
+    """
     BARRIER_BLOCK = "09ca2713-28ee-4119-9622-e85490034758"
     LOGIC_GATE = "9f0f56e8-2c31-4d83-996c-d00a9b296c3f"
     TIMER = "8f7fd0e7-c46e-4944-a414-7ce2437bb30f"
@@ -15,6 +17,8 @@ class SHAPEID:
 
 
 class COLOR:
+    """Color constants for Blocks and Parts.
+    """
     BARRIER_BLOCK_DEFAULT = "CE9E0C"
     BUTTON_DEFAULT = "DF7F01"
     LOGIC_GATE_DEFAULT = "DF7F01"
@@ -24,11 +28,15 @@ class COLOR:
 
 
 class AXIS:
+    """Default axises
+    """
     DEFAULT_XAXIS = 1
     DEFAULT_ZAXIS = 3
 
 
 class VERSION:
+    """Blueprint version
+    """
     BLUEPRINT_VERSION = 4
 
 
@@ -40,6 +48,11 @@ __global_id_counter = 0
 
 
 def get_new_id():
+    """Get a unique ID (incremental)
+
+    Returns:
+        int: The unique ID.
+    """
     global __global_id_counter
     __global_id_counter = (new_id := __global_id_counter) + 1
     return new_id

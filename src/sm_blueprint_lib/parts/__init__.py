@@ -1,3 +1,6 @@
+"""Blocks and Parts definitions.
+"""
+
 from .barrierblock import *
 from .logicgate import *
 from .sensor import *
