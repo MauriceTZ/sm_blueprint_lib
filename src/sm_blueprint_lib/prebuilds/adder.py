@@ -1,9 +1,9 @@
 from typing import Sequence
 from numpy import ndarray
-from ..utils import get_bits_required, check_pos, connect, num_to_bit_list
+from ..utils import get_bits_required, connect, num_to_bit_list
 from ..blueprint import Blueprint
 from ..parts.logicgate import LogicGate
-from ..pos import Pos
+from ..pos import *
 
 
 def simple_adder_subtractor(bp: Blueprint,

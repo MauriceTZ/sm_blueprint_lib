@@ -1,4 +1,4 @@
-from .blueprint import Blueprint
+from .blueprint import *
 from .body import *
 from .bounds import *
 from .constants import *

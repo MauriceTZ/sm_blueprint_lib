@@ -1,11 +1,11 @@
 from typing import Sequence
 from numpy import array, ndarray
-from ..utils import get_bits_required, check_pos, connect, num_to_bit_list
+from ..utils import get_bits_required, connect, num_to_bit_list
 from ..blueprint import Blueprint
 from ..parts.logicgate import LogicGate
 from ..parts.sensor import Sensor5
 from ..parts.timer import Timer
-from ..pos import Pos
+from ..pos import *
 
 
 def distance_sensor(bp: Blueprint,

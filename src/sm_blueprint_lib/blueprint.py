@@ -1,20 +1,22 @@
 from dataclasses import dataclass, field
+from typing import Optional
 
 from .bases.parts.basepart import BasePart
 from .body import Body
-from .constants import VERSION
+from .bases.joints.basejoint import BaseJoint
+from .constants import VERSION, SHAPEID
 
 
 @dataclass
 class Blueprint:
-    bodies: list[Body] = field(default_factory=lambda: [Body()])
+    bodies: list[Body] = field(default_factory=lambda: [{}])
+    joints: Optional[list[BaseJoint]] = None
     version: int = VERSION.BLUEPRINT_VERSION
 
     def __post_init__(self):
-        try:
-            self.bodies = [Body(**body) for body in self.bodies]
-        except TypeError:
-            pass
+        self.bodies = [Body(**body) for body in self.bodies]
+        if self.joints:
+            self.joints = [SHAPEID.JOINT_TO_CLASS[j["shapeId"]](**j) for j in self.joints]
 
     def add(self, *obj, body=0):
         """Adds the object(s) to the blueprint.

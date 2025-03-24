@@ -2,7 +2,7 @@ from pprint import pp
 
 from numpy import ndarray
 
-from src.sm_blueprint_lib import Timer, LogicGate, BarrierBlock, Switch, Button, Blueprint, save_blueprint, dump_string_from_blueprint, connect
+from src.sm_blueprint_lib import Timer, LogicGate, BarrierBlock, Switch, Button, Blueprint, save_blueprint, dump_string_from_blueprint, connect, load_blueprint_from_string, load_blueprint
 
 size = 10
 l0 = [
@@ -35,6 +35,7 @@ s = Switch((10, 10, 0), "ff0000")
 b = Button((9, 9, 0), "ff0000")
 
 bp = Blueprint()
+# print(dump_string_from_blueprint(bp))
 
 connect(s, l1)
 connect(l0, l1)
@@ -63,6 +64,8 @@ bp.add(l0, l1, l2, base, zero, l3, s, b)
 
 # for l in l3:
 #     bp.bodies[0].childs.extend(l)
+
+pp(load_blueprint(r"C:\Users\mauri\AppData\Roaming\Axolot Games\Scrap Mechanic\User\User_76561198400983548\Blueprints\68326f94-1bc7-446a-8e7c-63d4fb01d694\blueprint.json"))
 
 print(len(bp.bodies[0].childs))
 path = r"C:\Users\mauri\AppData\Roaming\Axolot Games\Scrap Mechanic\User\User_76561198400983548\Blueprints\c35f6e4e-52cb-4b00-8afa-f0ffd3fbb012\blueprint.json"

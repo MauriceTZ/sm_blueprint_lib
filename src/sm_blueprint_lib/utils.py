@@ -10,7 +10,6 @@ from .blueprint import Blueprint
 from .parts.barrierblock import BarrierBlock
 from .parts.logicgate import LogicGate
 from .parts.timer import Timer
-from .pos import Pos
 
 
 def load_blueprint(path: str):
@@ -114,20 +113,6 @@ def connect(_from, _to, *, parallel=True):
         else:                                               # Assume _to is a sequence of parts
             for subto in _to:
                 connect(_from, subto, parallel=parallel)
-
-
-def check_pos(pos: Sequence) -> Pos:
-    """Converts a Sequence into a Pos class if it wasn't already.
-
-    Args:
-        pos (Sequence): The Sequence to be converted.
-
-    Returns:
-        Pos: The converted Pos.
-    """
-    if not isinstance(pos, Pos):
-        pos = Pos(*list(pos))
-    return pos
 
 
 def get_bits_required(number: int | float):

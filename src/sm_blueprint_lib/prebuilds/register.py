@@ -1,9 +1,8 @@
 from typing import Sequence
 from numpy import ndarray
-from ..utils import check_pos
 from ..blueprint import Blueprint
 from ..parts.logicgate import LogicGate
-from ..pos import Pos
+from ..pos import *
 from ..prebuilds.counter import counter, counter_decrement
 
 
