@@ -12,8 +12,8 @@ class Rot:
 
     def __add__(self, o: "Rot" | Sequence):
         if isinstance(o, Rot):
-            return Rot(self.x + o.x, self.y + o.y)
-        return Rot(self.x + o[0], self.y + o[1])
+            return Rot(self.x_axis + o.x_axis, self.y_axis + o.y_axis)
+        return Rot(self.x_axis + o[0], self.y_axis + o[1])
 
 
 def check_rot(rot: Sequence | dict) -> Rot:
@@ -33,7 +33,7 @@ def check_rot(rot: Sequence | dict) -> Rot:
     return rot
 
 
-def set_rotation(pos,rot, facing, rotated):
+def set_rotation(pos, rot, facing, rotated):
     """Sets the rotation of a block
 
     Args:
