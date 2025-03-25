@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Sequence
-from constants import ROTATIONS
-
+from .constants import ROTATIONS
+from .pos import Pos
 
 @dataclass
 class Rot:
@@ -34,13 +34,13 @@ def check_rot(rot: Sequence | dict) -> Rot:
 
 
 def set_rotation(pos, rot, facing, rotated):
-    """Sets the rotation of a block
+    """Sets the rotation of a block.
 
     Args:
-        pos (Pos): Class that represents the position of a block (x, y, z)
-        rot (Rot): Class that represents the rotation of a block (x-axis, y-axis)
-        facing (String): String indicating facing direction of the block
-        rotated (String): String indicating rotated direction of the face
+        pos (Pos): Class that represents the position of a block (x, y, z).
+        rot (Rot): Class that represents the rotation of a block (x-axis, y-axis).
+        facing (String): String indicating facing direction of the block.
+        rotated (String): String indicating rotated direction of the face.
 
     """
     x, y, z, x_axis, y_axis = ROTATIONS.rotations[facing][rotated]
@@ -50,3 +50,14 @@ def set_rotation(pos, rot, facing, rotated):
     rot.x_axis = x_axis
     rot.y_axis = y_axis
 
+def rotate(gates: list, center: Pos):
+    """Rotates a list of gate
+
+    Args:
+        gates (list): list of gates to rotate.
+        center (Pos): Center point to rotate gates.
+
+    """
+    for gate in gates:
+        temp = gate.pos
+        # todo everything :)

@@ -6,6 +6,7 @@ from dataclasses import asdict
 from json import load, dump, loads, dumps
 from math import ceil, log2
 from typing import Sequence
+import PIL
 
 from numpy import ndarray
 
@@ -139,3 +140,190 @@ def num_to_bit_list(number: int, bit_length: int):
     for b in range(bit_length):
         output[b] = bool((number >> b) & 1)
     return output
+
+
+"""
+
+def fill_void(object,x,y,z,block, color = "000000" ,offSet = None):
+    def show_fill_block():
+        def logic_gate(image,pos,size, color):
+            for x in range(16):
+                for y in range(16):
+                    if x <= 1 or y <= 1 or x >= 14 or y >= 14 :
+                        image.putpixel((pos[0]+x, pos[1]+y), color)
+                    if 1 < y < 14 and 1 < x < 14 :
+                        image.putpixel((pos[0]+x, pos[1]+y), (128,128,128))
+
+            image.putpixel((pos[0]+4, pos[1]+4), (32, 32, 32))
+            image.putpixel((pos[0]+4, pos[1]+5), (32, 32, 32))
+            image.putpixel((pos[0]+4, pos[1]+6), (32, 32, 32))
+            image.putpixel((pos[0]+4, pos[1]+7), (32, 32, 32))
+            image.putpixel((pos[0]+4, pos[1]+8), (32, 32, 32))
+            image.putpixel((pos[0]+4, pos[1]+9), (32, 32, 32))
+            image.putpixel((pos[0]+4, pos[1]+10), (32, 32, 32))
+            image.putpixel((pos[0]+4, pos[1]+11), (32, 32, 32))
+            image.putpixel((pos[0]+5, pos[1]+4), (32, 32, 32))
+            image.putpixel((pos[0]+5, pos[1]+5), (32, 32, 32))
+            image.putpixel((pos[0]+5, pos[1]+6), (32, 32, 32))
+            image.putpixel((pos[0]+5, pos[1]+7), (32, 32, 32))
+            image.putpixel((pos[0]+5, pos[1]+8), (32, 32, 32))
+            image.putpixel((pos[0]+5, pos[1]+9), (32, 32, 32))
+            image.putpixel((pos[0]+5, pos[1]+10), (32, 32, 32))
+            image.putpixel((pos[0]+5, pos[1]+11), (32, 32, 32))
+
+            image.putpixel((pos[0]+6, pos[1]+10), (32, 32, 32))
+            image.putpixel((pos[0]+6, pos[1]+11), (32, 32, 32))
+            image.putpixel((pos[0]+7, pos[1]+10), (32, 32, 32))
+            image.putpixel((pos[0]+7, pos[1]+11), (32, 32, 32))
+            image.putpixel((pos[0]+8, pos[1]+10), (32, 32, 32))
+            image.putpixel((pos[0]+8, pos[1]+11), (32, 32, 32))
+            image.putpixel((pos[0]+9, pos[1]+9), (32, 32, 32))
+            image.putpixel((pos[0]+9, pos[1]+10), (32, 32, 32))
+            image.putpixel((pos[0]+9, pos[1]+11), (32, 32, 32))
+            image.putpixel((pos[0]+10, pos[1]+10), (32, 32, 32))
+
+            image.putpixel((pos[0]+6, pos[1]+4), (32, 32, 32))
+            image.putpixel((pos[0]+6, pos[1]+5), (32, 32, 32))
+            image.putpixel((pos[0]+7, pos[1]+4), (32, 32, 32))
+            image.putpixel((pos[0]+7, pos[1]+5), (32, 32, 32))
+            image.putpixel((pos[0]+8, pos[1]+4), (32, 32, 32))
+            image.putpixel((pos[0]+8, pos[1]+5), (32, 32, 32))
+            image.putpixel((pos[0]+9, pos[1]+4), (32, 32, 32))
+            image.putpixel((pos[0]+9, pos[1]+5), (32, 32, 32))
+            image.putpixel((pos[0]+9, pos[1]+6), (32, 32, 32))
+            image.putpixel((pos[0]+10, pos[1]+5), (32, 32, 32))
+
+            image.putpixel((pos[0]+10, pos[1]+6), (32, 32, 32))
+            image.putpixel((pos[0]+10, pos[1]+7), (32, 32, 32))
+            image.putpixel((pos[0]+10, pos[1]+8), (32, 32, 32))
+            image.putpixel((pos[0]+10, pos[1]+9), (32, 32, 32))
+            image.putpixel((pos[0]+11, pos[1]+6), (32, 32, 32))
+            image.putpixel((pos[0]+11, pos[1]+7), (32, 32, 32))
+            image.putpixel((pos[0]+11, pos[1]+8), (32, 32, 32))
+            image.putpixel((pos[0]+11, pos[1]+9), (32, 32, 32))
+
+        def Noblock(image,pos,size):
+            for x in range(size[0]):
+                for y in range(size[1]):
+                    if x == y or x+1 == y or x == size[1]-y or x+1 == size[1]-y or x == 0 or y == 0 or x == size[0]-1 or y == size[1]-1 :
+                        image.putpixel((pos[0]+x, pos[1]+y), (255,0,0))
+                    else:
+                        image.putpixel((pos[0] + x, pos[1] + y), (0, 0, 0))
+
+        size = 16
+        new_image = Image.new("RGB", (int(len(filled_blocks)*size), int(len(filled_blocks[0])*size)), color=0)
+        for z in range(len(filled_blocks[0][0])):
+            for x in range(len(filled_blocks)):
+                for y in range(len(filled_blocks[x])):
+                    if filled_blocks[x][y][z] is not None:
+                        logic_gate(new_image,(x*size,-y*size),(size,size),hex_rgb(filled_blocks[x][y][z]))
+
+                    else:
+                        Noblock(new_image,(x*size,-y*size),(size,size))
+            new_image.show()
+
+    def fill_block(member):
+        if hasattr(member, "timer_pos"):
+            posx, posy, posz = member.timer_pos
+            posx -= offx
+            posy -= offy
+            posz -= offz
+            filled_blocks[posx][posy][posz] = member
+
+        posx, posy, posz = member.pos
+        posx -= offx
+        posy -= offy
+        posz -= offz
+        filled_blocks[posx][posy][posz] = member
+
+    def fill():
+        isblock = False
+        blocks_members = [attr for attr in dir(blocks) if not callable(getattr(blocks, attr)) and not attr.startswith("__")]
+        for each in blocks_members:
+            if block["uuid"] == blocks.__getattribute__(each)["uuid"]:
+                isblock = True
+                break
+
+
+        for x in range(len(filled_blocks)):
+            for y in range(len(filled_blocks[x])):
+                if filled_blocks[x][y][0] is None:
+                    if isblock:
+                        object.fill_block(block, (x+offx,y+offy-1,offz), (1,1,1), color)
+                    else:
+                        object.place_object(block,(x+offx,y+offy-1,offz),"up","up", color)
+
+    filled_blocks = [[[None for _ in range(z)] for _ in range(y)] for _ in range(x)]
+
+    if offSet is not None:
+        offx, offy, offz = offSet
+    elif hasattr(object, "pos"):
+        offx,offy,offz = object.pos
+    else:
+        offx, offy, offz = 0,0,0
+
+    members = [attr for attr in dir(object) if not callable(getattr(object, attr)) and not attr.startswith("__")]
+
+    for each in members:
+        member = object.__getattribute__(each)
+        if type(member) == type([]):
+            for each in member:
+                if hasattr(each, "pos"):
+                    fill_block(each)
+
+        elif hasattr(member,"pos"):
+            fill_block(member)
+
+    #show_fill_block()
+    fill()
+
+def border(blueprint,posx,posy,offx,offy):
+    offx-=1
+    offy-=1
+    posx+=1
+
+    for y in range(posy):
+        blueprint.place_object(objects.Small_Pipe_Tee,(offx,y + offy,0),"up","up","000000")
+        blueprint.place_object(objects.Duct_End,(offx,y + offy,0),"south","right","000000")
+        blueprint.place_object(objects.Duct_End,(offx,y + offy,0),"north","left","000000")
+        blueprint.place_object(objects.Duct_End,(offx,y + offy,0),"south","left","000000")
+
+        blueprint.place_object(objects.Small_Pipe_Tee,(offx+posx,y + offy,0),"up","down","000000")
+        blueprint.place_object(objects.Duct_End,(offx+posx,y + offy,0),"west","down","000000")
+        blueprint.place_object(objects.Duct_End,(offx+posx,y + offy,0),"south","right","000000")
+        blueprint.place_object(objects.Duct_End,(offx+posx,y + offy,0),"south","left","000000")
+
+    for x in range(posx-1):
+        blueprint.place_object(objects.Small_Pipe_Tee,(1+x+offx,offy-1,0),"up","left","000000")
+        blueprint.place_object(objects.Duct_End,(1+x+offx,offy-1,0),"west","down","000000")
+        blueprint.place_object(objects.Duct_End,(1+x+offx,offy-1,0),"east","left","000000")
+        blueprint.place_object(objects.Duct_End,(1+x+offx,offy-1,0),"west","left","000000")
+
+        blueprint.place_object(objects.Small_Pipe_Tee,(1+x+offx,offy+posy,0),"up","right","000000")
+        blueprint.place_object(objects.Duct_End,(1+x+offx,offy+posy,0),"west","up","000000")
+        blueprint.place_object(objects.Duct_End,(1+x+offx,offy+posy,0),"east","left","000000")
+        blueprint.place_object(objects.Duct_End,(1+x+offx,offy+posy,0),"west","left","000000")
+    offy-=1
+    blueprint.place_object(objects.Small_Pipe_Bend, (offx, offy, 0), "west", "left", "000000")
+    blueprint.place_object(objects.Duct_End, (offx, offy, 0), "west", "right", "000000")
+    blueprint.place_object(objects.Duct_End, (offx, offy, 0), "south", "left", "000000")
+    blueprint.place_object(objects.Duct_End, (offx, offy, 0), "west", "down", "000000")
+    blueprint.place_object(objects.Duct_End, (offx, offy, 0), "south", "up", "000000")
+    blueprint.place_object(objects.Small_Pipe_Bend, (offx, posy+offy+1, 0), "west", "right", "000000")
+    blueprint.place_object(objects.Duct_End, (offx, posy+offy+1, 0), "west", "right", "000000")
+    blueprint.place_object(objects.Duct_End, (offx, posy+offy+1, 0), "north", "left", "000000")
+    blueprint.place_object(objects.Duct_End, (offx, posy+offy+1, 0), "west", "up", "000000")
+    blueprint.place_object(objects.Duct_End, (offx, posy+offy+1, 0), "north", "right", "000000")
+    blueprint.place_object(objects.Small_Pipe_Bend, (posx+offx, offy, 0), "east", "left", "000000")
+    blueprint.place_object(objects.Duct_End, (posx+offx, offy, 0), "south", "left", "000000")
+    blueprint.place_object(objects.Duct_End, (posx+offx, offy, 0), "east", "left", "000000")
+    blueprint.place_object(objects.Duct_End, (posx+offx, offy, 0), "south", "down", "000000")
+    blueprint.place_object(objects.Duct_End, (posx+offx, offy, 0), "east", "up", "000000")
+    blueprint.place_object(objects.Small_Pipe_Bend, (posx+offx, posy+offy+1, 0), "east", "right", "000000")
+    blueprint.place_object(objects.Duct_End, (posx+offx, posy+offy+1, 0), "east", "down", "000000")
+    blueprint.place_object(objects.Duct_End, (posx+offx, posy+offy+1, 0), "north", "up", "000000")
+    blueprint.place_object(objects.Duct_End, (posx+offx, posy+offy+1, 0), "east", "left", "000000")
+    blueprint.place_object(objects.Duct_End, (posx+offx, posy+offy+1, 0), "north", "right", "000000")
+
+"""
+
