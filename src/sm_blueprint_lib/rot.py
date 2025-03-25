@@ -45,8 +45,8 @@ def set_rotation(pos,rot, facing, rotated):
     """
     x, y, z, x_axis, y_axis = ROTATIONS.rotations[facing][rotated]
     pos.x += x
-    pos.x += y
-    pos.x += z
+    pos.y += y
+    pos.z += z
     rot.x_axis = x_axis
     rot.y_axis = y_axis
 
