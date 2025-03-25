@@ -1,8 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from ...rot import Xaxis, Zaxis
-from ...constants import SHAPEID , AXIS
+from ...constants import SHAPEID, AXIS
 from ...pos import Pos
 from ...id import ID
 
@@ -15,8 +14,8 @@ class BasePart:
     pos: Pos
     color: str
     joints: Optional[list[ID]] = field(kw_only=True, default=None)
-    xaxis: Optional[Xaxis] = field(kw_only=True, default=AXIS.DEFAULT_XAXIS)
-    zaxis: Optional[Zaxis] = field(kw_only=True, default=AXIS.DEFAULT_ZAXIS)
+    xaxis: int = field(kw_only=True, default=AXIS.DEFAULT_XAXIS)
+    zaxis: int = field(kw_only=True, default=AXIS.DEFAULT_ZAXIS)
 
     def __post_init__(self):
         # if pos given as {"x": ..., "y": ..., "z": ...} or (x, y, z) then convert to Pos class
@@ -32,20 +31,6 @@ class BasePart:
                 self.color[0], self.color[1], self.color[2])
         if self.joints:
             self.joints = [ID(**id) for id in self.joints]
-
-        # if xaxis given as {"xaxis": ...} or xaxis then convert to Xaxis class
-        if not isinstance(self.xaxis, Xaxis):
-            try:
-                self.xaxis = Xaxis(**self.xaxis)
-            except TypeError:
-                self.xaxis = Xaxis(self.xaxis)
-
-        # if zaxis given as {"zaxis": ...} or xaxis then convert to Zaxis class
-        if not isinstance(self.zaxis, Zaxis):
-            try:
-                self.zaxis = Zaxis(**self.zaxis)
-            except TypeError:
-                self.zaxis = Zaxis(self.zaxis)
 
     def __init_subclass__(cls):
         super().__init_subclass__()

@@ -1,3 +1,6 @@
+from typing import Literal
+
+
 class SHAPEID:
     """Shape ID constants for Blocks and Parts.
     """
@@ -36,8 +39,12 @@ class AXIS:
     DEFAULT_ZAXIS_INTERACTABLE = -2
 
 
-class ROTATIONS:
-    rotations = {
+class ROTATION:
+    """Rotations constants ( by @Inventorsteve :) )
+    """
+    FACING = Literal["west", "up", "down", "south", "north", "east"]
+    ROTATED = Literal["down", "right", "left", "up"]
+    ROTATION_TABLE = {
         "west": {"down": (1, 0, 0, 2, 3), "right": (1, 1, 0, 3, -2), "left": (1, 0, 1, -3, 2), "up": (1, 1, 1, -2, -3)},
         "up": {"down": (1, 1, 0, -2, -1), "right": (0, 1, 0, 1, -2), "left": (1, 0, 0, -1, 2), "up": (0, 0, 0, 2, 1)},
         "down": {"down": (1, 1, 1, -1, -2), "right": (1, 0, 1, 2, -1), "left": (0, 1, 1, -2, 1), "up": (0, 0, 1, 1, 2)},
