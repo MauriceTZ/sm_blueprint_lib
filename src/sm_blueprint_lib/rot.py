@@ -61,3 +61,5 @@ def rotate(gates: list, center: Pos):
     for gate in gates:
         temp = gate.pos
         # todo everything :)
+    pass
+
