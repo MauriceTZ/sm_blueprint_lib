@@ -32,7 +32,8 @@ base = BarrierBlock((0, -1, -1), "000000", (size+1, size+1, 1))
 zero = BarrierBlock((0, -1, 0), "000000", (1, 1, 1))
 
 s = Switch((10, 10, 0), "ff0000")
-b = Button((9, 9, 0), "ff0000")
+b = Button((9, 10, 0), "ff0000")
+g = LogicGate((8, 10, 0), "ff0000")
 
 bp = Blueprint()
 # print(dump_string_from_blueprint(bp))
@@ -44,7 +45,7 @@ connect(l3, l2[-1])
 connect(l1, l2, parallel=False)
 connect(l3.T, l1)
 
-bp.add(l0, l1, l2, base, zero, l3, s, b)
+bp.add(l0, l1, l2, base, zero, l3, s, b, g)
 
 # bp.add(l0)
 # bp.add(l1)
