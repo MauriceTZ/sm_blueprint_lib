@@ -154,7 +154,7 @@ def fill_void(object,x,y,z,block, color = "000000" ,offSet = None):
                     if 1 < y < 14 and 1 < x < 14 :
                         image.putpixel((pos[0]+x, pos[1]+y), (128,128,128))
 
-            image.putpixel((pos[0]+4, pos[1]+4), (32, 32, 32))
+            image.putpixel((pos[0]+4, pos[1]+4), (32, 32, 32))            # I dont even know why this is the way it its -steve
             image.putpixel((pos[0]+4, pos[1]+5), (32, 32, 32))
             image.putpixel((pos[0]+4, pos[1]+6), (32, 32, 32))
             image.putpixel((pos[0]+4, pos[1]+7), (32, 32, 32))
