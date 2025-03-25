@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Sequence
-from constants import ROTATIONS
+from .constants import ROTATIONS
 
 
 @dataclass
