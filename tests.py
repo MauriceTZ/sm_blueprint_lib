@@ -18,7 +18,7 @@ from src.sm_blueprint_lib.parts.sensor import Sensor5
 # from sm.bases.parts.baseinteractablepart import BaseInteractablePart
 # from sm.parts.logicgate import LogicGate
 
-path = r"C:\Users\mauri\AppData\Roaming\Axolot Games\Scrap Mechanic\User\User_76561198400983548\Blueprints\1d5e07ec-c750-4a24-ade9-0e278867ba81\blueprint.json"
+path = r"/home/dyaln/snap/steam/common/.steam/steam/steamapps/compatdata/387990/pfx/drive_c/users/steamuser/AppData/Roaming/Axolot Games/Scrap Mechanic/User/User_76561198331351809/Blueprints/e37c1c7a-119b-44d8-a44b-8b511519fb46/blueprint.json"
 
 with open(path) as fp:
     bp = json.load(fp)

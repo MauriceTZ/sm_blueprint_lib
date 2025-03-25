@@ -2,38 +2,70 @@ from dataclasses import dataclass
 from typing import Sequence
 from .constants import ROTATIONS
 from .pos import Pos
+from dataclasses import dataclass
+from typing import Sequence
 
 @dataclass
-class Rot:
-    """Class that represents the rotation of a block (x-axis, y-axis)
+class Xaxis:
+    """Class that represents the xaxis of a block (y-axis)
     """
-    x_axis: int
-    y_axis: int
 
-    def __add__(self, o: "Rot" | Sequence):
-        if isinstance(o, Rot):
-            return Rot(self.x_axis + o.x_axis, self.y_axis + o.y_axis)
-        return Rot(self.x_axis + o[0], self.y_axis + o[1])
+    xaxis: int
+
+    def __add__(self, o: "Xaxis" | Sequence):
+        if isinstance(o, Xaxis):
+            return Xaxis(self.xaxis + o.xaxis)
+        return Xaxis(self.xaxis + o[0])
 
 
-def check_rot(rot: Sequence | dict) -> Rot:
-    """Converts a Sequence or dict into a Rot class if it wasn't already.
+def check_xaxis(xaxis: Sequence | dict) -> Xaxis:
+    """Converts a Sequence or dict into a xaxis class if it wasn't already.
 
     Args:
-        rot (Sequence | dict): The Sequence or dict to be converted.
+        xaxis (Sequence | dict): The Sequence or dict to be converted.
 
     Returns:
-        Rot: The converted Rot.
+        Xaxis: The converted Xaxis.
     """
-    if not isinstance(rot, Rot):
-        if isinstance(rot, Sequence):
-            rot = Rot(*list(rot))
+    if not isinstance(xaxis, Xaxis):
+        if isinstance(xaxis, Sequence):
+            xaxis = Xaxis(*list(xaxis))
         else:
-            rot = Rot(**rot)
-    return rot
+            xaxis = Xaxis(**xaxis)
+    return xaxis
 
 
-def set_rotation(pos, rot, facing, rotated):
+@dataclass
+class Zaxis:
+    """Class that represents the zaxis of a block (y-axis)
+    """
+
+    zaxis: int
+
+    def __add__(self, o: "Zaxis" | Sequence):
+        if isinstance(o, Zaxis):
+            return Zaxis(self.zaxis + o.zaxis)
+        return Zaxis(self.zaxis + o[0])
+
+
+def check_zaxis(zaxis: Sequence | dict) -> Zaxis:
+    """Converts a Sequence or dict into a zaxis class if it wasn't already.
+
+    Args:
+        zaxis (Sequence | dict): The Sequence or dict to be converted.
+
+    Returns:
+        Zaxis: The converted Zaxis.
+    """
+    if not isinstance(zaxis, Zaxis):
+        if isinstance(zaxis, Sequence):
+            zaxis = Zaxis(*list(zaxis))
+        else:
+            zaxis = Zaxis(**zaxis)
+    return zaxis
+
+
+def set_rotation(pos, xaxis, zaxis, facing, rotated):
     """Sets the rotation of a block.
 
     Args:
@@ -43,12 +75,13 @@ def set_rotation(pos, rot, facing, rotated):
         rotated (String): String indicating rotated direction of the face.
 
     """
-    x, y, z, x_axis, y_axis = ROTATIONS.rotations[facing][rotated]
+    x, y, z, x_axis, z_axis = ROTATIONS.rotations[facing][rotated]
     pos.x += x
     pos.y += y
     pos.z += z
-    rot.x_axis = x_axis
-    rot.y_axis = y_axis
+    xaxis.xaxis = x_axis
+    zaxis.zaxis = z_axis
+
 
 def rotate(gates: list, center: Pos):
     """Rotates a list of gate
