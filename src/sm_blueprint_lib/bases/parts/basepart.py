@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from ...constants import SHAPEID, AXIS
+from ...constants import ROTATION, SHAPEID, AXIS
 from ...pos import Pos
 from ...id import ID
 
@@ -38,3 +38,18 @@ class BasePart:
             SHAPEID.SHAPEID_TO_CLASS[cls.shapeId.default] = cls
         except AttributeError:
             pass
+
+    def rotate(self, facing: ROTATION.FACING, rotated: ROTATION.ROTATED):
+        """Sets the rotation of a Part.
+
+        Args:
+            facing (ROTATION.FACING): String indicating facing direction of the Part.
+            rotated (ROTATION.ROTATED): String indicating rotated direction of the face.
+        """
+        x, y, z, x_axis, z_axis = ROTATION.ROTATION_TABLE[facing][rotated]
+        self.pos.x += x
+        self.pos.y += y
+        self.pos.z += z
+        self.xaxis = x_axis
+        self.zaxis = z_axis
+        return self
