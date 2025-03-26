@@ -8,8 +8,7 @@ g0 = LogicGate((1, 0, 0), "ffffff")  # .rotate("up", "right")
 g1 = LogicGate((2, 0, 0), "ffffff").rotate("up", "left")
 g2 = LogicGate((3, 0, 0), "ffffff").rotate("up", "up")
 g3 = LogicGate((4, 0, 0), "ffffff").rotate("up", "down")
-# Rotating the same part to see what happens lol
-g4 = LogicGate((5, 0, 0), "ffffff").rotate("up", "right").rotate("up", "right")
+g4 = LogicGate((5, 0, 0), "ffffff").rotate("up", "right")
 
 bp.add(g0,
        g1,
