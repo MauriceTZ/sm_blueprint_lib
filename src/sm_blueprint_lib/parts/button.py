@@ -8,4 +8,4 @@ from ..constants import SHAPEID
 class Button(BaseInteractablePart):
     """Class that represents a Button part.
     """
-    shapeId: str = field(kw_only=True, default=SHAPEID.BUTTON)
+    shapeId: str = field(kw_only=True, default=SHAPEID.Button)

@@ -8,7 +8,7 @@ from ...bounds import Bounds
 class BaseBoundablePart(BasePart):
     """Base class for all Boundable parts (those that are draggable)
     """
-    bounds: Bounds
+    bounds: Bounds = field(kw_only=True, default=(1,1,1))
 
     def __post_init__(self):
         super().__post_init__()

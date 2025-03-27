@@ -10,7 +10,7 @@ class Timer(BaseLogicPart):
     """Class that represents a Timer logic part.
     """
     controller: TimerController = field(default_factory=TimerController)
-    shapeId: str = field(kw_only=True, default=SHAPEID.TIMER)
+    shapeId: str = field(kw_only=True, default=SHAPEID.Timer)
 
     def __post_init__(self):
         super().__post_init__()

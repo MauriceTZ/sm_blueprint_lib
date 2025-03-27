@@ -8,4 +8,4 @@ from ..constants import SHAPEID
 class BarrierBlock(BaseBoundablePart):
     """Class that represents a Barrier Block.
     """
-    shapeId: str = field(kw_only=True, default=SHAPEID.BARRIER_BLOCK)
+    shapeId: str = field(kw_only=True, default=SHAPEID.Barrier_Block)

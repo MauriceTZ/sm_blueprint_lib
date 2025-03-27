@@ -8,4 +8,4 @@ from ..constants import SHAPEID
 class Piston5(PistonJoint):
     """Class that represents a Piston 5 part.
     """
-    shapeId: str = field(kw_only=True, default=SHAPEID.PISTON5)
+    shapeId: str = field(kw_only=True, default=SHAPEID.Piston_5)

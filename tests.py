@@ -64,7 +64,7 @@ j = '{"bodies":[{"childs":[{"bounds":{"x":2,"y":2,"z":1},"color":"CE9E0C","pos":
 bp = load_blueprint_from_string(j)
 pp(bp)
 
-pp(Sensor5((1,2,3), (255,255,255), (False, True, (255,0,0), False, 1)))
+pp(Sensor5((1,2,3), (False, True, (255,0,0), False, 1),color=(255,255,255)))
 
 # print(BaseController())
 # a = BaseInteractablePart("a", (1, 2, 3), (255, 0, 0), 1, 3)

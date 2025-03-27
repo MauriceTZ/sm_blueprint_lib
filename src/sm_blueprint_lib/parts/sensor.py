@@ -11,7 +11,7 @@ class Sensor5(BaseInteractablePart):
     """
     controller: SensorController = field(
         default_factory=SensorController)
-    shapeId: str = field(kw_only=True, default=SHAPEID.SENSOR5)
+    shapeId: str = field(kw_only=True, default=SHAPEID.Sensor_5)
 
     def __post_init__(self):
         super().__post_init__()

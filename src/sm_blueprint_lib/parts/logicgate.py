@@ -11,7 +11,7 @@ class LogicGate(BaseLogicPart):
     """
     controller: LogicGateController = field(
         default_factory=LogicGateController)
-    shapeId: str = field(kw_only=True, default=SHAPEID.LOGIC_GATE)
+    shapeId: str = field(kw_only=True, default=SHAPEID.Logic_Gate)
 
     def __post_init__(self):
         super().__post_init__()

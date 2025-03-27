@@ -8,4 +8,4 @@ from ..constants import SHAPEID
 class Switch(BaseLogicPart):
     """Class that represents a Switch part.
     """
-    shapeId: str = field(kw_only=True, default=SHAPEID.SWITCH)
+    shapeId: str = field(kw_only=True, default=SHAPEID.Switch)

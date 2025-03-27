@@ -2,6 +2,7 @@
 """
 
 from .barrierblock import *
+from .block import *
 from .logicgate import *
 from .sensor import *
 from .switch import *

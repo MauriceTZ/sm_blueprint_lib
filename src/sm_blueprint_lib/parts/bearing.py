@@ -8,4 +8,4 @@ from ..constants import SHAPEID
 class Bearing(BaseJoint):
     """Class that represents a Bearing part.
     """
-    shapeId: str = field(kw_only=True, default=SHAPEID.BEARING)
+    shapeId: str = field(kw_only=True, default=SHAPEID.Bearing)
