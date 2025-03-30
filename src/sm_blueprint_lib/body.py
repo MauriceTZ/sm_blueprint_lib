@@ -12,4 +12,6 @@ class Body:
 
     def __post_init__(self):
         self.childs = [SHAPEID.SHAPEID_TO_CLASS[child["shapeId"]](**child)
+                       if not isinstance(child, BasePart) else
+                       child
                        for child in self.childs]

@@ -10,4 +10,5 @@ class SuspensionJoin(BaseJoint):
 
     def __post_init__(self):
         super().__post_init__()
-        self.controller = SuspensionJointController(**self.controller)
+        if not isinstance(self.controller, SuspensionJointController):
+            self.controller = SuspensionJointController(**self.controller)

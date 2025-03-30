@@ -10,4 +10,5 @@ class PistonJoint(BaseJoint):
 
     def __post_init__(self):
         super().__post_init__()
-        self.controller = PistonJointController(**self.controller)
+        if not isinstance(self.controller, PistonJointController):
+            self.controller = PistonJointController(**self.controller)

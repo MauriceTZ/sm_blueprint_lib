@@ -30,7 +30,10 @@ class BasePart:
             self.color = "%02X%02X%02X" % (
                 self.color[0], self.color[1], self.color[2])
         if self.joints:
-            self.joints = [ID(**id) for id in self.joints]
+            self.joints = [ID(**id)
+                           if not isinstance(id, ID) else
+                           id
+                           for id in self.joints]
 
     def __init_subclass__(cls):
         super().__init_subclass__()

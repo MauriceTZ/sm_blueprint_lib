@@ -18,9 +18,15 @@ class Blueprint:
     version: int = VERSION.BLUEPRINT_VERSION
 
     def __post_init__(self):
-        self.bodies = [Body(**body) for body in self.bodies]
+        self.bodies = [Body(**body)
+                       if not isinstance(body, Body) else
+                       body
+                       for body in self.bodies]
         if self.joints:
-            self.joints = [SHAPEID.JOINT_TO_CLASS[j["shapeId"]](**j) for j in self.joints]
+            self.joints = [SHAPEID.JOINT_TO_CLASS[j["shapeId"]](**j)
+                           if not isinstance(j, BaseJoint) else
+                           j
+                           for j in self.joints]
 
     def add(self, *obj, body=0):
         """Adds the object(s) to the blueprint.
