@@ -6,12 +6,11 @@ from ..constants import SHAPEID
 
 
 @dataclass
-class Sensor5(BaseInteractablePart):
-    """Class that represents a Sensor 5 part.
+class BaseSensor(BaseInteractablePart):
+    """Base class for Sensors.
     """
     controller: SensorController = field(
         default_factory=SensorController)
-    shapeId: str = field(kw_only=True, default=SHAPEID.Sensor_5)
 
     def __post_init__(self):
         super().__post_init__()
@@ -24,3 +23,38 @@ class Sensor5(BaseInteractablePart):
                     self.controller = SensorController(*self.controller)
                 except TypeError:
                     self.controller = SensorController(self.controller)
+
+
+@dataclass
+class Sensor1(BaseSensor):
+    """Class that represents a Sensor 5 part.
+    """
+    shapeId: str = field(kw_only=True, default=SHAPEID.Sensor_1)
+
+
+@dataclass
+class Sensor2(BaseSensor):
+    """Class that represents a Sensor 5 part.
+    """
+    shapeId: str = field(kw_only=True, default=SHAPEID.Sensor_2)
+
+
+@dataclass
+class Sensor3(BaseSensor):
+    """Class that represents a Sensor 5 part.
+    """
+    shapeId: str = field(kw_only=True, default=SHAPEID.Sensor_3)
+
+
+@dataclass
+class Sensor4(BaseSensor):
+    """Class that represents a Sensor 5 part.
+    """
+    shapeId: str = field(kw_only=True, default=SHAPEID.Sensor_4)
+
+
+@dataclass
+class Sensor5(BaseSensor):
+    """Class that represents a Sensor 5 part.
+    """
+    shapeId: str = field(kw_only=True, default=SHAPEID.Sensor_5)

@@ -7,7 +7,7 @@ from .basecontroller import BaseController
 class SensorController(BaseController):
     """Sensor's Controller
     """
-    audioEnable: bool
+    audioEnabled: bool
     buttonMode: bool
     color: str
     colorMode: bool
@@ -19,6 +19,6 @@ class SensorController(BaseController):
         if not isinstance(self.color, str):
             self.color = "%02X%02X%02X" % (
                 self.color[0], self.color[1], self.color[2])
-        self.audioEnable = bool(self.audioEnable)
+        self.audioEnabled = bool(self.audioEnabled)
         self.buttonMode = bool(self.buttonMode)
         self.colorMode = bool(self.colorMode)
