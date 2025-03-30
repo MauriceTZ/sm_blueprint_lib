@@ -1,20 +1,16 @@
 """
 Utility functions for basic uses.
 """
-
+import os
+import sys
 from dataclasses import asdict
 from json import load, dump, loads, dumps
 from math import ceil, log2
-from typing import Sequence
-import PIL
 
 from numpy import ndarray
 
 from .bases.parts.baseinteractablepart import BaseInteractablePart
 from .blueprint import Blueprint
-from .parts.barrierblock import BarrierBlock
-from .parts.logicgate import LogicGate
-from .parts.timer import Timer
 
 
 def load_blueprint(path: str):
@@ -140,6 +136,46 @@ def num_to_bit_list(number: int, bit_length: int):
     for b in range(bit_length):
         output[b] = bool((number >> b) & 1)
     return output
+
+def get_path():
+    bp_path = ""
+    files_path = ""
+    if sys.platform == "linux":
+        print("linux System.")
+        linux_user = os.getcwd().split("/")[2]
+        if os.path.isdir(f"/home/{linux_user}/snap"):
+            print("Snap is installed.")
+            print("Checking Snap for Steam...")
+            if os.path.isdir(f"/home/{linux_user}/snap/steam/common/.local/share/Steam/steamapps/"):
+                steam_path = f"/home/{linux_user}/snap/steam/common/.local/share/Steam"
+                print(f"Steam is likely here {steam_path}.")
+                print(f"Checking for ScrapMechanic...")
+                if os.path.isdir(f"{steam_path}/steamapps/common/Scrap Mechanic"):
+                    print(f"ScrapMechanic is Installed.")
+                    print("Checking for compatibility data...")
+                    if os.path.isdir(f"{steam_path}/steamapps/compatdata/387990/pfx/drive_c/"):
+                        drive = f"{steam_path}/steamapps/compatdata/387990/pfx/drive_c/"
+                        print("Found.")
+                        if os.path.isdir(f"{drive}users/steamuser/AppData/Roaming/Axolot Games/Scrap Mechanic/User/"):
+                            sm_users = f"{drive}users/steamuser/AppData/Roaming/Axolot Games/Scrap Mechanic/User/"
+                            print(sm_users)
+
+        if os.path.isdir(f"/home/{linux_user}/.local/flatpak"):
+            print("flatpak is installed")
+    else:
+        drive = "C:"
+        #drive, user = os.path.expanduser().split("/")[2] os.path.expanduser()
+        if os.path.isdir(drive):
+            print(drive)
+            if os.path.isdir(f"{drive}Program Files (x86)/Steam/steamapps"):
+                print("found steam")
+                print("checking for  for ")
+
+
+
+def generate_blocks(path):
+    pass
+
 
 
 """
