@@ -187,7 +187,9 @@ def get_paths():
 
         if os.path.isdir(f"/home/{linux_user}/.local/flatpak"):
             print("flatpak is installed... now what?")
+
     elif sys.platform == "win32":
+        print("Windows System.")
         import winreg
         def read_reg(ep, p=r"", k=''):
             try:
