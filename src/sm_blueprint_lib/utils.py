@@ -12,18 +12,6 @@ from numpy import ndarray
 
 from .bases.parts.baseinteractablepart import BaseInteractablePart
 from .blueprint import Blueprint
-import winreg
-
-def read_reg(ep, p = r"", k = ''):
-    try:
-        key = winreg.OpenKeyEx(ep, p)
-        value = winreg.QueryValueEx(key,k)
-        if key:
-            winreg.CloseKey(key)
-        return value[0]
-    except Exception as e:
-        return None
-    return None
 
 
 def load_blueprint(path: str):
@@ -150,6 +138,21 @@ def num_to_bit_list(number: int, bit_length: int):
         output[b] = bool((number >> b) & 1)
     return output
 
+def load_vdf(path):
+    temp = "{"
+    with open(path,"r") as vdf:
+        for line in vdf.readlines():
+            temp += line.strip("		").strip("\n").replace('"		"', '":"')
+    temp = temp.replace('"{','":{')
+    temp = temp.replace('}"', '},"')
+    temp = temp.replace('"""', '=_=')
+    temp = temp.replace('""', '","')
+    temp = temp.replace('=_=', '"","')
+    temp+="}"
+    return loads(temp)
+
+
+
 def get_paths():
     """Tries to find all paths related to ScrapMechanic.
 
@@ -185,18 +188,41 @@ def get_paths():
         if os.path.isdir(f"/home/{linux_user}/.local/flatpak"):
             print("flatpak is installed... now what?")
     elif sys.platform == "win32":
-        user = os.getlogin()
+        import winreg
+        def read_reg(ep, p=r"", k=''):
+            try:
+                key = winreg.OpenKeyEx(ep, p)
+                value = winreg.QueryValueEx(key, k)
+                if key:
+                    winreg.CloseKey(key)
+                return value[0]
+            except Exception as e:
+                return None
+            return None
+
         steam_path = str(read_reg(ep=winreg.HKEY_LOCAL_MACHINE, p=r"SOFTWARE\Wow6432Node\Valve\Steam",k='InstallPath'))
         steam_active_user = str(read_reg(ep=winreg.HKEY_CURRENT_USER, p=r"Software\Valve\Steam\ActiveProcess",k='ActiveUser'))
+
+        scrap_path = ""
+
         if os.path.isdir(steam_path):
             print(f"Steam is likely here {steam_path}.")
             print(f"Checking for ScrapMechanic...")
-            if os.path.isdir(f"{steam_path}/steamapps/common/Scrap Mechanic"):
-                scrap_path = f"{steam_path}/steamapps/common/Scrap Mechanic"
-                print(f"ScrapMechanic is Installed.")
+            if os.path.isdir(fr"{steam_path}\steamapps\common\Scrap Mechanic"):
+                scrap_path = fr"{steam_path}\steamapps\common\Scrap Mechanic"
+                print(f"ScrapMechanic is installed at {scrap_path}")
             else:
-                print("ERROR ScrapMechanic is not in default location")
-                return None,None
+                print(f"Reading libraryfolders.vdf for ScrapMechanic...")
+                vdf = load_vdf(fr"{steam_path}\config\libraryfolders.vdf")
+                for library in vdf["libraryfolders"]:
+                    if "387990" in vdf["libraryfolders"][library]["apps"].keys():
+                        if os.path.isdir(fr"{vdf["libraryfolders"][library]["path"]}\steamapps\common\Scrap Mechanic"):
+                            scrap_path = fr"{vdf["libraryfolders"][library]["path"]}\steamapps\common\Scrap Mechanic"
+                            print(f"ScrapMechanic is installed at {scrap_path}")
+            if scrap_path == "":
+                print("Error, ScrapMechanic could not be found!")
+                return None, None
+
             print("looking for appdata...")
             appdata_path = os.getenv("APPDATA")
             if os.path.isdir(appdata_path):
@@ -204,15 +230,39 @@ def get_paths():
                 print(f"Checking for ScrapMechanic...")
                 if os.path.isdir(fr"{appdata_path}\Axolot Games\Scrap Mechanic\User"):
                     print(fr"Found ScrapMechanic at {appdata_path}\Axolot Games\Scrap Mechanic")
+                else:
+                    print(f"ERROR could not find ScrapMechanic in {appdata_path}")
+                    return None, None
+                print("looking for blueprint folder...")
+                user_list = os.listdir(fr"{appdata_path}\Axolot Games\Scrap Mechanic\User")
+                if len(user_list) == 1:
+                    blueprint_path = f"{appdata_path}/{user_list[0]}/Blueprints/".replace("/", "\\")
+                    print(f"Found Blueprint folder at {blueprint_path}")
+                    return blueprint_path, scrap_path
+                print("More than 1 user for blueprint folder...")
                 if steam_active_user is not None:
-                    print("looking for blueprint folder...")
-                    if os.path.isdir(f"{steam_path}/userdata/{steam_active_user}/387990"):
-                        with open(f"{steam_path}/userdata/{steam_active_user}/387990/remotecache.vdf", "r") as remotecache:
-                            for i in range(10):
-                                line = remotecache.readline().strip("	")
-                                if line.startswith('"Axolot Games/'):
-                                    blueprint_path = f"{appdata_path}/{line.split("Blueprints")[0][1:]}Blueprints".replace("/","\\")
-                                    print(f"Found Blueprint folder at {blueprint_path}")
+                    print("Looking for active steam user...")
+                    if os.path.isdir(fr"{steam_path}\userdata\{steam_active_user}\387990"):
+                        print("Reading remotecache.vdf for active user.")
+                        vdf = load_vdf(fr"{steam_path}\userdata\{steam_active_user}\387990\remotecache.vdf")
+                        keys = vdf["387990"].keys()
+                        for key in keys:
+                            if key.startswith("Axolot Games"):
+                                print(f"Active user is {key.split("Blueprints")[0][-18:-1]}.")
+                                blueprint_path = f"{appdata_path}/{key.split("Blueprints")[0]}Blueprints/".replace("/", "\\")
+                                print(f"Found Blueprint folder at {blueprint_path}")
+                                return blueprint_path,scrap_path
+
+                    else:
+                        print(fr"ERROR could not find scrapMechanic file in {steam_path}\userdata\{steam_active_user}")
+                        return None, None
+                else:
+                    print("ERROR could not find active steam user")
+                    return None, None
+            else:
+                print("ERROR could not find appdata")
+                return None, None
+
     else:
         print("os unknown")
 
