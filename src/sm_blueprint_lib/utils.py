@@ -1,6 +1,7 @@
 """
 Utility functions for basic uses.
 """
+import json
 import os
 import sys
 from dataclasses import asdict
@@ -11,6 +12,18 @@ from numpy import ndarray
 
 from .bases.parts.baseinteractablepart import BaseInteractablePart
 from .blueprint import Blueprint
+import winreg
+
+def read_reg(ep, p = r"", k = ''):
+    try:
+        key = winreg.OpenKeyEx(ep, p)
+        value = winreg.QueryValueEx(key,k)
+        if key:
+            winreg.CloseKey(key)
+        return value[0]
+    except Exception as e:
+        return None
+    return None
 
 
 def load_blueprint(path: str):
@@ -137,13 +150,22 @@ def num_to_bit_list(number: int, bit_length: int):
         output[b] = bool((number >> b) & 1)
     return output
 
-def get_path():
-    bp_path = ""
+def get_paths():
+    """Tries to find all paths related to ScrapMechanic.
+
+    Returns:
+        blueprint_path (str): Path to the current steam users blueprint folder from root.
+        game_path (str): Path to ScrapMechanic game files.
+    """
+    blueprint_path = ""
     files_path = ""
+
+
+
     if sys.platform == "linux":
         print("linux System.")
         linux_user = os.getcwd().split("/")[2]
-        if os.path.isdir(f"/home/{linux_user}/snap"):
+        if not os.path.isdir(f"/home/{linux_user}/snap"):
             print("Snap is installed.")
             print("Checking Snap for Steam...")
             if os.path.isdir(f"/home/{linux_user}/snap/steam/common/.local/share/Steam/steamapps/"):
@@ -161,15 +183,39 @@ def get_path():
                             print(sm_users)
 
         if os.path.isdir(f"/home/{linux_user}/.local/flatpak"):
-            print("flatpak is installed")
+            print("flatpak is installed... now what?")
+    elif sys.platform == "win32":
+        user = os.getlogin()
+        steam_path = str(read_reg(ep=winreg.HKEY_LOCAL_MACHINE, p=r"SOFTWARE\Wow6432Node\Valve\Steam",k='InstallPath'))
+        steam_active_user = str(read_reg(ep=winreg.HKEY_CURRENT_USER, p=r"Software\Valve\Steam\ActiveProcess",k='ActiveUser'))
+        if os.path.isdir(steam_path):
+            print(f"Steam is likely here {steam_path}.")
+            print(f"Checking for ScrapMechanic...")
+            if os.path.isdir(f"{steam_path}/steamapps/common/Scrap Mechanic"):
+                scrap_path = f"{steam_path}/steamapps/common/Scrap Mechanic"
+                print(f"ScrapMechanic is Installed.")
+            else:
+                print("ERROR ScrapMechanic is not in default location")
+                return None,None
+            print("looking for appdata...")
+            appdata_path = os.getenv("APPDATA")
+            if os.path.isdir(appdata_path):
+                print(f"found appdata at {appdata_path}")
+                print(f"Checking for ScrapMechanic...")
+                if os.path.isdir(fr"{appdata_path}\Axolot Games\Scrap Mechanic\User"):
+                    print(fr"Found ScrapMechanic at {appdata_path}\Axolot Games\Scrap Mechanic")
+                if steam_active_user is not None:
+                    print("looking for blueprint folder...")
+                    if os.path.isdir(f"{steam_path}/userdata/{steam_active_user}/387990"):
+                        with open(f"{steam_path}/userdata/{steam_active_user}/387990/remotecache.vdf", "r") as remotecache:
+                            for i in range(10):
+                                line = remotecache.readline().strip("	")
+                                if line.startswith('"Axolot Games/'):
+                                    blueprint_path = f"{appdata_path}/{line.split("Blueprints")[0][1:]}Blueprints".replace("/","\\")
+                                    print(f"Found Blueprint folder at {blueprint_path}")
     else:
-        drive = "C:"
-        #drive, user = os.path.expanduser().split("/")[2] os.path.expanduser()
-        if os.path.isdir(drive):
-            print(drive)
-            if os.path.isdir(f"{drive}Program Files (x86)/Steam/steamapps"):
-                print("found steam")
-                print("checking for  for ")
+        print("os unknown")
+
 
 
 
