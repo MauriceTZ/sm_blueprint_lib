@@ -12,7 +12,7 @@ class BasePart:
     """
     shapeId: str
     pos: Pos
-    color: str = field(kw_only=True, default=COLOR.DEFAULT)
+    color: str
     joints: Optional[list[ID]] = field(kw_only=True, default=None)
     xaxis: int = field(kw_only=True, default=AXIS.DEFAULT_XAXIS)
     zaxis: int = field(kw_only=True, default=AXIS.DEFAULT_ZAXIS)

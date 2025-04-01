@@ -4,21 +4,7 @@ from math import sin
 from typing import Sequence
 
 from numpy import array
-from src.sm_blueprint_lib import Blueprint, connect, num_to_bit_list, save_blueprint
-from src.sm_blueprint_lib.parts.logicgate import LogicGate
-from src.sm_blueprint_lib.pos import Pos
-from src.sm_blueprint_lib.prebuilds.adder import simple_adder_subtractor
-from src.sm_blueprint_lib.prebuilds.barrel_shifter import barrel_shifter
-from src.sm_blueprint_lib.prebuilds.clock40hz import clock40hz
-from src.sm_blueprint_lib.prebuilds.comparator import comparator
-from src.sm_blueprint_lib.prebuilds.counter import counter
-from src.sm_blueprint_lib.prebuilds.distance_sensor import distance_sensor, distance_sensor_raycast
-from src.sm_blueprint_lib.prebuilds.ram import ram
-from src.sm_blueprint_lib.prebuilds.decoder import decoder
-from src.sm_blueprint_lib.prebuilds.register import counter_register, register
-from src.sm_blueprint_lib.prebuilds.rom import rom
-from src.sm_blueprint_lib.prebuilds.timer_ram_multiclient import timer_ram_multiclient
-from src.sm_blueprint_lib.prebuilds.timer_ram_cached import timer_ram_cached
+from src.sm_blueprint_lib import *
 
 
 bp = Blueprint()
@@ -85,5 +71,5 @@ timer_ram_cached(bp,
 
 
 print(f"Prebuild size: {len(bp.bodies[0].childs)} parts")
-path = r"C:\Users\mauri\AppData\Roaming\Axolot Games\Scrap Mechanic\User\User_76561198400983548\Blueprints\c35f6e4e-52cb-4b00-8afa-f0ffd3fbb012\blueprint.json"
+path = get_paths()[0]
 save_blueprint(bp, path)

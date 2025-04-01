@@ -15,3 +15,4 @@ from .parts import *
 from .prebuilds import *
 from .rot import *
 from .bases import *
+from .blocks import *

@@ -2,6 +2,7 @@ from pprint import pp
 
 from src.sm_blueprint_lib import *
 
+path = utils.get_paths()[0]
 print("Blueprint from direct Class instancing")
 bp = Blueprint(bodies=[Body(childs=[BarrierBlock(shapeId='09ca2713-28ee-4119-9622-e85490034758',
                                                  pos=Pos(x=20, y=-5, z=3),
@@ -879,3 +880,5 @@ bp1 = load_blueprint_from_string("""
 }
 """)
 pp(bp1)
+
+

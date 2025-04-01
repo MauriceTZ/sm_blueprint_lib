@@ -21,7 +21,7 @@ bp.add(g0,
        BarrierBlock((0, 1, -1), "00ff00", (1, 3, 1)),
        BarrierBlock((0, 0, 0), "0000ff", (1, 1, 5)),
        )
-path = r"C:\Users\mauri\AppData\Roaming\Axolot Games\Scrap Mechanic\User\User_76561198400983548\Blueprints\c35f6e4e-52cb-4b00-8afa-f0ffd3fbb012\blueprint.json"
-
+path = utils.get_paths()[0]
 pp(bp)
-save_blueprint(bp, path)
+
+make_new_blueprint(path,"bob",bp)

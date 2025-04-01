@@ -1,6 +1,5 @@
 from typing import Literal
 
-
 class SHAPEID:
     """Shape ID constants for Blocks and Parts.
     """
@@ -775,9 +774,61 @@ class SHAPEID:
     JOINT_TO_CLASS = {}
 
 
+class BLOCKS:
+    """Block names.
+    """
+    Spaceship_Block = "Spaceship_Block"
+    Brick_Block = "Brick_Block"
+    Path_Light_Block = "Path_Light_Block"
+    Barrier_Block = "Barrier_Block"
+    Net_Fence = "Net_Fence"
+    Glass_Block = "Glass_Block"
+    Glass_Tile_Block = "Glass_Tile_Block"
+    Metal_Block_1 = "Metal_Block_1"
+    Tile_Block = "Tile_Block"
+    Concrete_Block_1 = "Concrete_Block_1"
+    Wood_Block_1 = "Wood_Block_1"
+    Cardboard_Block = "Cardboard_Block"
+    Wood_Block_3 = "Wood_Block_3"
+    Metal_Block_2 = "Metal_Block_2"
+    Wood_Block_2 = "Wood_Block_2"
+    Scrap_Metal_Block = "Scrap_Metal_Block"
+    Scrap_Wood_Block = "Scrap_Wood_Block"
+    Rusted_Metal_Block = "Rusted_Metal_Block"
+    Extruded_Metal_Block = "Extruded_Metal_Block"
+    Scrap_Stone_Block = "Scrap_Stone_Block"
+    Solid_Net_Block = "Solid_Net_Block"
+    Aluminum_Block = "Aluminum_Block"
+    Net_Block = "Net_Block"
+    Spaceship_Floor_Block = "Spaceship_Floor_Block"
+    Plastic_Block = "Plastic_Block"
+    Restroom_Block = "Restroom_Block"
+    Insulation_Block = "Insulation_Block"
+    Striped_Net_Block = "Striped_Net_Block"
+    Concrete_Block_Mould = "Concrete_Block_Mould"
+    Plaster_Block = "Plaster_Block"
+    Square_Mesh_Block = "Square_Mesh_Block"
+    Armored_Glass_Block = "Armored_Glass_Block"
+    Crane_Hook_Block = "Crane_Hook_Block"
+    Metal_Block_3 = "Metal_Block_3"
+    Framework_Block = "Framework_Block"
+    Sand_Block = "Sand_Block"
+    Concrete_Slab_Block = "Concrete_Slab_Block"
+    Worn_Metal_Block = "Worn_Metal_Block"
+    Concrete_Block_3 = "Concrete_Block_3"
+    Painted_Wall_Block = "Painted_Wall_Block"
+    Punched_Steel_Block = "Punched_Steel_Block"
+    Bubble_Plastic_Block = "Bubble_Plastic_Block"
+    Cracked_Concrete_Block = "Cracked_Concrete_Block"
+    Diamond_Plate_Block = "Diamond_Plate_Block"
+    Carpet_Block = "Carpet_Block"
+    Concrete_Block_2 = "Concrete_Block_2"
+
+
 class COLOR:
     """Color constants for Blocks and Parts.
     """
+    TEMP = "TEMP"
     DEFAULT = "DF7F01"
     DEFAULT_BARRIER_BLOCK = "CE9E0C"
     DEFAULT_BUTTON = "DF7F01"
@@ -1050,8 +1101,8 @@ class AXIS:
     """
     DEFAULT_XAXIS = 1
     DEFAULT_ZAXIS = 3
-    DEFAULT_XAXIS_INTERACTABLE = 1
-    DEFAULT_ZAXIS_INTERACTABLE = -2
+    DEFAULT_XAXIS_INTERACTABLE = 2
+    DEFAULT_ZAXIS_INTERACTABLE = 1
 
 
 class ROTATION:

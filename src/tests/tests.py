@@ -1,24 +1,8 @@
 import json
 from pprint import pp
+from src.sm_blueprint_lib import *
 
-
-from src.sm_blueprint_lib import load_blueprint, save_blueprint, load_blueprint_from_string
-# from sm.bases.controllers.basecontroller import BaseController
-# from sm.bases.controllers.baselogiccontroller import BaseLogicController
-# from sm.bases.parts.baselogicpart import BaseLogicPart
-# import sm.bases.parts.basepart
-# from sm.bases.controllers.logicgatecontroller import LogicGateController
-# from sm.blueprint import Blueprint
-# import sm.bases.parts.baseboundablepart
-# import sm.parts.barrierblock
-# from dataclasses import asdict
-
-from src.sm_blueprint_lib.constants import SHAPEID
-from src.sm_blueprint_lib.parts.sensor import Sensor5
-# from sm.bases.parts.baseinteractablepart import BaseInteractablePart
-# from sm.parts.logicgate import LogicGate
-
-path = r"/home/dyaln/snap/steam/common/.steam/steam/steamapps/compatdata/387990/pfx/drive_c/users/steamuser/AppData/Roaming/Axolot Games/Scrap Mechanic/User/User_76561198331351809/Blueprints/e37c1c7a-119b-44d8-a44b-8b511519fb46/blueprint.json"
+path = get_paths()[0]
 
 with open(path) as fp:
     bp = json.load(fp)

@@ -4,6 +4,8 @@ Utility functions for basic uses.
 import json
 import os
 import sys
+import uuid
+import shutil
 from dataclasses import asdict
 from json import load, dump, loads, dumps
 from math import ceil, log2
@@ -138,6 +140,7 @@ def num_to_bit_list(number: int, bit_length: int):
         output[b] = bool((number >> b) & 1)
     return output
 
+
 def load_vdf(file):
     """Converts a steam vdf file to a python dict.
 
@@ -160,7 +163,6 @@ def load_vdf(file):
     return loads(temp)
 
 
-
 def find_game(steam_path):
     """Tries to find the Scrap Mechanic path.
 
@@ -177,6 +179,7 @@ def find_game(steam_path):
                 if os.path.isdir(fr"{vdf["libraryfolders"][library]["path"]}/steamapps/common/Scrap Mechanic"):
                     return fr"{vdf["libraryfolders"][library]["path"]}/steamapps/common/Scrap Mechanic"
     return None
+
 
 def find_blueprint_folder(steam_path,appdata_path):
     """Tries to find the path to blueprint folder.
@@ -239,15 +242,31 @@ def get_paths():
         blueprint_path = find_blueprint_folder(steam_path, appdata_path).replace("/", "\\")
         return blueprint_path, game_path
 
-
     else:
         print("os unknown")
 
 
-
-
 def generate_blocks(path):
     pass
+
+
+def make_new_blueprint(path, name, blueprint, description="#{STEAM_WORKSHOP_NO_DESCRIPTION}", Image=None):
+    id = uuid.uuid4()
+    while id in os.listdir(path):
+        id = uuid.uuid4()
+    blueprint_path = path + str(id)
+    os.mkdir(blueprint_path)
+    shutil.copy(__file__[:-8]+"icon.png",blueprint_path)
+    with open(blueprint_path+"/description.json","w") as discrip:
+        discrip.write(dumps({"description": description,
+                                "localId": str(id),
+                                "name": name,
+                                "type": "Blueprint",
+                                "version": 0},indent=4))
+    save_blueprint(blueprint,blueprint_path+"/blueprint.json")
+    return blueprint_path
+
+
 
 
 
