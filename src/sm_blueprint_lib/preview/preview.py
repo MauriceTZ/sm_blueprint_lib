@@ -1,3 +1,6 @@
+from glob import iglob
+import os
+
 import moderngl_window as mglw
 import moderngl as mgl
 from moderngl_window import scene
@@ -11,7 +14,8 @@ class CameraWindow(mglw.WindowConfig):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.camera = scene.KeyboardCamera(self.wnd.keys, aspect_ratio=self.wnd.aspect_ratio)
+        self.camera = scene.KeyboardCamera(
+            self.wnd.keys, aspect_ratio=self.wnd.aspect_ratio)
         self.camera_enabled = True
 
     def on_key_event(self, key, action, modifiers):
@@ -40,36 +44,43 @@ class CameraWindow(mglw.WindowConfig):
         self.camera.velocity = max(velocity, 1.0)
 
 
-
-class BlueprintPreviewer(CameraWindow):
-    window_size = 1080, 720
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # self.wnd.mouse_exclusivity = True
-        self.logicgate = self.load_scene(
-            r"C:\Users\mauri\Documents\Proyects\Python\Scrap Mechanic\sm_blueprint_lib\src\sm_blueprint_lib\preview\models\obj_interactive_logicgate_off.obj")
-        self.camera = scene.KeyboardCamera(
-            self.wnd.keys,
-            fov=75.0,
-            aspect_ratio=self.wnd.aspect_ratio,
-            near=0.1,
-            far=1000.0,
-        )
-        self.camera.velocity = 10.0
-        self.camera.mouse_sensitivity = 0.25
-        self.camera.position = (
-            self.logicgate.get_center()
-            + glm.vec3(0.0, 0.0, self.logicgate.diagonal_size / 0.5)
-        )
-    def on_render(self, time, frame_time):
-        self.ctx.enable_only(mgl.DEPTH_TEST | mgl.CULL_FACE)
-        self.logicgate.draw_wireframe(
-            projection_matrix=self.camera.projection.matrix,
-            camera_matrix=self.camera.matrix,
-            # time=time,
-        )
-
-
 def preview(bp: Blueprint):
+    class BlueprintPreviewer(CameraWindow):
+        window_size = 1080, 720
+        clear_color = 0.3, 0.3, 0
+
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            self.wnd.mouse_exclusivity = True
+
+            self.parts: list[scene.Scene] = []
+            for i, p in enumerate(iglob("**/*.obj", recursive=True)):
+                try:
+                    self.parts.append(s := self.load_scene(os.path.abspath(p)))
+                    s.matrix *= glm.translate(glm.vec3((i % 8)*5, (i//8)*4, 0))
+                except FileNotFoundError:
+                    pass
+            self.camera = scene.KeyboardCamera(
+                self.wnd.keys,
+                fov=75.0,
+                aspect_ratio=self.wnd.aspect_ratio,
+                near=0.1,
+                far=1000.0,
+            )
+            self.camera.velocity = 10.0
+            self.camera.mouse_sensitivity = 0.25
+            # self.camera.position = (
+            #     self.parts.get_center()
+            #     + glm.vec3(0.0, 0.0, self.parts.diagonal_size / 0.5)
+            # )
+
+        def on_render(self, time, frame_time):
+            self.ctx.enable_only(mgl.DEPTH_TEST | mgl.CULL_FACE)
+            for part in self.parts:
+                part.draw(
+                    projection_matrix=self.camera.projection.matrix,
+                    camera_matrix=self.camera.matrix,
+                    time=time
+                )
+
     BlueprintPreviewer.run()
