@@ -1,1 +1,1 @@
-from .barrierblock import *
+from .block import *

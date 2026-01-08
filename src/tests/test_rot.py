@@ -16,10 +16,10 @@ bp.add(g0,
        g3,
        g4,
        # show the axis just for debugging
-       BarrierBlock((0, 0, -1), "ffffff", (1, 1, 1)),
-       BarrierBlock((1, -1, -1), "ff0000", (5, 3, 1)),
-       BarrierBlock((0, 1, -1), "00ff00", (1, 3, 1)),
-       BarrierBlock((0, 0, 0), "0000ff", (1, 1, 5)),
+       Block((0, 0, -1), "ffffff", (1, 1, 1)),
+       Block((1, -1, -1), "ff0000", (5, 3, 1)),
+       Block((0, 1, -1), "00ff00", (1, 3, 1)),
+       Block((0, 0, 0), "0000ff", (1, 1, 5)),
        )
 path = utils.get_paths()[0]
 pp(bp)

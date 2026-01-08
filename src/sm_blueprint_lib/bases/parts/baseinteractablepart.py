@@ -14,9 +14,12 @@ class BaseInteractablePart(BasePart):
     xaxis: int = field(kw_only=True, default=AXIS.DEFAULT_XAXIS_INTERACTABLE)
     zaxis: int = field(kw_only=True, default=AXIS.DEFAULT_ZAXIS_INTERACTABLE)
 
-    def connect(self, o: "BaseInteractablePart"):
+    def connect(self, o):
         if not self.controller.controllers:
             self.controller.controllers = []
-            
+        if type(o) is int:
+            self.controller.controllers.append(ID(o))
+            return o
+
         self.controller.controllers.append(ID(o.controller.id))
         return o

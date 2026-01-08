@@ -1,16 +1,3 @@
-# sm_blueprint_lib
- Scrap Mechanic Library for Blueprint manipulation.
-
-## Instalation
-```sh
-pip install sm_blueprint_lib
-```
-## Updating version
-```sh
-pip install --upgrade sm_blueprint_lib
-```
-## Usage
-```python
 import numpy as np
 
 import sm_blueprint_lib as sm
@@ -92,12 +79,3 @@ sm.make_new_blueprint("sm_lib_test_blueprint", bp)
 
 # Or save over an existing blueprint
 sm.save_blueprint("sm_lib_test_blueprint", bp)
-```
-
-### Results
-#### 1 to 1 and loop
-![1 to 1 and loop](1to1andloop.png)
-#### Row to row and 1 to many
-![row to row and 1 to many](rowtorowand1tomany.png)
-#### Many to 1 and many to many
-![many to 1 and many to many](manytooneandmanytomany.png)

@@ -5,7 +5,7 @@ from src.sm_blueprint_lib.constants import SHAPEID
 
 
 @dataclass
-class BarrierBlock(BaseBoundablePart):
+class Block(BaseBoundablePart):
     """Class that represents a Barrier Block.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Barrier_Block)

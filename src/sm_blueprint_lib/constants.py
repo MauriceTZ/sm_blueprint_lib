@@ -1,5 +1,6 @@
 from typing import Literal
 
+
 class SHAPEID:
     """Shape ID constants for Blocks and Parts.
     """
@@ -824,8 +825,85 @@ class BLOCKS:
     Carpet_Block = "Carpet_Block"
     Concrete_Block_2 = "Concrete_Block_2"
 
+class PAINT_COLOR:
+    Soft_Peach = "eeeeee"
+    White = "eeeeee"
+    Medium_Grey = "7f7f7f"
+    Light_Grey = "7f7f7f"
+    Black_Cow = "4a4a4a"
+    Dark_Grey = "4a4a4a"
+    Dark_Jungle_Green = "222222"
+    Black = "222222"
 
-class COLOR:
+    Light_Yellow = "f5f071"
+    Sandy_Yellow = "f5f071"
+    Barberry = "e2db13"
+    Yellow = "e2db13"
+    Dark_Yellow = "Swamp Green"
+    Dark_Yellow = "817c00"
+    Woodrush = "323000"
+    Aged_Lithium_Grease = "323000"
+
+    Pale_Lime = "cbf66f"
+    Yellowish_Green = "a0ea00"
+    Murky_Green = "577d07"
+    Dark_Olive_Green = "375000"
+
+    Dragon_Green = "68ff88"
+    Light_Green = "68ff88"
+    Malachite = "19e753"
+    Green = "19e753"
+    La_Salle_Green = "0e8031"
+    Dark_Green = "0e8031"
+    Zucchini = "064023"
+    Darkest_Green = "064023"
+
+    Blue_Lagoon = "7eeded"
+    Blue_Diamond = "2ce6e6"
+    Blue_Chill = "118787"
+    Rich_Black = "0a4444"
+
+    Ultramarine_Blue = "4c6fe3"
+    Light_Blue = "4c6fe3"
+    Palatinate_Blue = "0a3ee2"
+    Blue = "0a3ee2"
+    Smalt = "0f2e91"
+    Dark_Blue = "0f2e91"
+    Downriver = "0a1d5a"
+    Darkest_Blue = "0a1d5a"
+
+    Light_Purple = "ae79f0"
+    Purplish_Blue = "7514ed"
+    Purple = "7514ed"
+    Daisy_Bush = "500aa6"
+    Dark_Purple = "500aa6"
+    Persian_Indigo = "35086c"
+    Darkest_Purple = "35086c"
+
+    Violet = "ee7bf0"
+    Hot_Purple = "cf11d2"
+    Rich_Purple = "720a74"
+    Deep_Violet = "520653"
+
+    Light_Carmine_Pink = "f06767"
+    Light_Red = "f06767"
+    Fire_Engine_Red = "d02525"
+    Red = "d02525"
+    Dark_Red = "7c0000"
+    Dried_Blood = "560202"
+    Darkest_Red = "560202"
+
+    Pale_Orange = "eeaf5c"
+    Light_Orange = "eeaf5c"
+    Tahiti_Gold = "df7f00"
+    Orange = "df7f00"
+    Nutmeg_Wood = "673b00"
+    Brown = "673b00"
+    Deep_Bronze = "472800"
+    Dark_Brown = "472800"
+
+
+class BLOCK_COLOR:
     """Color constants for Blocks and Parts.
     """
     TEMP = "TEMP"
@@ -1141,3 +1219,13 @@ def get_new_id():
     global __global_id_counter
     __global_id_counter = (new_id := __global_id_counter) + 1
     return new_id
+
+def get_current_id():
+    """returns the current ID
+
+    Returns:
+        int: The unique ID.
+    """
+    global __global_id_counter
+    __global_id_counter = (ID := __global_id_counter)
+    return ID-1

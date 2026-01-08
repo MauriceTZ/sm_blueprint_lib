@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from ...constants import ROTATION, SHAPEID, AXIS, COLOR
+from ...constants import ROTATION, SHAPEID, AXIS, BLOCK_COLOR
 from ...pos import Pos
 from ...id import ID
 
@@ -15,7 +15,7 @@ class BasePart:
     color: str
     joints: Optional[list[ID]] = field(kw_only=True, default=None)
     xaxis: int = field(kw_only=True, default=AXIS.DEFAULT_XAXIS)
-    zaxis: int = field(kw_only=True, default=AXIS.DEFAULT_ZAXIS)
+    zaxis: int = field(kw_only=True, default=AXIS.DEFAULT_XAXIS)
 
     def __post_init__(self):
         # if pos given as {"x": ..., "y": ..., "z": ...} or (x, y, z) then convert to Pos class

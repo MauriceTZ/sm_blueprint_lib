@@ -29,14 +29,13 @@ def load_blueprint(path: str):
         return Blueprint(**load(fp))
 
 
-def save_blueprint(bp: Blueprint, path: str):
+def save_blueprint(name: str, bp: Blueprint):
     """Save a blueprint to a file (normally a blueprint.json).
 
     Args:
-        path (str): The path to save the json file.
         bp (Blueprint): The blueprint to be saved.
     """
-    with open(path, mode="w") as fp:
+    with open(get_blueprint_path(name), "w") as fp:
         return dump(asdict(bp), fp, sort_keys=True, separators=(',', ':'))
 
 
@@ -219,11 +218,8 @@ def get_paths():
         game_path (str): Path to ScrapMechanic game files.
     """
     if sys.platform == "linux":
-        print("os: linux")
         linux_user = os.getcwd().split("/")[2]
-        print("linux_user:",linux_user)
         if os.path.isdir(f"/home/{linux_user}/snap/steam/common/.local/share/Steam/steamapps/"):
-            print("installer:", "snap")
             steam_path = f"/home/{linux_user}/snap/steam/common/.local/share/Steam"
             game_path = find_game(steam_path)
             if os.path.isdir(f"{steam_path}/steamapps/compatdata/387990/pfx/drive_c/"):
@@ -234,7 +230,7 @@ def get_paths():
                     return blueprint_path, game_path
 
         if os.path.isdir(f"/home/{linux_user}/.var/app/com.valvesoftware.Steam/data/Steam/steamapps"):
-            print("installer:", "flathub")
+            #print("installer:", "flathub")
             steam_path = f"/home/{linux_user}/.var/app/com.valvesoftware.Steam/data/Steam"
             game_path = find_game(steam_path)
             if os.path.isdir(f"{steam_path}/steamapps/compatdata/387990/pfx/drive_c/"):
@@ -244,7 +240,6 @@ def get_paths():
                     blueprint_path = find_blueprint_folder(steam_path, appdata_path)
                     return blueprint_path, game_path
 
-        print("linux installer unknown")
         return None, None
 
     elif sys.platform == "win32":
@@ -258,7 +253,6 @@ def get_paths():
         return blueprint_path, game_path
 
     else:
-        print("os unknown")
         return None, None
 
 
@@ -266,208 +260,112 @@ def generate_blocks(path):
     pass
 
 
-def make_new_blueprint(path, name, blueprint, description="#{STEAM_WORKSHOP_NO_DESCRIPTION}", Image=None):
+def make_new_blueprint(name, blueprint = None, description="#{STEAM_WORKSHOP_NO_DESCRIPTION}", Image=None):
+    """Will make a new blueprint folder in the directory of path.
+
+    Args:
+        name (str): Name of the new blueprint.
+        blueprint (Blueprint, optional): Blueprint to be saved.
+            If None, an empty blueprint is created.
+        description (str, optional): Description of the new blueprint.
+            Defaults to "#{STEAM_WORKSHOP_NO_DESCRIPTION}".
+        Image (Image, optional): Image used as the blueprint icon.
+            If None, the sm_blueprint_icon is used. Defaults to None.
+
+    Returns:
+        blueprint_uuid (str): The uuid of the new blueprint folder.
+    """
+    path = get_paths()[0]
+    if find_blueprint(name) is not None:
+        print("blueprint already exists")
+        return find_blueprint(name)
     id = uuid.uuid4()
     while id in os.listdir(path):
         id = uuid.uuid4()
     blueprint_path = path + str(id)
     os.mkdir(blueprint_path)
-    shutil.copy(__file__[:-8]+"icon.png",blueprint_path)
+
+    if Image is None:
+        shutil.copy(__file__[:-8]+"icon.png",blueprint_path)
+    elif os.path.isfile(Image):
+        shutil.copy(Image, blueprint_path)
+    else:
+        shutil.copy(__file__[:-8] + "icon.png", blueprint_path)
+
     with open(blueprint_path+"/description.json","w") as discrip:
         discrip.write(dumps({"description": description,
                                 "localId": str(id),
                                 "name": name,
                                 "type": "Blueprint",
                                 "version": 0},indent=4))
-    save_blueprint(blueprint,blueprint_path+"/blueprint.json")
-    return blueprint_path
+
+    if blueprint is not None:
+        blueprint = Blueprint()
+    save_blueprint(name,blueprint)
+    return str(id)
 
 
+def find_blueprint(name):
+    """loops though path and opens descriptions to check blueprint name.
+
+    Args:
+        path (str): Path to the main blueprint folder.
+        name (str): Name of the blueprint.
+
+    Returns:
+        blueprint_uuid (str): The uuid of the new blueprint folder.
+    """
+    path = get_paths()[0]
+    for bp in os.listdir(path):
+        if os.path.exists(path+bp+"/description.json"):
+            with open(path+bp+"/description.json","r") as discrip:
+                discrip = loads(discrip.read())
+                if name  == discrip["name"]:
+                    return bp
+    return None
+
+def list_blueprints():
+    """loops though path and opens descriptions to check blueprint names.
+
+    Returns:
+        BlueprintList: ([str]): List of blueprint names.
+
+    """
+    path = get_paths()[0]
+    bplist = []
+    for bp in os.listdir(path):
+        if os.path.exists(path+bp+"/description.json"):
+            with open(path+bp+"/description.json","r") as discrip:
+                discrip = loads(discrip.read())
+                bplist.append(discrip["name"])
+    return bplist
 
 
+def get_blueprint_path(name):
+    """gets the full path of blueprint.json from blueprint name.
 
-"""
+    Args:
+        name (str): Name of the blueprint.
 
-def fill_void(object,x,y,z,block, color = "000000" ,offSet = None):
-    def show_fill_block():
-        def logic_gate(image,pos,size, color):
-            for x in range(16):
-                for y in range(16):
-                    if x <= 1 or y <= 1 or x >= 14 or y >= 14 :
-                        image.putpixel((pos[0]+x, pos[1]+y), color)
-                    if 1 < y < 14 and 1 < x < 14 :
-                        image.putpixel((pos[0]+x, pos[1]+y), (128,128,128))
+    Returns:
+        BlueprintPath: (str): full path of blueprint.json.
 
-            image.putpixel((pos[0]+4, pos[1]+4), (32, 32, 32))            # I dont even know why this is the way it its -steve
-            image.putpixel((pos[0]+4, pos[1]+5), (32, 32, 32))
-            image.putpixel((pos[0]+4, pos[1]+6), (32, 32, 32))
-            image.putpixel((pos[0]+4, pos[1]+7), (32, 32, 32))
-            image.putpixel((pos[0]+4, pos[1]+8), (32, 32, 32))
-            image.putpixel((pos[0]+4, pos[1]+9), (32, 32, 32))
-            image.putpixel((pos[0]+4, pos[1]+10), (32, 32, 32))
-            image.putpixel((pos[0]+4, pos[1]+11), (32, 32, 32))
-            image.putpixel((pos[0]+5, pos[1]+4), (32, 32, 32))
-            image.putpixel((pos[0]+5, pos[1]+5), (32, 32, 32))
-            image.putpixel((pos[0]+5, pos[1]+6), (32, 32, 32))
-            image.putpixel((pos[0]+5, pos[1]+7), (32, 32, 32))
-            image.putpixel((pos[0]+5, pos[1]+8), (32, 32, 32))
-            image.putpixel((pos[0]+5, pos[1]+9), (32, 32, 32))
-            image.putpixel((pos[0]+5, pos[1]+10), (32, 32, 32))
-            image.putpixel((pos[0]+5, pos[1]+11), (32, 32, 32))
+    """
+    path = get_paths()[0]
+    bp = find_blueprint(name)
+    return f"{path}{bp}/blueprint.json"
 
-            image.putpixel((pos[0]+6, pos[1]+10), (32, 32, 32))
-            image.putpixel((pos[0]+6, pos[1]+11), (32, 32, 32))
-            image.putpixel((pos[0]+7, pos[1]+10), (32, 32, 32))
-            image.putpixel((pos[0]+7, pos[1]+11), (32, 32, 32))
-            image.putpixel((pos[0]+8, pos[1]+10), (32, 32, 32))
-            image.putpixel((pos[0]+8, pos[1]+11), (32, 32, 32))
-            image.putpixel((pos[0]+9, pos[1]+9), (32, 32, 32))
-            image.putpixel((pos[0]+9, pos[1]+10), (32, 32, 32))
-            image.putpixel((pos[0]+9, pos[1]+11), (32, 32, 32))
-            image.putpixel((pos[0]+10, pos[1]+10), (32, 32, 32))
+def delete_blueprint(name):
+    """deletes a blueprints whole folder!
 
-            image.putpixel((pos[0]+6, pos[1]+4), (32, 32, 32))
-            image.putpixel((pos[0]+6, pos[1]+5), (32, 32, 32))
-            image.putpixel((pos[0]+7, pos[1]+4), (32, 32, 32))
-            image.putpixel((pos[0]+7, pos[1]+5), (32, 32, 32))
-            image.putpixel((pos[0]+8, pos[1]+4), (32, 32, 32))
-            image.putpixel((pos[0]+8, pos[1]+5), (32, 32, 32))
-            image.putpixel((pos[0]+9, pos[1]+4), (32, 32, 32))
-            image.putpixel((pos[0]+9, pos[1]+5), (32, 32, 32))
-            image.putpixel((pos[0]+9, pos[1]+6), (32, 32, 32))
-            image.putpixel((pos[0]+10, pos[1]+5), (32, 32, 32))
+    Args:
+        name (str): Name of the blueprint.
 
-            image.putpixel((pos[0]+10, pos[1]+6), (32, 32, 32))
-            image.putpixel((pos[0]+10, pos[1]+7), (32, 32, 32))
-            image.putpixel((pos[0]+10, pos[1]+8), (32, 32, 32))
-            image.putpixel((pos[0]+10, pos[1]+9), (32, 32, 32))
-            image.putpixel((pos[0]+11, pos[1]+6), (32, 32, 32))
-            image.putpixel((pos[0]+11, pos[1]+7), (32, 32, 32))
-            image.putpixel((pos[0]+11, pos[1]+8), (32, 32, 32))
-            image.putpixel((pos[0]+11, pos[1]+9), (32, 32, 32))
-
-        def Noblock(image,pos,size):
-            for x in range(size[0]):
-                for y in range(size[1]):
-                    if x == y or x+1 == y or x == size[1]-y or x+1 == size[1]-y or x == 0 or y == 0 or x == size[0]-1 or y == size[1]-1 :
-                        image.putpixel((pos[0]+x, pos[1]+y), (255,0,0))
-                    else:
-                        image.putpixel((pos[0] + x, pos[1] + y), (0, 0, 0))
-
-        size = 16
-        new_image = Image.new("RGB", (int(len(filled_blocks)*size), int(len(filled_blocks[0])*size)), color=0)
-        for z in range(len(filled_blocks[0][0])):
-            for x in range(len(filled_blocks)):
-                for y in range(len(filled_blocks[x])):
-                    if filled_blocks[x][y][z] is not None:
-                        logic_gate(new_image,(x*size,-y*size),(size,size),hex_rgb(filled_blocks[x][y][z]))
-
-                    else:
-                        Noblock(new_image,(x*size,-y*size),(size,size))
-            new_image.show()
-
-    def fill_block(member):
-        if hasattr(member, "timer_pos"):
-            posx, posy, posz = member.timer_pos
-            posx -= offx
-            posy -= offy
-            posz -= offz
-            filled_blocks[posx][posy][posz] = member
-
-        posx, posy, posz = member.pos
-        posx -= offx
-        posy -= offy
-        posz -= offz
-        filled_blocks[posx][posy][posz] = member
-
-    def fill():
-        isblock = False
-        blocks_members = [attr for attr in dir(blocks) if not callable(getattr(blocks, attr)) and not attr.startswith("__")]
-        for each in blocks_members:
-            if block["uuid"] == blocks.__getattribute__(each)["uuid"]:
-                isblock = True
-                break
-
-
-        for x in range(len(filled_blocks)):
-            for y in range(len(filled_blocks[x])):
-                if filled_blocks[x][y][0] is None:
-                    if isblock:
-                        object.fill_block(block, (x+offx,y+offy-1,offz), (1,1,1), color)
-                    else:
-                        object.place_object(block,(x+offx,y+offy-1,offz),"up","up", color)
-
-    filled_blocks = [[[None for _ in range(z)] for _ in range(y)] for _ in range(x)]
-
-    if offSet is not None:
-        offx, offy, offz = offSet
-    elif hasattr(object, "pos"):
-        offx,offy,offz = object.pos
-    else:
-        offx, offy, offz = 0,0,0
-
-    members = [attr for attr in dir(object) if not callable(getattr(object, attr)) and not attr.startswith("__")]
-
-    for each in members:
-        member = object.__getattribute__(each)
-        if type(member) == type([]):
-            for each in member:
-                if hasattr(each, "pos"):
-                    fill_block(each)
-
-        elif hasattr(member,"pos"):
-            fill_block(member)
-
-    #show_fill_block()
-    fill()
-
-def border(blueprint,posx,posy,offx,offy):
-    offx-=1
-    offy-=1
-    posx+=1
-
-    for y in range(posy):
-        blueprint.place_object(objects.Small_Pipe_Tee,(offx,y + offy,0),"up","up","000000")
-        blueprint.place_object(objects.Duct_End,(offx,y + offy,0),"south","right","000000")
-        blueprint.place_object(objects.Duct_End,(offx,y + offy,0),"north","left","000000")
-        blueprint.place_object(objects.Duct_End,(offx,y + offy,0),"south","left","000000")
-
-        blueprint.place_object(objects.Small_Pipe_Tee,(offx+posx,y + offy,0),"up","down","000000")
-        blueprint.place_object(objects.Duct_End,(offx+posx,y + offy,0),"west","down","000000")
-        blueprint.place_object(objects.Duct_End,(offx+posx,y + offy,0),"south","right","000000")
-        blueprint.place_object(objects.Duct_End,(offx+posx,y + offy,0),"south","left","000000")
-
-    for x in range(posx-1):
-        blueprint.place_object(objects.Small_Pipe_Tee,(1+x+offx,offy-1,0),"up","left","000000")
-        blueprint.place_object(objects.Duct_End,(1+x+offx,offy-1,0),"west","down","000000")
-        blueprint.place_object(objects.Duct_End,(1+x+offx,offy-1,0),"east","left","000000")
-        blueprint.place_object(objects.Duct_End,(1+x+offx,offy-1,0),"west","left","000000")
-
-        blueprint.place_object(objects.Small_Pipe_Tee,(1+x+offx,offy+posy,0),"up","right","000000")
-        blueprint.place_object(objects.Duct_End,(1+x+offx,offy+posy,0),"west","up","000000")
-        blueprint.place_object(objects.Duct_End,(1+x+offx,offy+posy,0),"east","left","000000")
-        blueprint.place_object(objects.Duct_End,(1+x+offx,offy+posy,0),"west","left","000000")
-    offy-=1
-    blueprint.place_object(objects.Small_Pipe_Bend, (offx, offy, 0), "west", "left", "000000")
-    blueprint.place_object(objects.Duct_End, (offx, offy, 0), "west", "right", "000000")
-    blueprint.place_object(objects.Duct_End, (offx, offy, 0), "south", "left", "000000")
-    blueprint.place_object(objects.Duct_End, (offx, offy, 0), "west", "down", "000000")
-    blueprint.place_object(objects.Duct_End, (offx, offy, 0), "south", "up", "000000")
-    blueprint.place_object(objects.Small_Pipe_Bend, (offx, posy+offy+1, 0), "west", "right", "000000")
-    blueprint.place_object(objects.Duct_End, (offx, posy+offy+1, 0), "west", "right", "000000")
-    blueprint.place_object(objects.Duct_End, (offx, posy+offy+1, 0), "north", "left", "000000")
-    blueprint.place_object(objects.Duct_End, (offx, posy+offy+1, 0), "west", "up", "000000")
-    blueprint.place_object(objects.Duct_End, (offx, posy+offy+1, 0), "north", "right", "000000")
-    blueprint.place_object(objects.Small_Pipe_Bend, (posx+offx, offy, 0), "east", "left", "000000")
-    blueprint.place_object(objects.Duct_End, (posx+offx, offy, 0), "south", "left", "000000")
-    blueprint.place_object(objects.Duct_End, (posx+offx, offy, 0), "east", "left", "000000")
-    blueprint.place_object(objects.Duct_End, (posx+offx, offy, 0), "south", "down", "000000")
-    blueprint.place_object(objects.Duct_End, (posx+offx, offy, 0), "east", "up", "000000")
-    blueprint.place_object(objects.Small_Pipe_Bend, (posx+offx, posy+offy+1, 0), "east", "right", "000000")
-    blueprint.place_object(objects.Duct_End, (posx+offx, posy+offy+1, 0), "east", "down", "000000")
-    blueprint.place_object(objects.Duct_End, (posx+offx, posy+offy+1, 0), "north", "up", "000000")
-    blueprint.place_object(objects.Duct_End, (posx+offx, posy+offy+1, 0), "east", "left", "000000")
-    blueprint.place_object(objects.Duct_End, (posx+offx, posy+offy+1, 0), "north", "right", "000000")
-
-"""
-
+    """
+    path = get_paths()[0]
+    if find_blueprint(name) is not None:
+        bp = path+"/"+find_blueprint(name)
+        if input(f'are you sure you want to delete blueprint {name}? Type "yes" or "no".' ) == "yes":
+            for file in os.listdir(bp):
+                os.remove(bp+"/"+file)
+            os.rmdir(bp)
