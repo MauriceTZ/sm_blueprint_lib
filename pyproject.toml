@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sm_blueprint_lib"
-version = "0.0.13"
+version = "0.0.14"
 dependencies = ["numpy", "pyglm", "moderngl", "moderngl-window"]
 authors = [
   { name="Maurice", email="mauriciotorrez00@gmail.com" },
