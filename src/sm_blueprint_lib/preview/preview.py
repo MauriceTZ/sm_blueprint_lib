@@ -6,6 +6,9 @@ import moderngl as mgl
 from moderngl_window import scene
 import glm
 import pygame as pg
+from dataclasses import astuple
+
+from ..preview.create_dict import create_dictionary_uuid_to_obj
 
 from ..blueprint import Blueprint
 
@@ -20,11 +23,11 @@ class CameraWindow(mglw.WindowConfig):
         self.camera_enabled = True
 
     def on_key_event(self, key, action, modifiers):
-        keys = self.wnd.keys
 
         if self.camera_enabled:
             self.camera.key_input(key, action, modifiers)
 
+        # keys = self.wnd.keys
         # if action == keys.ACTION_PRESS:
         #     if key == keys.C:
         #         self.camera_enabled = not self.camera_enabled
@@ -54,13 +57,23 @@ def preview(bp: Blueprint):
             super().__init__(**kwargs)
             self.wnd.mouse_exclusivity = True
 
+            self.UUID_TO_OBJ = create_dictionary_uuid_to_obj()
+
             self.parts: list[scene.Scene] = []
-            for i, p in enumerate(iglob("**/*.obj", recursive=True)):
-                try:
-                    self.parts.append(s := self.load_scene(os.path.abspath(p)))
-                    s.matrix *= glm.translate(glm.vec3((i % 8)*5, (i//8)*4, 0))
-                except FileNotFoundError:
-                    pass
+            for body in bp.bodies:
+                for part in body.childs:
+                    try:
+                        s = self.load_scene(os.path.abspath(os.path.join(r"src\sm_blueprint_lib\preview\models", self.UUID_TO_OBJ[part.shapeId])))
+                        s.matrix *= glm.rotate(glm.radians(90), glm.vec3(-1,0,0)) * glm.translate((part.pos.x, part.pos.y, part.pos.z)) * compute_rotation_matrix(part.xaxis, part.zaxis)
+                        self.parts.append(s)
+                    except KeyError:
+                        pass
+            # for i, p in enumerate(iglob("**/*.obj", recursive=True)):
+            #     try:
+            #         self.parts.append(s := self.load_scene(os.path.abspath(p)))
+            #         s.matrix *= glm.translate(glm.vec3((i % 8)*5, (i//8)*4, 0))
+            #     except FileNotFoundError:
+            #         pass
             self.camera = scene.KeyboardCamera(
                 self.wnd.keys,
                 fov=75.0,
@@ -83,5 +96,26 @@ def preview(bp: Blueprint):
                     camera_matrix=self.camera.matrix,
                     time=time
                 )
+            
 
     BlueprintPreviewer.run()
+
+def compute_rotation_matrix(xaxis: int, zaxis: int):
+    """
+    This function generates the needed rotation matrix from the xaxis and zaxis
+    attributes of a Part in order for the preview code to render them in the
+    correct orientation and position.
+    
+    :param xaxis: The xaxis attribute of a part.
+    :type xaxis: int
+    :param zaxis: The zaxis attribute of a part.
+    :type zaxis: int
+    """
+    x, z = glm.vec3(0), glm.vec3(0)
+    xdir = 1 if xaxis > 0 else -1
+    zdir = 1 if zaxis > 0 else -1
+    x[int(abs(xaxis)) - 1] = xdir
+    z[int(abs(zaxis)) - 1] = zdir
+    y = glm.cross(z, x)
+    # First translate the object by (0.5, 0.5, 0.5) and THEN rotate
+    return glm.mat4_cast(glm.quatLookAtLH(z, y)) * glm.translate(glm.vec3(0.5, 0.5, 0.5))

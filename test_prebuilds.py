@@ -9,16 +9,18 @@ from src.sm_blueprint_lib import *
 
 bp = Blueprint()
 
-timer_ram_cached(bp,
-                 bit_length=8,
-                 num_address_per_cache=8,
-                 num_caches=4,
-                 num_timer_banks=4,
-                 num_caches_per_bank=128)
+# timer_ram_cached(bp,
+#                  bit_length=8,
+#                  num_address_per_cache=8,
+#                  num_caches=4,
+#                  num_timer_banks=4,
+#                  num_caches_per_bank=128)
 
 # comparator(bp, bit_length=32)
 
-# simple_adder_subtractor(bp, bit_length=32)
+# simple_adder_subtractor(bp, bit_length=8)
+
+ram(bp, 8, 8)
 
 # counter_register(bp,
 #                  bit_length=6,
@@ -71,5 +73,6 @@ timer_ram_cached(bp,
 
 
 print(f"Prebuild size: {len(bp.bodies[0].childs)} parts")
-path = get_paths()[0]
-save_blueprint(bp, path)
+# path = get_paths()[0]
+# save_blueprint(bp, path)
+print(dump_string_from_blueprint(bp))
