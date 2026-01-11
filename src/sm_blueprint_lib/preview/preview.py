@@ -5,6 +5,7 @@ import moderngl_window as mglw
 import moderngl as mgl
 from moderngl_window import scene
 import glm
+import pygame as pg
 
 from ..blueprint import Blueprint
 
@@ -24,13 +25,13 @@ class CameraWindow(mglw.WindowConfig):
         if self.camera_enabled:
             self.camera.key_input(key, action, modifiers)
 
-        if action == keys.ACTION_PRESS:
-            if key == keys.C:
-                self.camera_enabled = not self.camera_enabled
-                self.wnd.mouse_exclusivity = self.camera_enabled
-                self.wnd.cursor = not self.camera_enabled
-            if key == keys.SPACE:
-                self.timer.toggle_pause()
+        # if action == keys.ACTION_PRESS:
+        #     if key == keys.C:
+        #         self.camera_enabled = not self.camera_enabled
+        #         self.wnd.mouse_exclusivity = self.camera_enabled
+        #         self.wnd.cursor = not self.camera_enabled
+        #     if key == keys.SPACE:
+        #         self.timer.toggle_pause()
 
     def on_mouse_position_event(self, x: int, y: int, dx, dy):
         if self.camera_enabled:
