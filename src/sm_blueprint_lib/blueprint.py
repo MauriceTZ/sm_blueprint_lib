@@ -41,3 +41,8 @@ class Blueprint:
             else:
                 for subsubobj in subobj:
                     self.add(subsubobj, body=body)
+    
+    def all_parts(self):
+        for body in self.bodies:
+            for part in body.childs:
+                yield part

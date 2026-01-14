@@ -34,6 +34,8 @@ class BasePart:
                            if not isinstance(id, ID) else
                            id
                            for id in self.joints]
+        # Internal variable for alpha channel for the preview module
+        self.a = 1
 
     def __init_subclass__(cls):
         super().__init_subclass__()

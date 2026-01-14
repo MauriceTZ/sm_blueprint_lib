@@ -175,8 +175,8 @@ def find_game(steam_path):
         vdf = load_vdf(fr"{steam_path}/config/libraryfolders.vdf")
         for library in vdf["libraryfolders"]:
             if "387990" in vdf["libraryfolders"][library]["apps"].keys():
-                if os.path.isdir(fr"{vdf["libraryfolders"][library]["path"]}/steamapps/common/Scrap Mechanic"):
-                    return fr"{vdf["libraryfolders"][library]["path"]}/steamapps/common/Scrap Mechanic"
+                if os.path.isdir(fr"{vdf['libraryfolders'][library]['path']}/steamapps/common/Scrap Mechanic"):
+                    return fr"{vdf['libraryfolders'][library]['path']}/steamapps/common/Scrap Mechanic"
     return None
 
 
@@ -206,7 +206,7 @@ def find_blueprint_folder(steam_path,appdata_path):
             keys = vdf["387990"].keys()
             for key in keys:
                 if key.startswith("Axolot Games"):
-                    return f"{appdata_path}/{key.split("Blueprints")[0]}Blueprints/"
+                    return f"{appdata_path}/{key.split('Blueprints')[0]}Blueprints/"
     return None
 
 

@@ -4,6 +4,7 @@
 # 
 
 newmtl logicgate
+map_Kd obj_interactive_logicgate_dif.tga
 Ka 0.488889 0.488889 0.488889
 Kd 0.400000 0.400000 0.400000
 illum 1

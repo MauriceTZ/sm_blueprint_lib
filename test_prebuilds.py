@@ -71,7 +71,8 @@ ram(bp, 8, 8)
 # c = counter(bp, pos=(0, -9, 1), bit_length=32,
 #             precreated_swxors=reg[0][:, 1])
 
-
+# l = LogicGate((0,0,0), "FFFF00", 0)
+# bp.add(l)
 print(f"Prebuild size: {len(bp.bodies[0].childs)} parts")
 # path = get_paths()[0]
 # save_blueprint(bp, path)
