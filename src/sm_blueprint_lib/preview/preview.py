@@ -5,7 +5,7 @@ import moderngl as mgl
 import glm
 
 from ..blueprint import Blueprint
-from .renderers import LogicGateRenderer
+from .renderers import LogicGateRenderer, TimerGateRenderer
 from .camera import Camera
 
 
@@ -35,7 +35,6 @@ def preview(bp: Blueprint):
             self.clock = pg.time.Clock()
             self.camera = Camera(self.window_size)
             self.rot_radius = 20
-            # self.rot_vec = glm.vec2(-glm.half_pi(), 0)
             self.rot_vec = glm.vec2(0)
             self.start_drag = None
             self.mouse_sensitivity = 0.01
@@ -47,6 +46,7 @@ def preview(bp: Blueprint):
 
             self.renderers = [
                 LogicGateRenderer(self.context, shaders_path, textures_path, meshes_path),
+                TimerGateRenderer(self.context, shaders_path, textures_path, meshes_path),
             ]
 
             self.running = True

@@ -9,3 +9,9 @@ class Block(BaseBoundablePart):
     """Class that represents a Barrier Block.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Barrier_Block)
+
+@dataclass
+class SpaceshipFloorBlock(BaseBoundablePart):
+    """Class that represents a Spaceship Floor Block.
+    """
+    shapeId: str = field(kw_only=True, default=SHAPEID.Spaceship_Floor_Block)
