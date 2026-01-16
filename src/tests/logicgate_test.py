@@ -3,7 +3,7 @@ import pprint as pp
 
 bp = Blueprint()
 print(get_current_id())
-gate1 = LogicGate((1,2,3),PAINT_COLOR.Orange,MODE.AND,xaxis=3,zaxis=3)
+gate1 = LogicGate((1,2,3),PAINT_COLOR.Orange,2,xaxis=3,zaxis=3)
 pp.pprint(gate1)
 print(get_current_id())
 gate2 = LogicGate((4,3,2),PAINT_COLOR.Blue,"or")
@@ -24,7 +24,15 @@ gate3.connect(gate1)
 
 bp.add(gate1,gate2,gate3,timer,button)
 
-save_blueprint(bp,get_blueprint_path("sm_test_blueprint"))
+
 
 print(get_current_id())
 
+print(rgb_to_hex((255,255,255)))
+
+
+bp.add(Block(BLOCKS.Concrete_Block_1))
+pp.pprint(Block(BLOCKS.Concrete_Block_1))
+
+
+save_blueprint("sm_CPU_V6",bp)

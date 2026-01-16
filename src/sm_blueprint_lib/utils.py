@@ -16,16 +16,16 @@ from .bases.parts.baseinteractablepart import BaseInteractablePart
 from .blueprint import Blueprint
 
 
-def load_blueprint(path: str):
+def load_blueprint(name: str):
     """Load a blueprint from a path file (normally a blueprint.json).
 
     Args:
-        path (str): The path to the json file.
+        name (str): Name of the blueprint to load.
 
     Returns:
         Blueprint: The loaded blueprint.
     """
-    with open(path) as fp:
+    with open(get_blueprint_path(name)) as fp:
         return Blueprint(**load(fp))
 
 
@@ -33,6 +33,7 @@ def save_blueprint(name: str, bp: Blueprint):
     """Save a blueprint to a file (normally a blueprint.json).
 
     Args:
+        name (str): Name of the new blueprint.
         bp (Blueprint): The blueprint to be saved.
     """
     with open(get_blueprint_path(name), "w") as fp:
@@ -369,3 +370,24 @@ def delete_blueprint(name):
             for file in os.listdir(bp):
                 os.remove(bp+"/"+file)
             os.rmdir(bp)
+
+def rgb_to_hex(rgb):
+    """converts an RGB value to an hex value.
+    Args:
+        rgb (tuple): RGB value
+
+    Returns:
+        hex (str): hex value of the RGB value.
+    """
+    return "%02X%02X%02X" % rgb
+
+def hex_to_rgb(hex):
+    """converts an hex value to an RGB value.
+    Args:
+        hex (str): hex value of the RGB value.
+
+    Returns:
+        rgb (tuple): RGB value
+    """
+    hex = hex.lstrip("#")
+    return tuple(int(hex[i:i + 2], 16) for i in (0, 2, 4))
