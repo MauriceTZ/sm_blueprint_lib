@@ -1,6 +1,6 @@
 """
 # sm_blueprint_lib
-asdasdasdasds
+Yeah we definitely need a better description.
 """
 
 from .blueprint import *

@@ -1,1 +1,1 @@
-from .block import *
+from .blocks import *

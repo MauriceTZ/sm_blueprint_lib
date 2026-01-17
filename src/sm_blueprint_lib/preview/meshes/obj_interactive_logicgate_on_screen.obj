@@ -1,6 +1,5 @@
 # Blender 5.0.1
 # www.blender.org
-mtllib obj_interactive_logicgate_on_screen.mtl
 o obj_interactive_logicgate_on_screen
 v -0.431503 0.431959 -0.482082
 v 0.432077 0.431959 -0.482082
@@ -39,7 +38,6 @@ vt 0.167007 0.832928
 vt 0.167007 0.997808
 vt 0.002128 0.997808
 s 1
-usemtl screen
 f 5/1/1 6/2/2 11/3/3 12/4/4
 f 6/2/2 5/1/1 8/5/5 7/6/6
 f 7/6/6 8/5/5 10/7/7 9/8/8

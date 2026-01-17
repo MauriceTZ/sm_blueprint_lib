@@ -31,12 +31,10 @@ class LogicGateRenderer:
         scene_screen = pywavefront.Wavefront(join(meshes_dir, "obj_interactive_logicgate_on_screen.obj"))
 
         body = scene_body.materials["default0"]
-        head = scene_screen.materials["screen"]
+        head = scene_screen.materials["default0"]
 
-        print(body.vertex_format)
         self.vertices_body = self.context.buffer(np.array(body.vertices, dtype=np.float32))
 
-        print(head.vertex_format)
         self.vertices_head = self.context.buffer(np.array(head.vertices, dtype=np.float32))
 
         self.models = self.context.buffer(reserve=1, dynamic=True)
@@ -107,13 +105,13 @@ class LogicGateRenderer:
         self.shader.programs[0]["V"] = chain(*camera.view().to_tuple())
         self.shader.programs[0]["P"] = chain(*camera.projection().to_tuple())
         self.shader.programs[0]["tex"] = 0
-        self.texture.textures[0].use(0)
+        self.texture.textures["obj_interactive_logicgate_dif"].use(0)
         self.vao_body.render(instances=len(instances))
 
         self.shader.programs[1]["V"] = chain(*camera.view().to_tuple())
         self.shader.programs[1]["P"] = chain(*camera.projection().to_tuple())
         self.shader.programs[1]["tex"] = 1
-        self.texture.textures[0].use(1)
+        self.texture.textures["obj_interactive_logicgate_dif"].use(1)
         self.vao_head.render(instances=len(instances))
 
     def get_type(self, logicgate: LogicGate):

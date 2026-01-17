@@ -1,12 +1,13 @@
 import pygame as pg
 import moderngl as mgl
 from os import PathLike
+from os.path import basename, splitext
 
 
 class Texture:
     def __init__(self, context: mgl.Context, *tex_paths: PathLike) -> None:
         self.context = context
-        self.textures = [self.get_texture(path) for path in tex_paths]
+        self.textures = {splitext(basename(path))[0]: self.get_texture(path) for path in tex_paths}
 
     def get_texture(self, path: PathLike):
         texture = pg.image.load(path).convert_alpha()

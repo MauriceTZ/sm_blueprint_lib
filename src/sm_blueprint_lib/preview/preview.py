@@ -5,7 +5,7 @@ import moderngl as mgl
 import glm
 
 from ..blueprint import Blueprint
-from .renderers import LogicGateRenderer, TimerGateRenderer
+from .renderers import LogicGateRenderer, TimerGateRenderer, BlockRenderer
 from .camera import Camera
 
 
@@ -47,6 +47,7 @@ def preview(bp: Blueprint):
             self.renderers = [
                 LogicGateRenderer(self.context, shaders_path, textures_path, meshes_path),
                 TimerGateRenderer(self.context, shaders_path, textures_path, meshes_path),
+                BlockRenderer(self.context, shaders_path, textures_path, meshes_path),
             ]
 
             self.running = True

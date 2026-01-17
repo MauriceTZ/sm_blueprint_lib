@@ -18,3 +18,6 @@ class BaseBoundablePart(BasePart):
             except TypeError:
                 self.bounds = Bounds(
                     self.bounds[0], self.bounds[1], self.bounds[2])
+        # Internal variable for proper texture tile preview
+        self._texture_id = None
+        self._tiling = None

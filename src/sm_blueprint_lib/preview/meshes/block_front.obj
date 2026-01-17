@@ -1,0 +1,37 @@
+# I was lazy and asked Gemini to generate the cube...
+# 1x1x1 Cube centered at (0,0,0)
+# UVs are mapped to cover the full 0-1 range on every face individually.
+
+# --- Vertices (v) ---
+# Front face
+v -0.5 -0.5  0.5
+v  0.5 -0.5  0.5
+v  0.5  0.5  0.5
+v -0.5  0.5  0.5
+# Back face
+v -0.5 -0.5 -0.5
+v  0.5 -0.5 -0.5
+v  0.5  0.5 -0.5
+v -0.5  0.5 -0.5
+
+# --- UV Coordinates (vt) ---
+# We only need 4 coordinates to represent the corners of the texture
+vt 0.0 0.0
+vt 1.0 0.0
+vt 1.0 1.0
+vt 0.0 1.0
+
+# --- Normals (vn) ---
+vn  0  0  1
+vn  0  0 -1
+vn  0  1  0
+vn  0 -1  0
+vn  1  0  0
+vn -1  0  0
+
+# --- Faces (f) ---
+# Format: v/vt/vn
+# Note: The middle index (vt) is always 1-2-3-4 to repeat the texture
+
+# Front Face (Normal +Z)
+f 1/1/1 2/2/1 3/3/1 4/4/1
