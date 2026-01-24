@@ -3,11 +3,12 @@ from os import PathLike
 from os.path import join
 from dataclasses import astuple
 import numpy as np
-import glob
+import json
+from pprint import pp
 
 import moderngl as mgl
 import glm
-import pywavefront
+import pyassimp
 
 from ..camera import Camera
 from ..shader_program import ShaderProgram
@@ -17,38 +18,67 @@ from ...bases.parts.baseboundablepart import BaseBoundablePart
 
 
 class BlockRenderer:
-    def __init__(self, context: mgl.Context, shaders_dir: PathLike, textures_dir: PathLike, meshes_dir: PathLike) -> None:
+    def __init__(self, context: mgl.Context, shaders_dir: PathLike, game_dir: PathLike, meshes_dir: PathLike) -> None:
         self.context = context
         self.shader = ShaderProgram(
             self.context,
             join(shaders_dir, "tileblock")
         )
-        
+
+        GAME_DATA = join(game_dir, "Data")
+        SURVIVAL_DATA = join(game_dir, "Survival")
+
+        blocks_json_path = join(GAME_DATA, "Objects", "Database", "ShapeSets", "blocks.json")
+        survival_blocks_json_path = join(SURVIVAL_DATA, "Objects", "Database", "ShapeSets", "blocks.json")
+        with open(blocks_json_path) as fp:
+            blocks_json = json.load(fp)
+        with open(survival_blocks_json_path) as fp:
+            survival_blocks_json = json.load(fp)
+        all_blocks = blocks_json["blockList"] + survival_blocks_json["blockList"]
+
         self.texture = Texture(
             self.context,
-            *glob.glob(join(textures_dir, "blocks", "*"))
+            *[b["dif"].replace("$GAME_DATA", GAME_DATA).replace("$SURVIVAL_DATA", SURVIVAL_DATA) for b in all_blocks],
         )
         # Yeah im sorry i was lazy...
-        block_front = pywavefront.Wavefront(join(meshes_dir, "block_front.obj"))
-        block_back = pywavefront.Wavefront(join(meshes_dir, "block_back.obj"))
-        block_top = pywavefront.Wavefront(join(meshes_dir, "block_top.obj"))
-        block_botton = pywavefront.Wavefront(join(meshes_dir, "block_botton.obj"))
-        block_right = pywavefront.Wavefront(join(meshes_dir, "block_right.obj"))
-        block_left = pywavefront.Wavefront(join(meshes_dir, "block_left.obj"))
+        with pyassimp.load(join(meshes_dir, "block_front.obj")) as scene:
+            block_front = scene.meshes[0]
+        with pyassimp.load(join(meshes_dir, "block_back.obj")) as scene:
+            block_back = scene.meshes[0]
+        with pyassimp.load(join(meshes_dir, "block_top.obj")) as scene:
+            block_top = scene.meshes[0]
+        with pyassimp.load(join(meshes_dir, "block_botton.obj")) as scene:
+            block_botton = scene.meshes[0]
+        with pyassimp.load(join(meshes_dir, "block_right.obj")) as scene:
+            block_right = scene.meshes[0]
+        with pyassimp.load(join(meshes_dir, "block_left.obj")) as scene:
+            block_left = scene.meshes[0]
 
-        front = block_front.materials["default0"]
-        back = block_back.materials["default0"]
-        top = block_top.materials["default0"]
-        botton = block_botton.materials["default0"]
-        right = block_right.materials["default0"]
-        left = block_left.materials["default0"]
+        front = np.concatenate((block_front.texturecoords[0, :, :2],
+                                block_front.normals,
+                                block_front.vertices), axis=1)[block_front.faces]
+        back = np.concatenate((block_back.texturecoords[0, :, :2],
+                               block_back.normals,
+                               block_back.vertices), axis=1)[block_back.faces]
+        top = np.concatenate((block_top.texturecoords[0, :, :2],
+                              block_top.normals,
+                              block_top.vertices), axis=1)[block_top.faces]
+        botton = np.concatenate((block_botton.texturecoords[0, :, :2],
+                                 block_botton.normals,
+                                 block_botton.vertices), axis=1)[block_botton.faces]
+        right = np.concatenate((block_right.texturecoords[0, :, :2],
+                                block_right.normals,
+                                block_right.vertices), axis=1)[block_right.faces]
+        left = np.concatenate((block_left.texturecoords[0, :, :2],
+                               block_left.normals,
+                               block_left.vertices), axis=1)[block_left.faces]
 
-        self.vertices_front = self.context.buffer(np.array(front.vertices, dtype=np.float32))
-        self.vertices_back = self.context.buffer(np.array(back.vertices, dtype=np.float32))
-        self.vertices_top = self.context.buffer(np.array(top.vertices, dtype=np.float32))
-        self.vertices_botton = self.context.buffer(np.array(botton.vertices, dtype=np.float32))
-        self.vertices_right = self.context.buffer(np.array(right.vertices, dtype=np.float32))
-        self.vertices_left = self.context.buffer(np.array(left.vertices, dtype=np.float32))
+        self.vertices_front = self.context.buffer(front.astype(np.float32))
+        self.vertices_back = self.context.buffer(back.astype(np.float32))
+        self.vertices_top = self.context.buffer(top.astype(np.float32))
+        self.vertices_botton = self.context.buffer(botton.astype(np.float32))
+        self.vertices_right = self.context.buffer(right.astype(np.float32))
+        self.vertices_left = self.context.buffer(left.astype(np.float32))
 
         self.vao_content_front = [
             (self.vertices_front, "2f 3f 3f", "uv", "normal", "vert"),

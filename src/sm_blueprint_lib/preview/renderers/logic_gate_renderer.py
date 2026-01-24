@@ -3,10 +3,12 @@ from os import PathLike
 from os.path import join
 from dataclasses import astuple
 import numpy as np
+from pprint import pp
+import json
 
 import moderngl as mgl
 import glm
-import pywavefront
+import pyassimp
 
 from ..camera import Camera
 from ..shader_program import ShaderProgram
@@ -16,26 +18,41 @@ from ...parts.logicgate import LogicGate
 
 
 class LogicGateRenderer:
-    def __init__(self, context: mgl.Context, shaders_dir: PathLike, textures_dir: PathLike, meshes_dir: PathLike) -> None:
+    def __init__(self, context: mgl.Context, shaders_dir: PathLike, game_dir: PathLike) -> None:
         self.context = context
         self.shader = ShaderProgram(
             self.context,
             join(shaders_dir, "logicgatebody"),
             join(shaders_dir, "logicgatehead"),
         )
+        GAME_DATA = join(game_dir, "Data")
+        rend_file = join(GAME_DATA, "Objects", "Renderable", "Interactive", "obj_interactive_logicgate.rend")
+
+        with open(rend_file) as fp:
+            rend_json = json.load(fp)
+
+        mesh_file = rend_json["lodList"][0]["mesh"].replace("$GAME_DATA", GAME_DATA)
+        texture_file = rend_json["lodList"][0]["subMeshMap"]["logicgate"]["textureList"][0].replace("$GAME_DATA", GAME_DATA)
+        
         self.texture = Texture(
             self.context,
-            join(textures_dir, "obj_interactive_logicgate_dif.tga"),
+            texture_file,
         )
-        scene_body = pywavefront.Wavefront(join(meshes_dir, "obj_interactive_logicgate_on_body.obj"))
-        scene_screen = pywavefront.Wavefront(join(meshes_dir, "obj_interactive_logicgate_on_screen.obj"))
 
-        body = scene_body.materials["default0"]
-        head = scene_screen.materials["default0"]
+        with pyassimp.load(mesh_file) as scene:
+            body = scene.meshes[0]
+            screen = scene.meshes[1]
 
-        self.vertices_body = self.context.buffer(np.array(body.vertices, dtype=np.float32))
 
-        self.vertices_head = self.context.buffer(np.array(head.vertices, dtype=np.float32))
+        self.vertices_body = self.context.buffer(np.concatenate((body.texturecoords[0, :, :2],
+                                                                 body.normals,
+                                                                 body.vertices), axis=1).astype(np.float32))
+        self.faces_body = self.context.buffer(body.faces)
+
+        self.vertices_screen = self.context.buffer(np.concatenate((screen.texturecoords[0, :, :2],
+                                                                   screen.normals,
+                                                                   screen.vertices), axis=1).astype(np.float32))
+        self.faces_screen = self.context.buffer(screen.faces)
 
         self.models = self.context.buffer(reserve=1, dynamic=True)
         self.colors = self.context.buffer(reserve=1, dynamic=True)
@@ -50,8 +67,8 @@ class LogicGateRenderer:
             (self.states, "1f /i", "state"),
             (self.alpha, "1f /i", "alpha"),
         ]
-        self.vao_content_head = [
-            (self.vertices_head, "2f 3f 3f", "uv", "normal", "vert"),
+        self.vao_content_screen = [
+            (self.vertices_screen, "2f 3f 3f", "uv", "normal", "vert"),
             (self.models, "4f 4f 4f 4f /i", "M0", "M1", "M2", "M3"),
             (self.colors, "3f /i", "color"),
             (self.states, "1f /i", "state"),
@@ -61,13 +78,16 @@ class LogicGateRenderer:
         self.vao_body = self.context.vertex_array(
             self.shader.programs[0],
             self.vao_content_body,
-            skip_errors=False 
+            skip_errors=False,
+            index_buffer=self.faces_body
         )
-        self.vao_head = self.context.vertex_array(
+        self.vao_screen = self.context.vertex_array(
             self.shader.programs[1],
-            self.vao_content_head,
-            skip_errors=False
+            self.vao_content_screen,
+            skip_errors=False,
+            index_buffer=self.faces_screen
         )
+
 
     def render(self, camera: Camera, parts: list[BasePart]):
         instances: list[LogicGate] = []
@@ -112,7 +132,7 @@ class LogicGateRenderer:
         self.shader.programs[1]["P"] = chain(*camera.projection().to_tuple())
         self.shader.programs[1]["tex"] = 1
         self.texture.textures["obj_interactive_logicgate_dif"].use(1)
-        self.vao_head.render(instances=len(instances))
+        self.vao_screen.render(instances=len(instances))
 
     def get_type(self, logicgate: LogicGate):
         return logicgate.controller.mode
@@ -137,10 +157,9 @@ class LogicGateRenderer:
         )
 
     def get_rot(self, logicgate: LogicGate):
-        offset = glm.translate(glm.vec3(0.5))
         x = glm.vec3()
         z = glm.vec3()
         x[abs(logicgate.xaxis) - 1] = glm.sign(logicgate.xaxis)
         z[abs(logicgate.zaxis) - 1] = glm.sign(logicgate.zaxis)
         y = glm.cross(z, x)
-        return glm.mat4_cast(glm.quatLookAtLH(z, y)) * offset * glm.rotate(glm.half_pi(), (1, 0, 0))
+        return glm.mat4_cast(glm.quatLookAtLH(z, y)) * glm.translate(glm.vec3(0.5))

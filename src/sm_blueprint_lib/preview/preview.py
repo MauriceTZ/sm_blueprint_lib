@@ -8,12 +8,16 @@ from ..blueprint import Blueprint
 from .renderers import LogicGateRenderer, TimerGateRenderer, BlockRenderer
 from .camera import Camera
 from ..pos import Pos
+from ..utils import get_paths
+
 from dataclasses import astuple
 
 
 def preview(bp: Blueprint):
     class BlueprintPreviewEngine:
         def __init__(self, window_size=(1080, 720)):
+            _, self.game_path = get_paths()
+            assert self.game_path, "Your game files ain't filing..."
             pg.init()
 
             self.window_size = window_size
@@ -46,13 +50,12 @@ def preview(bp: Blueprint):
 
             base_path = os.path.join(os.path.abspath(os.getcwd()), "src", "sm_blueprint_lib", "preview")
             shaders_path = os.path.join(base_path, "shaders")
-            textures_path = os.path.join(base_path, "textures")
             meshes_path = os.path.join(base_path, "meshes")
 
             self.renderers = [
-                LogicGateRenderer(self.context, shaders_path, textures_path, meshes_path),
-                TimerGateRenderer(self.context, shaders_path, textures_path, meshes_path),
-                BlockRenderer(self.context, shaders_path, textures_path, meshes_path),
+                LogicGateRenderer(self.context, shaders_path, self.game_path),
+                TimerGateRenderer(self.context, shaders_path, self.game_path),
+                BlockRenderer(self.context, shaders_path, self.game_path, meshes_path),
             ]
 
             self.running = True
@@ -87,8 +90,9 @@ def preview(bp: Blueprint):
 
             keys = pg.key.get_pressed()
 
-            forward = glm.normalize(self.camera.looking_at - self.camera.pos)
+            forward = self.camera.looking_at - self.camera.pos
             forward.z = 0
+            forward = glm.normalize(forward)
             right = glm.cross(forward, (0, 0, 1))
             if keys[pg.K_e]:
                 self.camera.looking_at.z += self.camera_velocity * self.deltatime
