@@ -12,3 +12,4 @@ from .bearing import *
 from .piston import *
 
 from .decor import *
+from .containers import *

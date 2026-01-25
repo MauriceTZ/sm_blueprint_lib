@@ -27,7 +27,9 @@ class PartRenderer:
         )
         self.UUID_DATA = {}
         GAME_DATA = join(game_dir, "Data")
+        SURVIVAL_DATA = join(game_dir, "Survival")
         ShapeSetPath = join(GAME_DATA, "Objects", "Database", "ShapeSets")
+        SurvivalShapeSetPath = join(SURVIVAL_DATA, "Objects", "Database", "ShapeSets")
 
         self.models = self.context.buffer(reserve=1, dynamic=True)
         self.colors = self.context.buffer(reserve=1, dynamic=True)
@@ -35,36 +37,41 @@ class PartRenderer:
 
         with open(join(ShapeSetPath, "decor.json")) as fp:
             decor_json = json.load(fp)
-            for part in decor_json["partList"]:
-                if isinstance(part["renderable"], str):
-                    with open(part["renderable"].replace("$GAME_DATA", GAME_DATA)) as fp:
-                        part["renderable"] = json.load(fp)
-            for part in decor_json["partList"]:
-                part_data = part["renderable"]["lodList"][0]
-                mesh = part_data["mesh"].replace("$GAME_DATA", GAME_DATA)
-                texture = part_data["subMeshList"][0]["textureList"][0].replace("$GAME_DATA", GAME_DATA)
-                with pyassimp.load(mesh) as m:
-                    part_model = m.meshes[0]
-                    model_vertex = self.context.buffer(np.concatenate((part_model.texturecoords[0, :, :2],
-                                                                       part_model.normals,
-                                                                       part_model.vertices), axis=1).astype(np.float32))
-                    model_faces = self.context.buffer(part_model.faces)
-                    model_vao = self.context.vertex_array(
-                        self.shader.programs[0],
-                        [(model_vertex, "2f 3f 3f", "uv", "normal", "vert"),
-                         (self.models, "4f 4f 4f 4f /i", "M0", "M1", "M2", "M3"),
-                         (self.colors, "3f /i", "color"),
-                         (self.alpha, "1f /i", "alpha")],
-                        skip_errors=False,
-                        index_buffer=model_faces
-                    )
-                    self.UUID_DATA[part["uuid"]] = {
-                        "vao": model_vao,
-                        "texture": texture,
-                        "texture_id": splitext(basename(texture))[0],
-                    }
-            textures = [v["texture"] for k, v in self.UUID_DATA.items()]
-            self.texture = Texture(self.context, *textures)
+        with open(join(ShapeSetPath, "containers.json")) as fp:
+            containers_json = json.load(fp)
+        with open(join(SurvivalShapeSetPath, "containers.json")) as fp:
+            survival_containers_json = json.load(fp)
+        all_parts = decor_json["partList"] + containers_json["partList"] + survival_containers_json["partList"]
+        for part in all_parts:
+            if isinstance(part["renderable"], str):
+                with open(part["renderable"].replace("$GAME_DATA", GAME_DATA)) as fp:
+                    part["renderable"] = json.load(fp)
+        for part in all_parts:
+            part_data = part["renderable"]["lodList"][0]
+            mesh = part_data["mesh"].replace("$GAME_DATA", GAME_DATA).replace("$SURVIVAL_DATA", SURVIVAL_DATA)
+            texture = part_data["subMeshList"][0]["textureList"][0].replace("$GAME_DATA", GAME_DATA).replace("$SURVIVAL_DATA", SURVIVAL_DATA)
+            with pyassimp.load(mesh) as m:
+                part_model = m.meshes[0]
+                model_vertex = self.context.buffer(np.concatenate((part_model.texturecoords[0, :, :2],
+                                                                    part_model.normals,
+                                                                    part_model.vertices), axis=1).astype(np.float32))
+                model_faces = self.context.buffer(part_model.faces)
+                model_vao = self.context.vertex_array(
+                    self.shader.programs[0],
+                    [(model_vertex, "2f 3f 3f", "uv", "normal", "vert"),
+                        (self.models, "4f 4f 4f 4f /i", "M0", "M1", "M2", "M3"),
+                        (self.colors, "3f /i", "color"),
+                        (self.alpha, "1f /i", "alpha")],
+                    skip_errors=False,
+                    index_buffer=model_faces
+                )
+                self.UUID_DATA[part["uuid"]] = {
+                    "vao": model_vao,
+                    "texture": texture,
+                    "texture_id": splitext(basename(texture))[0],
+                }
+        textures = [v["texture"] for k, v in self.UUID_DATA.items()]
+        self.texture = Texture(self.context, *textures)
 
     def render(self, camera: Camera, parts: list[BasePart]):
         instances: list[BaseNormalPart] = []
@@ -120,4 +127,4 @@ class PartRenderer:
         x[abs(part.xaxis) - 1] = glm.sign(part.xaxis)
         z[abs(part.zaxis) - 1] = glm.sign(part.zaxis)
         y = glm.cross(z, x)
-        return glm.mat4_cast(glm.quatLookAtLH(z, y)) * glm.translate(part._box/2)
+        return glm.mat4_cast(glm.quatLookAtLH(z, y)) * glm.translate(part._box/2) * glm.translate(part._offset)
