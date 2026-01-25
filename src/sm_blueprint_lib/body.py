@@ -14,4 +14,5 @@ class Body:
         self.childs = [SHAPEID.SHAPEID_TO_CLASS[child["shapeId"]](**child)
                        if not isinstance(child, BasePart) else
                        child
-                       for child in self.childs]
+                       # Exclude not supported parts
+                       for child in self.childs if SHAPEID.SHAPEID_TO_CLASS.get(child["shapeId"])]

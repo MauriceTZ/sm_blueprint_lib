@@ -37,14 +37,26 @@ class PartRenderer:
 
         with open(join(ShapeSetPath, "decor.json")) as fp:
             decor_json = json.load(fp)
+        with open(join(SurvivalShapeSetPath, "decor.json")) as fp:
+            survival_decor_json = json.load(fp)
         with open(join(ShapeSetPath, "containers.json")) as fp:
             containers_json = json.load(fp)
         with open(join(SurvivalShapeSetPath, "containers.json")) as fp:
             survival_containers_json = json.load(fp)
-        all_parts = decor_json["partList"] + containers_json["partList"] + survival_containers_json["partList"]
+        with open(join(ShapeSetPath, "fittings.json")) as fp:
+            fittings_json = json.load(fp)
+        with open(join(SurvivalShapeSetPath, "fittings.json")) as fp:
+            survival_fittings_json = json.load(fp)
+        all_parts = (decor_json["partList"]
+                     + containers_json["partList"]
+                     + survival_containers_json["partList"]
+                     + fittings_json["partList"]
+                     + survival_fittings_json["partList"])
+        # TODO: deal with parts that have subMeshMap instead
+        # all_parts = decor_json["partList"] + survival_decor_json["partList"] + containers_json["partList"] + survival_containers_json["partList"]
         for part in all_parts:
             if isinstance(part["renderable"], str):
-                with open(part["renderable"].replace("$GAME_DATA", GAME_DATA)) as fp:
+                with open(part["renderable"].replace("$GAME_DATA", GAME_DATA).replace("$SURVIVAL_DATA", SURVIVAL_DATA)) as fp:
                     part["renderable"] = json.load(fp)
         for part in all_parts:
             part_data = part["renderable"]["lodList"][0]

@@ -13,3 +13,4 @@ from .piston import *
 
 from .decor import *
 from .containers import *
+from .fittings import *
