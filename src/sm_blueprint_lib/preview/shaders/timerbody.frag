@@ -12,7 +12,6 @@ out vec4 output_color;
 void main()
 {
     vec4 diff = texture(tex, UV);
-    // Take the default color of timers (0xDF7F01)
-    output_color = diff + vec4(COLOR - vec3(0.8745098039215686, 0.4980392156862745, 0.00392156862745098), 1) * (1 - diff.a);
+    output_color = vec4(diff.xyz*pow(diff.a,1) + COLOR*(1-pow(diff.a,0.5)), 1);
     output_color.a = ALPHA;
 }

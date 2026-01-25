@@ -369,7 +369,7 @@ class SHAPEID:
     Scrap_Wheel = '59f6951a-a450-42bf-ad03-54567cb70245'
     obj_harvests_trees_leafy02_p06 = '5a0ffe5b-f7cf-482b-915f-1d6b0876c26c'
     obj_harvests_trees_spruce02_p00 = '5a508601-485f-4db6-8134-69a4d3d02bc1'
-    Sunshake_Vending_Machine = '5ad298e4-f5ad-479c-9ec6-6c4f9d3fb8ae'
+    Sunshake_Vending_Machine = '7c6e88a7-21a4-4e97-856f-b937264e0d7d'
     Calendar = '5b628f22-ec0d-448f-a6be-3453950120a4'
     Ship_Wall_Panel_Small = '5ba206c2-d10b-4815-b95b-04be4959ec31'
     obj_harvests_trees_pine01_p06 = '5ca61a85-7040-47bc-8f87-5d2ce295cb6e'

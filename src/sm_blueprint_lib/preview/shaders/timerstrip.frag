@@ -17,6 +17,6 @@ void main()
         1 - floor(STATE / (256.0 - 0.0001)) * 97.0 / 512.0 + 0.0001
     );
     vec4 diff = texture(tex, UV + offset).rgba;
-    output_color = diff + vec4(COLOR, 1) * (1 - diff.a);
+    output_color = vec4(diff.xyz*pow(diff.a,1) + COLOR*(1-pow(diff.a,0.5)), 1);
     output_color.a = ALPHA;
 }

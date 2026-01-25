@@ -10,3 +10,5 @@ from .timer import *
 from .suspension import *
 from .bearing import *
 from .piston import *
+
+from .decor import *

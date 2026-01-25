@@ -59,14 +59,16 @@ pp(all_decor)
 classes = "".join(
 f'''
 @dataclass
-class {b["name"].replace(" ", "")}(BasePart):
+class {b["name"].replace(" ", "").replace("-", "")}(BaseNormalPart):
     """Class that represents a {b["name"]}.
     """
-    shapeId: str = field(kw_only=True, default=SHAPEID.{b["name"].replace(" ", "_")})
+    shapeId: str = field(kw_only=True, default=SHAPEID.{b["name"].replace(" ", "_").replace("-", "_")})
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "{b['name2']}"
+        self._box = vec3{(b['hull']['x'], b['hull']['y'], b['hull']['z']) if b.get('hull') else
+                         (b["box"]['x'], b["box"]['y'], b["box"]['z']) if b.get('box') else
+                         (1, 1, 1)}
 '''
     for b in all_decor
 )

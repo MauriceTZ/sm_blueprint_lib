@@ -12,6 +12,6 @@ out vec4 output_color;
 void main()
 {
     vec4 diff = texture(tex, UV);
-    output_color = diff + vec4(color, 0) * (1 - diff.a) * 0.80;
+    output_color = vec4(diff.xyz*pow(diff.a,1) + color*(1-pow(diff.a,0.5)), 1);
     output_color.a = alpha;
 }

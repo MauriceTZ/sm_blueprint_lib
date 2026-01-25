@@ -5,7 +5,7 @@ import moderngl as mgl
 import glm
 
 from ..blueprint import Blueprint
-from .renderers import LogicGateRenderer, TimerGateRenderer, BlockRenderer
+from .renderers import LogicGateRenderer, TimerGateRenderer, BlockRenderer, PartRenderer
 from .camera import Camera
 from ..pos import Pos
 from ..utils import get_paths
@@ -53,6 +53,7 @@ def preview(bp: Blueprint):
             meshes_path = os.path.join(base_path, "meshes")
 
             self.renderers = [
+                PartRenderer(self.context, shaders_path, self.game_path),
                 LogicGateRenderer(self.context, shaders_path, self.game_path),
                 TimerGateRenderer(self.context, shaders_path, self.game_path),
                 BlockRenderer(self.context, shaders_path, self.game_path, meshes_path),

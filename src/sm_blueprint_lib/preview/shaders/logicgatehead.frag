@@ -14,6 +14,6 @@ void main()
 {
     vec2 offset = vec2(0.1666670 * TYPE, -0.16450 * STATE);
     vec4 diff = texture(tex, UV + offset);
-    output_color = diff + vec4(COLOR, 1) * (1 - diff.a);
+    output_color = vec4(diff.xyz*pow(diff.a,1) + COLOR*(1-pow(diff.a,0.5)), 1);
     output_color.a = ALPHA;
 }
