@@ -5,12 +5,38 @@ import moderngl as mgl
 import glm
 
 from ..blueprint import Blueprint
-from .renderers import LogicGateRenderer, TimerGateRenderer, BlockRenderer, PartRenderer
 from .camera import Camera
 from ..pos import Pos
 from ..utils import get_paths
 
 from dataclasses import astuple
+
+
+class LazyRendererManager:
+    """Lazy loading manager for renderers to improve startup performance"""
+    def __init__(self, context, shaders_path, game_path, meshes_path):
+        self._context = context
+        self._shaders_path = shaders_path
+        self._game_path = game_path
+        self._meshes_path = meshes_path
+        self._renderers = {}
+    
+    def get_renderer(self, renderer_type):
+        """Get renderer instance, creating it lazily if needed"""
+        if renderer_type not in self._renderers:
+            if renderer_type == 'part':
+                from .renderers import PartRenderer
+                self._renderers[renderer_type] = PartRenderer(self._context, self._shaders_path, self._game_path)
+            elif renderer_type == 'logic_gate':
+                from .renderers import LogicGateRenderer
+                self._renderers[renderer_type] = LogicGateRenderer(self._context, self._shaders_path, self._game_path)
+            elif renderer_type == 'timer_gate':
+                from .renderers import TimerGateRenderer
+                self._renderers[renderer_type] = TimerGateRenderer(self._context, self._shaders_path, self._game_path)
+            elif renderer_type == 'block':
+                from .renderers import BlockRenderer
+                self._renderers[renderer_type] = BlockRenderer(self._context, self._shaders_path, self._game_path, self._meshes_path)
+        return self._renderers[renderer_type]
 
 
 def preview(bp: Blueprint):
@@ -52,12 +78,8 @@ def preview(bp: Blueprint):
             shaders_path = os.path.join(base_path, "shaders")
             meshes_path = os.path.join(base_path, "meshes")
 
-            self.renderers = [
-                PartRenderer(self.context, shaders_path, self.game_path),
-                LogicGateRenderer(self.context, shaders_path, self.game_path),
-                TimerGateRenderer(self.context, shaders_path, self.game_path),
-                BlockRenderer(self.context, shaders_path, self.game_path, meshes_path),
-            ]
+            # Use lazy renderer manager for better startup performance
+            self.renderer_manager = LazyRendererManager(self.context, shaders_path, self.game_path, meshes_path)
 
             self.running = True
         
@@ -118,8 +140,25 @@ def preview(bp: Blueprint):
             ) * self.rot_radius
 
         def render(self):
-            for renderer in self.renderers:
-                renderer.render(self.camera, bp.all_parts())
+            # Use lazy renderer manager - renderers are created only when needed
+            parts = list(bp.all_parts())
+            for part in parts:
+                # Determine renderer type based on part class
+                renderer_type = None
+                if hasattr(part, '__class__'):
+                    class_name = part.__class__.__name__.lower()
+                    if 'logicgate' in class_name:
+                        renderer_type = 'logic_gate'
+                    elif 'timer' in class_name:
+                        renderer_type = 'timer_gate'
+                    elif 'block' in class_name:
+                        renderer_type = 'block'
+                    else:
+                        renderer_type = 'part'
+                
+                if renderer_type:
+                    renderer = self.renderer_manager.get_renderer(renderer_type)
+                    renderer.render(self.camera, [part])
         
         def set_win_size(self, size: tuple[int, int]):
             self.window_size = size
