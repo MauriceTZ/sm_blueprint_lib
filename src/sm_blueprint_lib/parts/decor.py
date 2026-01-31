@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from glm import vec3
 
 from ..bases.parts.basenormalpart import BaseNormalPart
+from ..bases.parts.baseinteractablepart import BaseInteractablePart
 from ..constants import SHAPEID
 
 
@@ -334,7 +335,7 @@ class RecyclingBin(BaseNormalPart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._box = vec3(1, 1, 1)
+        self._box = vec3(3, 6, 3)
 
 @dataclass
 class PaperStack(BaseNormalPart):
@@ -387,7 +388,7 @@ class RoadSignBase(BaseNormalPart):
         self._box = vec3(3, 2, 3)
 
 @dataclass
-class CashRegister(BaseNormalPart):
+class CashRegister(BaseInteractablePart):
     """Class that represents a Cash Register.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Cash_Register)
@@ -464,34 +465,34 @@ class HayBale(BaseNormalPart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._box = vec3(1, 1, 1)
+        self._box = vec3(5, 7, 7)
 
-# @dataclass
-# class WindowWithBlinds(BaseNormalPart):
-#     """Class that represents a Window With Blinds.
-#     """
-#     shapeId: str = field(kw_only=True, default=SHAPEID.Window_With_Blinds)
+@dataclass
+class WindowWithBlinds(BaseNormalPart):
+    """Class that represents a Window With Blinds.
+    """
+    shapeId: str = field(kw_only=True, default=SHAPEID.Window_With_Blinds)
 
-#     def __post_init__(self):
-#         super().__post_init__()
-#         self._box = vec3(5, 6, 1)
+    def __post_init__(self):
+        super().__post_init__()
+        self._box = vec3(5, 6, 1)
 
-# @dataclass
-# class WindowWithCurtains(BaseNormalPart):
-#     """Class that represents a Window With Curtains.
-#     """
-#     shapeId: str = field(kw_only=True, default=SHAPEID.Window_With_Curtains)
+@dataclass
+class WindowWithCurtains(BaseNormalPart):
+    """Class that represents a Window With Curtains.
+    """
+    shapeId: str = field(kw_only=True, default=SHAPEID.Window_With_Curtains)
 
-#     def __post_init__(self):
-#         super().__post_init__()
-#         self._box = vec3(10, 6, 1)
+    def __post_init__(self):
+        super().__post_init__()
+        self._box = vec3(10, 6, 1)
 
-# @dataclass
-# class BrokenClock(BaseNormalPart):
-#     """Class that represents a Broken Clock.
-#     """
-#     shapeId: str = field(kw_only=True, default=SHAPEID.Broken_Clock)
+@dataclass
+class BrokenClock(BaseNormalPart):
+    """Class that represents a Broken Clock.
+    """
+    shapeId: str = field(kw_only=True, default=SHAPEID.Broken_Clock)
 
-#     def __post_init__(self):
-#         super().__post_init__()
-#         self._box = vec3(2, 2, 1)
+    def __post_init__(self):
+        super().__post_init__()
+        self._box = vec3(2, 2, 1)

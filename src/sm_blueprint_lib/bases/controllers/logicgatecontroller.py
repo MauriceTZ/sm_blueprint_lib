@@ -7,7 +7,7 @@ from .baselogiccontroller import BaseLogicController
 class LogicGateController(BaseLogicController):
     """Logic Gate's Controller
     """
-    mode: int|str = "or"
+    mode: int | str = "or"
 
     def __post_init__(self):
         if type(self.mode) == str:
@@ -26,3 +26,4 @@ class LogicGateController(BaseLogicController):
                     self.mode = 5
                 case _:
                     self.mode = 0
+        super().__post_init__()

@@ -2,12 +2,12 @@ from dataclasses import dataclass, field
 
 from glm import vec3
 
-from ..bases.parts.basenormalpart import BaseNormalPart
+from ..bases.parts.basepart import BasePart
 from ..constants import SHAPEID
 
 
 @dataclass
-class WoodenCrate(BaseNormalPart):
+class WoodenCrate(BasePart):
     """Class that represents a Wooden Crate.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Wooden_Crate)
@@ -17,7 +17,7 @@ class WoodenCrate(BaseNormalPart):
         self._box = vec3(3, 2, 2)
 
 @dataclass
-class VegetableBox(BaseNormalPart):
+class VegetableBox(BasePart):
     """Class that represents a Vegetable Box.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Vegetable_Box)
@@ -27,7 +27,7 @@ class VegetableBox(BaseNormalPart):
         self._box = vec3(4, 2, 3)
 
 @dataclass
-class CucumberBox(BaseNormalPart):
+class CucumberBox(BasePart):
     """Class that represents a Cucumber Box.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Cucumber_Box)
@@ -37,7 +37,7 @@ class CucumberBox(BaseNormalPart):
         self._box = vec3(4, 2, 3)
 
 @dataclass
-class CarrotBox(BaseNormalPart):
+class CarrotBox(BasePart):
     """Class that represents a Carrot Box.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Carrot_Box)
@@ -47,7 +47,7 @@ class CarrotBox(BaseNormalPart):
         self._box = vec3(4, 3, 3)
 
 @dataclass
-class BananaBox(BaseNormalPart):
+class BananaBox(BasePart):
     """Class that represents a Banana Box.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Banana_Box)
@@ -57,7 +57,7 @@ class BananaBox(BaseNormalPart):
         self._box = vec3(4, 3, 3)
 
 @dataclass
-class FruitBox(BaseNormalPart):
+class FruitBox(BasePart):
     """Class that represents a Fruit Box.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Fruit_Box)
@@ -67,7 +67,7 @@ class FruitBox(BaseNormalPart):
         self._box = vec3(4, 4, 4)
 
 @dataclass
-class OnionBox(BaseNormalPart):
+class OnionBox(BasePart):
     """Class that represents a Onion Box.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Onion_Box)
@@ -77,7 +77,7 @@ class OnionBox(BaseNormalPart):
         self._box = vec3(6, 4, 4)
 
 @dataclass
-class BeetrootBox(BaseNormalPart):
+class BeetrootBox(BasePart):
     """Class that represents a Beetroot Box.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Beetroot_Box)
@@ -87,7 +87,7 @@ class BeetrootBox(BaseNormalPart):
         self._box = vec3(6, 4, 4)
 
 @dataclass
-class OrangeBox(BaseNormalPart):
+class OrangeBox(BasePart):
     """Class that represents a Orange Box.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Orange_Box)
@@ -97,7 +97,7 @@ class OrangeBox(BaseNormalPart):
         self._box = vec3(6, 6, 6)
 
 @dataclass
-class PlantContainer(BaseNormalPart):
+class PlantContainer(BasePart):
     """Class that represents a Plant Container.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Plant_Container)
@@ -107,7 +107,7 @@ class PlantContainer(BaseNormalPart):
         self._box = vec3(2, 2, 2)
 
 @dataclass
-class OpenPlantContainer(BaseNormalPart):
+class OpenPlantContainer(BasePart):
     """Class that represents a Open Plant Container.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Open_Plant_Container)
@@ -117,7 +117,7 @@ class OpenPlantContainer(BaseNormalPart):
         self._box = vec3(2, 2, 2)
 
 @dataclass
-class HayCrate(BaseNormalPart):
+class HayCrate(BasePart):
     """Class that represents a Hay Crate.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Hay_Crate)
@@ -127,7 +127,7 @@ class HayCrate(BaseNormalPart):
         self._box = vec3(7, 6, 7)
 
 @dataclass
-class StoneCrate(BaseNormalPart):
+class StoneCrate(BasePart):
     """Class that represents a Stone Crate.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Stone_Crate)
@@ -137,7 +137,7 @@ class StoneCrate(BaseNormalPart):
         self._box = vec3(7, 6, 7)
 
 @dataclass
-class TreeCrate(BaseNormalPart):
+class TreeCrate(BasePart):
     """Class that represents a Tree Crate.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Tree_Crate)
@@ -147,7 +147,7 @@ class TreeCrate(BaseNormalPart):
         self._box = vec3(7, 6, 7)
 
 @dataclass
-class UnfoldedBananaBox(BaseNormalPart):
+class UnfoldedBananaBox(BasePart):
     """Class that represents a Unfolded Banana Box.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Unfolded_Banana_Box)
@@ -157,7 +157,7 @@ class UnfoldedBananaBox(BaseNormalPart):
         self._box = vec3(3, 1, 4)
 
 @dataclass
-class UnfoldedOnionBox(BaseNormalPart):
+class UnfoldedOnionBox(BasePart):
     """Class that represents a Unfolded Onion Box.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Unfolded_Onion_Box)
@@ -167,7 +167,7 @@ class UnfoldedOnionBox(BaseNormalPart):
         self._box = vec3(3, 2, 4)
 
 @dataclass
-class UnfoldedGrowBox(BaseNormalPart):
+class UnfoldedGrowBox(BasePart):
     """Class that represents a Unfolded Grow Box.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Unfolded_Grow_Box)
@@ -177,7 +177,7 @@ class UnfoldedGrowBox(BaseNormalPart):
         self._box = vec3(5, 2, 6)
 
 @dataclass
-class MainHumidifier(BaseNormalPart):
+class MainHumidifier(BasePart):
     """Class that represents a Main Humidifier.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Main_Humidifier)
@@ -187,7 +187,7 @@ class MainHumidifier(BaseNormalPart):
         self._box = vec3(5, 5, 8)
 
 @dataclass
-class WarehouseCrate(BaseNormalPart):
+class WarehouseCrate(BasePart):
     """Class that represents a Warehouse Crate.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Warehouse_Crate)
@@ -197,7 +197,7 @@ class WarehouseCrate(BaseNormalPart):
         self._box = vec3(5, 8, 5)
 
 @dataclass
-class BlueberryJuiceCylinder(BaseNormalPart):
+class BlueberryJuiceCylinder(BasePart):
     """Class that represents a Blueberry Juice Cylinder.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Blueberry_Juice_Cylinder)
@@ -207,7 +207,7 @@ class BlueberryJuiceCylinder(BaseNormalPart):
         self._box = vec3(3, 4, 3)
 
 @dataclass
-class TomatoJuiceCylinder(BaseNormalPart):
+class TomatoJuiceCylinder(BasePart):
     """Class that represents a Tomato Juice Cylinder.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Tomato_Juice_Cylinder)

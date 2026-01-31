@@ -5,51 +5,27 @@ import moderngl as mgl
 import glm
 
 from ..blueprint import Blueprint
+from .renderers import BaseRenderer#LogicGateRenderer, TimerGateRenderer, BlockRenderer, PartRenderer, 
 from .camera import Camera
 from ..pos import Pos
 from ..utils import get_paths
+from ..bases.parts.basepart import BasePart
 
 from dataclasses import astuple
-
-
-class LazyRendererManager:
-    """Lazy loading manager for renderers to improve startup performance"""
-    def __init__(self, context, shaders_path, game_path, meshes_path):
-        self._context = context
-        self._shaders_path = shaders_path
-        self._game_path = game_path
-        self._meshes_path = meshes_path
-        self._renderers = {}
-    
-    def get_renderer(self, renderer_type):
-        """Get renderer instance, creating it lazily if needed"""
-        if renderer_type not in self._renderers:
-            if renderer_type == 'part':
-                from .renderers import PartRenderer
-                self._renderers[renderer_type] = PartRenderer(self._context, self._shaders_path, self._game_path)
-            elif renderer_type == 'logic_gate':
-                from .renderers import LogicGateRenderer
-                self._renderers[renderer_type] = LogicGateRenderer(self._context, self._shaders_path, self._game_path)
-            elif renderer_type == 'timer_gate':
-                from .renderers import TimerGateRenderer
-                self._renderers[renderer_type] = TimerGateRenderer(self._context, self._shaders_path, self._game_path)
-            elif renderer_type == 'block':
-                from .renderers import BlockRenderer
-                self._renderers[renderer_type] = BlockRenderer(self._context, self._shaders_path, self._game_path, self._meshes_path)
-        return self._renderers[renderer_type]
 
 
 def preview(bp: Blueprint):
     class BlueprintPreviewEngine:
         def __init__(self, window_size=(1080, 720)):
+            self.all_parts = list(bp.all_parts())
             _, self.game_path = get_paths()
             assert self.game_path, "Your game files ain't filing..."
             pg.init()
 
             self.window_size = window_size
-            self.clear_color = 0.3, 0.3, 0
+            self.clear_color = 0.1, 0.5, 0.3
             self.framerate = 60
-            self.deltatime = 0
+            self.deltatime = 0.0
 
             pg.display.gl_set_attribute(pg.GL_CONTEXT_MAJOR_VERSION, 4)
             pg.display.gl_set_attribute(pg.GL_CONTEXT_MINOR_VERSION, 5)
@@ -67,19 +43,14 @@ def preview(bp: Blueprint):
 
             self.clock = pg.time.Clock()
             self.camera = Camera(self.window_size)
-            self.camera.looking_at = glm.vec3(astuple(sum((p.pos for p in bp.all_parts()), start=Pos(0,0,0)))) / len(list(bp.all_parts()))
-            self.rot_radius = 20
-            self.rot_vec = glm.vec2(0)
+            self.camera.looking_at = glm.vec3(astuple(sum((p.pos if isinstance(p, BasePart) else p.posA for p in self.all_parts), start=Pos(0,0,0)))) / (len(list(self.all_parts)) or 1)
+            self.rot_radius = 80
+            self.rot_vec = glm.vec2(glm.pi() / 4)
             self.start_drag = None
             self.mouse_sensitivity = 0.01
-            self.camera_velocity = 10
+            self.camera_velocity = 20
 
-            base_path = os.path.join(os.path.abspath(os.getcwd()), "src", "sm_blueprint_lib", "preview")
-            shaders_path = os.path.join(base_path, "shaders")
-            meshes_path = os.path.join(base_path, "meshes")
-
-            # Use lazy renderer manager for better startup performance
-            self.renderer_manager = LazyRendererManager(self.context, shaders_path, self.game_path, meshes_path)
+            self.renderer = BaseRenderer(self.context, self.game_path, self.all_parts)
 
             self.running = True
         
@@ -140,26 +111,8 @@ def preview(bp: Blueprint):
             ) * self.rot_radius
 
         def render(self):
-            # Use lazy renderer manager - renderers are created only when needed
-            parts = list(bp.all_parts())
-            for part in parts:
-                # Determine renderer type based on part class
-                renderer_type = None
-                if hasattr(part, '__class__'):
-                    class_name = part.__class__.__name__.lower()
-                    if 'logicgate' in class_name:
-                        renderer_type = 'logic_gate'
-                    elif 'timer' in class_name:
-                        renderer_type = 'timer_gate'
-                    elif 'block' in class_name:
-                        renderer_type = 'block'
-                    else:
-                        renderer_type = 'part'
-                
-                if renderer_type:
-                    renderer = self.renderer_manager.get_renderer(renderer_type)
-                    renderer.render(self.camera, [part])
-        
+            self.renderer.render(self.camera, self.all_parts)
+
         def set_win_size(self, size: tuple[int, int]):
             self.window_size = size
             self.camera.set_viewport(self.window_size)

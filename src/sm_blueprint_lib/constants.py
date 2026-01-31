@@ -228,7 +228,7 @@ class SHAPEID:
     obj_harvests_trees_birch02_p01 = "13cf98bf-d033-4be5-a0a0-560cb946a4ba"
     obj_destructable_tape_taperoll04 = "1503a160-bf1f-4b86-8406-b11250c71a28"
     obj_harvests_trees_pine03_p10 = "15ee8b4c-d58b-462f-a0a0-5c9bcdff495f"
-    Warehouse_Spotlight = "16ba2d22-7b96-4c5e-9eb7-f6422ed80ad4"
+    Warehouse_Spotlight1 = "16ba2d22-7b96-4c5e-9eb7-f6422ed80ad4"
     Giant_Pipe_Glass_Corner = "16ed53cc-a45b-4f64-92d4-2db93bf33e1c"
     Frame_Beam_Corner = "176f4537-b245-4ba2-a318-da12e15bf789"
     Controller_2 = "1872d83a-d1a1-4cb7-ad46-9e4468d2548c"

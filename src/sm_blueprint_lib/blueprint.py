@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Optional
+from pprint import pp
 
 from .bases.parts.basepart import BasePart
 from .body import Body
@@ -23,10 +24,16 @@ class Blueprint:
                        body
                        for body in self.bodies]
         if self.joints:
-            self.joints = [SHAPEID.JOINT_TO_CLASS[j["shapeId"]](**j)
-                           if not isinstance(j, BaseJoint) else
-                           j
-                           for j in self.joints]
+            try:
+                jj = None
+                self.joints = [SHAPEID.JOINT_TO_CLASS[j["shapeId"]](**j)
+                               if not isinstance((jj:=j), BaseJoint) else
+                               j
+                               for j in self.joints]
+            except Exception as e:
+                pp(jj)
+                print(SHAPEID.JOINT_TO_CLASS[jj["shapeId"]].__name__)
+                raise e
 
     def add(self, *obj, body=0):
         """Adds the object(s) to the blueprint.
@@ -35,17 +42,17 @@ class Blueprint:
             obj (Any): Can be a instance of BasePart or a subclass. It also can be any nested iterable of instances (list of parts, list of lists of parts, etc).
             body (int, optional): Specify in which blueprint's body the object will be placed. Defaults to 0.
         """
-        # Use iterative approach instead of recursion for better performance
-        stack = list(obj)
-        while stack:
-            item = stack.pop()
-            if isinstance(item, BasePart):
-                self.bodies[body].childs.append(item)
+        for subobj in obj:
+            if isinstance(subobj, BasePart):
+                self.bodies[body].childs.append(subobj)
             else:
-                # Add items in reverse order to maintain original order
-                stack.extend(reversed(item))
+                for subsubobj in subobj:
+                    self.add(subsubobj, body=body)
     
     def all_parts(self):
         for body in self.bodies:
             for part in body.childs:
                 yield part
+        if self.joints:
+            for j in self.joints:
+                yield j

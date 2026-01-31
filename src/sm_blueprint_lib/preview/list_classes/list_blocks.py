@@ -62,7 +62,6 @@ class {b["name"].replace(" ", "")}(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "{os.path.splitext(os.path.basename(b["dif"]))[0]}"
         self._tiling = {b["tiling"]}
 '''
     for b in all_blocks

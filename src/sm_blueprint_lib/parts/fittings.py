@@ -2,12 +2,12 @@ from dataclasses import dataclass, field
 
 from glm import vec3
 
-from ..bases.parts.basenormalpart import BaseNormalPart
+from ..bases.parts.basepart import BasePart
 from ..constants import SHAPEID
 
 
 @dataclass
-class DuctShort(BaseNormalPart):
+class DuctShort(BasePart):
     """Class that represents a Duct Short.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Duct_Short)
@@ -17,7 +17,7 @@ class DuctShort(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class DuctLong(BaseNormalPart):
+class DuctLong(BasePart):
     """Class that represents a Duct Long.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Duct_Long)
@@ -27,7 +27,7 @@ class DuctLong(BaseNormalPart):
         self._box = vec3(1, 2, 1)
 
 @dataclass
-class DuctCorner(BaseNormalPart):
+class DuctCorner(BasePart):
     """Class that represents a Duct Corner.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Duct_Corner)
@@ -37,7 +37,7 @@ class DuctCorner(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class DuctJoin(BaseNormalPart):
+class DuctJoin(BasePart):
     """Class that represents a Duct Join.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Duct_Join)
@@ -47,7 +47,7 @@ class DuctJoin(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class DuctHolder(BaseNormalPart):
+class DuctHolder(BasePart):
     """Class that represents a Duct Holder.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Duct_Holder)
@@ -57,7 +57,7 @@ class DuctHolder(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class DuctEnd(BaseNormalPart):
+class DuctEnd(BasePart):
     """Class that represents a Duct End.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Duct_End)
@@ -67,7 +67,7 @@ class DuctEnd(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class AirConditioner(BaseNormalPart):
+class AirConditioner(BasePart):
     """Class that represents a Air Conditioner.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Air_Conditioner)
@@ -77,7 +77,7 @@ class AirConditioner(BaseNormalPart):
         self._box = vec3(5, 3, 2)
 
 @dataclass
-class PipeShort(BaseNormalPart):
+class PipeShort(BasePart):
     """Class that represents a Pipe Short.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Pipe_Short)
@@ -87,7 +87,7 @@ class PipeShort(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class PipeLong(BaseNormalPart):
+class PipeLong(BasePart):
     """Class that represents a Pipe Long.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Pipe_Long)
@@ -97,7 +97,7 @@ class PipeLong(BaseNormalPart):
         self._box = vec3(1, 3, 1)
 
 @dataclass
-class PipeCorner(BaseNormalPart):
+class PipeCorner(BasePart):
     """Class that represents a Pipe Corner.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Pipe_Corner)
@@ -107,7 +107,7 @@ class PipeCorner(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class PipeJoin(BaseNormalPart):
+class PipeJoin(BasePart):
     """Class that represents a Pipe Join.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Pipe_Join)
@@ -117,7 +117,7 @@ class PipeJoin(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class Valve(BaseNormalPart):
+class Valve(BasePart):
     """Class that represents a Valve.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Valve)
@@ -127,7 +127,7 @@ class Valve(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class LargePipeShort(BaseNormalPart):
+class LargePipeShort(BasePart):
     """Class that represents a Large Pipe Short.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Large_Pipe_Short)
@@ -137,7 +137,7 @@ class LargePipeShort(BaseNormalPart):
         self._box = vec3(3, 3, 3)
 
 @dataclass
-class LargePipeLong(BaseNormalPart):
+class LargePipeLong(BasePart):
     """Class that represents a Large Pipe Long.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Large_Pipe_Long)
@@ -147,7 +147,7 @@ class LargePipeLong(BaseNormalPart):
         self._box = vec3(3, 6, 3)
 
 @dataclass
-class LargePipeCorner(BaseNormalPart):
+class LargePipeCorner(BasePart):
     """Class that represents a Large Pipe Corner.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Large_Pipe_Corner)
@@ -157,7 +157,7 @@ class LargePipeCorner(BaseNormalPart):
         self._box = vec3(3, 3, 3)
 
 @dataclass
-class LargePipeJoin(BaseNormalPart):
+class LargePipeJoin(BasePart):
     """Class that represents a Large Pipe Join.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Large_Pipe_Join)
@@ -167,7 +167,7 @@ class LargePipeJoin(BaseNormalPart):
         self._box = vec3(3, 3, 3)
 
 @dataclass
-class WiresShort(BaseNormalPart):
+class WiresShort(BasePart):
     """Class that represents a Wires Short.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Wires_Short)
@@ -177,7 +177,7 @@ class WiresShort(BaseNormalPart):
         self._box = vec3(2, 1, 1)
 
 @dataclass
-class WiresLong(BaseNormalPart):
+class WiresLong(BasePart):
     """Class that represents a Wires Long.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Wires_Long)
@@ -187,7 +187,7 @@ class WiresLong(BaseNormalPart):
         self._box = vec3(2, 5, 1)
 
 @dataclass
-class WiresBend(BaseNormalPart):
+class WiresBend(BasePart):
     """Class that represents a Wires Bend.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Wires_Bend)
@@ -197,7 +197,7 @@ class WiresBend(BaseNormalPart):
         self._box = vec3(3, 3, 1)
 
 @dataclass
-class WiresConvexBend(BaseNormalPart):
+class WiresConvexBend(BasePart):
     """Class that represents a Wires Convex Bend.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Wires_Convex_Bend)
@@ -207,7 +207,7 @@ class WiresConvexBend(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class WiresConcaveBend(BaseNormalPart):
+class WiresConcaveBend(BasePart):
     """Class that represents a Wires Concave Bend.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Wires_Concave_Bend)
@@ -217,7 +217,7 @@ class WiresConcaveBend(BaseNormalPart):
         self._box = vec3(2, 1, 1)
 
 @dataclass
-class FuseBox(BaseNormalPart):
+class FuseBox(BasePart):
     """Class that represents a Fuse Box.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Fuse_Box)
@@ -227,7 +227,7 @@ class FuseBox(BaseNormalPart):
         self._box = vec3(3, 4, 1)
 
 @dataclass
-class TubesShort(BaseNormalPart):
+class TubesShort(BasePart):
     """Class that represents a Tubes Short.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Tubes_Short)
@@ -237,7 +237,7 @@ class TubesShort(BaseNormalPart):
         self._box = vec3(2, 2, 2)
 
 @dataclass
-class TubesLong(BaseNormalPart):
+class TubesLong(BasePart):
     """Class that represents a Tubes Long.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Tubes_Long)
@@ -247,7 +247,7 @@ class TubesLong(BaseNormalPart):
         self._box = vec3(2, 4, 2)
 
 @dataclass
-class TubesCorner(BaseNormalPart):
+class TubesCorner(BasePart):
     """Class that represents a Tubes Corner.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Tubes_Corner)
@@ -257,7 +257,7 @@ class TubesCorner(BaseNormalPart):
         self._box = vec3(2, 2, 2)
 
 @dataclass
-class TubesJoin(BaseNormalPart):
+class TubesJoin(BasePart):
     """Class that represents a Tubes Join.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Tubes_Join)
@@ -267,7 +267,7 @@ class TubesJoin(BaseNormalPart):
         self._box = vec3(2, 2, 2)
 
 @dataclass
-class SmallPipeShort(BaseNormalPart):
+class SmallPipeShort(BasePart):
     """Class that represents a Small Pipe Short.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Small_Pipe_Short)
@@ -277,7 +277,7 @@ class SmallPipeShort(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class SmallPipeLong(BaseNormalPart):
+class SmallPipeLong(BasePart):
     """Class that represents a Small Pipe Long.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Small_Pipe_Long)
@@ -287,7 +287,7 @@ class SmallPipeLong(BaseNormalPart):
         self._box = vec3(4, 1, 1)
 
 @dataclass
-class SmallPipeBend(BaseNormalPart):
+class SmallPipeBend(BasePart):
     """Class that represents a Small Pipe Bend.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Small_Pipe_Bend)
@@ -297,7 +297,7 @@ class SmallPipeBend(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class SmallPipeTee(BaseNormalPart):
+class SmallPipeTee(BasePart):
     """Class that represents a Small Pipe Tee.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Small_Pipe_Tee)
@@ -307,7 +307,7 @@ class SmallPipeTee(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class SmallPipeCorner(BaseNormalPart):
+class SmallPipeCorner(BasePart):
     """Class that represents a Small Pipe Corner.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Small_Pipe_Corner)
@@ -317,7 +317,7 @@ class SmallPipeCorner(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class SmallPipeFourWay(BaseNormalPart):
+class SmallPipeFourWay(BasePart):
     """Class that represents a Small Pipe Four Way.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Small_Pipe_Four_Way)
@@ -327,7 +327,7 @@ class SmallPipeFourWay(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class SmallPipeFourWayTee(BaseNormalPart):
+class SmallPipeFourWayTee(BasePart):
     """Class that represents a Small Pipe Four Way Tee.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Small_Pipe_Four_Way_Tee)
@@ -337,7 +337,7 @@ class SmallPipeFourWayTee(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class SmallPipeFiveWay(BaseNormalPart):
+class SmallPipeFiveWay(BasePart):
     """Class that represents a Small Pipe Five Way.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Small_Pipe_Five_Way)
@@ -347,7 +347,7 @@ class SmallPipeFiveWay(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class SmallPipeSixWay(BaseNormalPart):
+class SmallPipeSixWay(BasePart):
     """Class that represents a Small Pipe Six Way.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Small_Pipe_Six_Way)
@@ -357,7 +357,7 @@ class SmallPipeSixWay(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class LargePipeMount(BaseNormalPart):
+class LargePipeMount(BasePart):
     """Class that represents a Large Pipe Mount.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Large_Pipe_Mount)
@@ -367,7 +367,7 @@ class LargePipeMount(BaseNormalPart):
         self._box = vec3(3, 3, 1)
 
 @dataclass
-class HolderSupportLegBase(BaseNormalPart):
+class HolderSupportLegBase(BasePart):
     """Class that represents a Holder Support Leg Base.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Holder_Support_Leg_Base)
@@ -377,7 +377,7 @@ class HolderSupportLegBase(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class HolderSupportLeg(BaseNormalPart):
+class HolderSupportLeg(BasePart):
     """Class that represents a Holder Support Leg.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Holder_Support_Leg)
@@ -387,7 +387,7 @@ class HolderSupportLeg(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class HolderSupportBend(BaseNormalPart):
+class HolderSupportBend(BasePart):
     """Class that represents a Holder Support Bend.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Holder_Support_Bend)
@@ -397,7 +397,7 @@ class HolderSupportBend(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class LargePipeExtension(BaseNormalPart):
+class LargePipeExtension(BasePart):
     """Class that represents a Large Pipe Extension.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Large_Pipe_Extension)
@@ -407,7 +407,7 @@ class LargePipeExtension(BaseNormalPart):
         self._box = vec3(3, 3, 3)
 
 @dataclass
-class LargePipeCap(BaseNormalPart):
+class LargePipeCap(BasePart):
     """Class that represents a Large Pipe Cap.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Large_Pipe_Cap)
@@ -417,7 +417,7 @@ class LargePipeCap(BaseNormalPart):
         self._box = vec3(3, 1, 3)
 
 @dataclass
-class LargePipeCompressor(BaseNormalPart):
+class LargePipeCompressor(BasePart):
     """Class that represents a Large Pipe Compressor.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Large_Pipe_Compressor)
@@ -427,7 +427,7 @@ class LargePipeCompressor(BaseNormalPart):
         self._box = vec3(5, 5, 8)
 
 @dataclass
-class PowerStation(BaseNormalPart):
+class PowerStation(BasePart):
     """Class that represents a Power Station.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Power_Station)
@@ -437,7 +437,7 @@ class PowerStation(BaseNormalPart):
         self._box = vec3(4, 7, 2)
 
 @dataclass
-class GiantPipe(BaseNormalPart):
+class GiantPipe(BasePart):
     """Class that represents a Giant Pipe.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Giant_Pipe)
@@ -447,7 +447,7 @@ class GiantPipe(BaseNormalPart):
         self._box = vec3(7, 8, 7)
 
 @dataclass
-class GiantPipeGlassStraight(BaseNormalPart):
+class GiantPipeGlassStraight(BasePart):
     """Class that represents a Giant Pipe Glass Straight.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Giant_Pipe_Glass_Straight)
@@ -457,7 +457,7 @@ class GiantPipeGlassStraight(BaseNormalPart):
         self._box = vec3(7, 8, 7)
 
 @dataclass
-class GiantPipeCorner(BaseNormalPart):
+class GiantPipeCorner(BasePart):
     """Class that represents a Giant Pipe Corner.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Giant_Pipe_Corner)
@@ -467,7 +467,7 @@ class GiantPipeCorner(BaseNormalPart):
         self._box = vec3(7, 7, 7)
 
 @dataclass
-class GiantPipeGlassCorner(BaseNormalPart):
+class GiantPipeGlassCorner(BasePart):
     """Class that represents a Giant Pipe Glass Corner.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Giant_Pipe_Glass_Corner)
@@ -477,7 +477,7 @@ class GiantPipeGlassCorner(BaseNormalPart):
         self._box = vec3(7, 7, 7)
 
 @dataclass
-class GiantPipeTee(BaseNormalPart):
+class GiantPipeTee(BasePart):
     """Class that represents a Giant Pipe Tee.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Giant_Pipe_Tee)
@@ -487,7 +487,7 @@ class GiantPipeTee(BaseNormalPart):
         self._box = vec3(7, 7, 7)
 
 @dataclass
-class GiantPipeBracer(BaseNormalPart):
+class GiantPipeBracer(BasePart):
     """Class that represents a Giant Pipe Bracer.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Giant_Pipe_Bracer)
@@ -497,7 +497,7 @@ class GiantPipeBracer(BaseNormalPart):
         self._box = vec3(7, 1, 7)
 
 @dataclass
-class GiantPipeHolder(BaseNormalPart):
+class GiantPipeHolder(BasePart):
     """Class that represents a Giant Pipe Holder.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Giant_Pipe_Holder)
@@ -507,7 +507,7 @@ class GiantPipeHolder(BaseNormalPart):
         self._box = vec3(7, 2, 8)
 
 @dataclass
-class WarehouseVentilationShort(BaseNormalPart):
+class WarehouseVentilationShort(BasePart):
     """Class that represents a Warehouse Ventilation Short.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Warehouse_Ventilation_Short)
@@ -517,7 +517,7 @@ class WarehouseVentilationShort(BaseNormalPart):
         self._box = vec3(3, 3, 3)
 
 @dataclass
-class WarehouseVentilationLong(BaseNormalPart):
+class WarehouseVentilationLong(BasePart):
     """Class that represents a Warehouse Ventilation Long.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Warehouse_Ventilation_Long)
@@ -527,7 +527,7 @@ class WarehouseVentilationLong(BaseNormalPart):
         self._box = vec3(3, 3, 6)
 
 @dataclass
-class WarehouseVentilationCorner(BaseNormalPart):
+class WarehouseVentilationCorner(BasePart):
     """Class that represents a Warehouse Ventilation Corner.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Warehouse_Ventilation_Corner)
@@ -537,7 +537,7 @@ class WarehouseVentilationCorner(BaseNormalPart):
         self._box = vec3(3, 3, 3)
 
 @dataclass
-class WarehouseVentilationTee(BaseNormalPart):
+class WarehouseVentilationTee(BasePart):
     """Class that represents a Warehouse Ventilation Tee.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Warehouse_Ventilation_Tee)
@@ -547,7 +547,7 @@ class WarehouseVentilationTee(BaseNormalPart):
         self._box = vec3(3, 3, 3)
 
 @dataclass
-class WarehouseVentilationMount(BaseNormalPart):
+class WarehouseVentilationMount(BasePart):
     """Class that represents a Warehouse Ventilation Mount.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Warehouse_Ventilation_Mount)
@@ -557,7 +557,7 @@ class WarehouseVentilationMount(BaseNormalPart):
         self._box = vec3(3, 3, 1)
 
 @dataclass
-class WarehouseVentilationDrum(BaseNormalPart):
+class WarehouseVentilationDrum(BasePart):
     """Class that represents a Warehouse Ventilation Drum.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Warehouse_Ventilation_Drum)
@@ -567,7 +567,7 @@ class WarehouseVentilationDrum(BaseNormalPart):
         self._box = vec3(8, 6, 5)
 
 @dataclass
-class GeneratorPipeShort(BaseNormalPart):
+class GeneratorPipeShort(BasePart):
     """Class that represents a Generator Pipe Short.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Generator_Pipe_Short)
@@ -577,7 +577,7 @@ class GeneratorPipeShort(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class GeneratorPipeLong(BaseNormalPart):
+class GeneratorPipeLong(BasePart):
     """Class that represents a Generator Pipe Long.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Generator_Pipe_Long)
@@ -587,7 +587,7 @@ class GeneratorPipeLong(BaseNormalPart):
         self._box = vec3(1, 3, 1)
 
 @dataclass
-class GeneratorPipeCorner(BaseNormalPart):
+class GeneratorPipeCorner(BasePart):
     """Class that represents a Generator Pipe Corner.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Generator_Pipe_Corner)
@@ -597,7 +597,7 @@ class GeneratorPipeCorner(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class GeneratorPipeTee(BaseNormalPart):
+class GeneratorPipeTee(BasePart):
     """Class that represents a Generator Pipe Tee.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Generator_Pipe_Tee)
@@ -607,7 +607,7 @@ class GeneratorPipeTee(BaseNormalPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class GeneratorPipeFourWay(BaseNormalPart):
+class GeneratorPipeFourWay(BasePart):
     """Class that represents a Generator Pipe Four Way.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Generator_Pipe_Four_Way)

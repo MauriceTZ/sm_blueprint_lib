@@ -15,5 +15,3 @@ class BaseNormalPart(BasePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._box = vec3(1, 1, 1)
-        self._offset = vec3(0, 0, 0)

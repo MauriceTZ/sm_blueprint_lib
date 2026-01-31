@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
+from glm import vec3
+
 from ...constants import ROTATION, SHAPEID, AXIS, BLOCK_COLOR
 from ...pos import Pos
 from ...id import ID
@@ -34,8 +36,10 @@ class BasePart:
                            if not isinstance(id, ID) else
                            id
                            for id in self.joints]
-        # Internal variable for alpha channel for the preview module
-        self.a = 1
+        # Internal variable for the preview module
+        self._box = vec3(1, 1, 1)
+        self._offset = vec3(0, 0, 0)
+        self._tiling = 1
 
     def __init_subclass__(cls):
         super().__init_subclass__()

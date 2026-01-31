@@ -12,7 +12,6 @@ class ConcreteBlock1(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_concrete01_dif"
         self._tiling = 8
 
 @dataclass
@@ -23,7 +22,6 @@ class WoodBlock1(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_woodplanks01_dif"
         self._tiling = 8
 
 @dataclass
@@ -34,7 +32,6 @@ class MetalBlock1(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_metal01_dif"
         self._tiling = 8
 
 @dataclass
@@ -45,7 +42,6 @@ class BarrierBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_caution01_dif"
         self._tiling = 8
 
 @dataclass
@@ -56,7 +52,6 @@ class TileBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_tiles01_dif"
         self._tiling = 4
 
 @dataclass
@@ -67,7 +62,6 @@ class BrickBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_bricks01_dif"
         self._tiling = 8
 
 @dataclass
@@ -78,7 +72,6 @@ class GlassBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_glass_dif"
         self._tiling = 8
 
 @dataclass
@@ -89,7 +82,6 @@ class GlassTileBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_glasstiles_dif"
         self._tiling = 8
 
 @dataclass
@@ -100,7 +92,6 @@ class PathLightBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_lights01_dif"
         self._tiling = 2
 
 @dataclass
@@ -111,7 +102,6 @@ class SpaceshipBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_spaceship01_dif"
         self._tiling = 4
 
 @dataclass
@@ -122,7 +112,6 @@ class CardboardBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_cardboard_dif"
         self._tiling = 16
 
 @dataclass
@@ -133,7 +122,6 @@ class ScrapWoodBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_scrapwood_dif"
         self._tiling = 8
 
 @dataclass
@@ -144,7 +132,6 @@ class WoodBlock2(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_wood02_dif"
         self._tiling = 8
 
 @dataclass
@@ -155,7 +142,6 @@ class WoodBlock3(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_wood03_dif"
         self._tiling = 8
 
 @dataclass
@@ -166,7 +152,6 @@ class ScrapMetalBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_scrapmetal_dif"
         self._tiling = 16
 
 @dataclass
@@ -177,7 +162,6 @@ class MetalBlock2(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_metal02_dif"
         self._tiling = 8
 
 @dataclass
@@ -188,7 +172,6 @@ class MetalBlock3(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_metal03_dif"
         self._tiling = 8
 
 @dataclass
@@ -199,7 +182,6 @@ class ScrapStoneBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_scrapstone_dif"
         self._tiling = 8
 
 @dataclass
@@ -210,7 +192,6 @@ class ConcreteBlock2(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_concrete02_dif"
         self._tiling = 8
 
 @dataclass
@@ -221,7 +202,6 @@ class ConcreteBlock3(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_concrete03_dif"
         self._tiling = 8
 
 @dataclass
@@ -232,7 +212,6 @@ class CrackedConcreteBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_crackedconcrete01_dif"
         self._tiling = 8
 
 @dataclass
@@ -243,7 +222,6 @@ class ConcreteSlabBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_concretetiles_dif"
         self._tiling = 16
 
 @dataclass
@@ -254,7 +232,6 @@ class RustedMetalBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_metalbricks_dif"
         self._tiling = 8
 
 @dataclass
@@ -265,7 +242,6 @@ class ExtrudedMetalBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_beam2_dif"
         self._tiling = 8
 
 @dataclass
@@ -276,7 +252,6 @@ class BubblePlasticBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_bubblewrap_dif"
         self._tiling = 2
 
 @dataclass
@@ -287,7 +262,6 @@ class PlasticBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_plastic_dif"
         self._tiling = 4
 
 @dataclass
@@ -298,7 +272,6 @@ class InsulationBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_insulation_dif"
         self._tiling = 8
 
 @dataclass
@@ -309,7 +282,6 @@ class PlasterBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_drywall_dif"
         self._tiling = 8
 
 @dataclass
@@ -320,7 +292,6 @@ class CarpetBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_carpet_dif"
         self._tiling = 4
 
 @dataclass
@@ -331,7 +302,6 @@ class PaintedWallBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_plasticwall_dif"
         self._tiling = 8
 
 @dataclass
@@ -342,7 +312,6 @@ class NetBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_metalnet_dif"
         self._tiling = 1
 
 @dataclass
@@ -353,7 +322,6 @@ class SolidNetBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_crossnet_dif"
         self._tiling = 1
 
 @dataclass
@@ -364,7 +332,6 @@ class PunchedSteelBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_tryponet_dif"
         self._tiling = 1
 
 @dataclass
@@ -375,7 +342,6 @@ class StripedNetBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_stripednet_dif"
         self._tiling = 8
 
 @dataclass
@@ -386,7 +352,6 @@ class SquareMeshBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_squarenet_dif"
         self._tiling = 1
 
 @dataclass
@@ -397,7 +362,6 @@ class RestroomBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_titanium_dif"
         self._tiling = 8
 
 @dataclass
@@ -408,7 +372,6 @@ class DiamondPlateBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_spaceship02_dif"
         self._tiling = 4
 
 @dataclass
@@ -419,7 +382,6 @@ class AluminumBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_spaceship03_dif"
         self._tiling = 4
 
 @dataclass
@@ -430,7 +392,6 @@ class WornMetalBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_wornmetal_dif"
         self._tiling = 8
 
 @dataclass
@@ -441,7 +402,6 @@ class SpaceshipFloorBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "t_tiled_spaceship_vents_dif"
         self._tiling = 8
 
 @dataclass
@@ -452,7 +412,6 @@ class SandBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_sand_dif"
         self._tiling = 8
 
 @dataclass
@@ -463,5 +422,4 @@ class ArmoredGlassBlock(BaseBoundablePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._texture_id = "blk_armoredglass_dif"
         self._tiling = 4

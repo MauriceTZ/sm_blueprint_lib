@@ -59,7 +59,7 @@ pp(all_fittings)
 classes = "".join(  # TODO: check more cylinder cases
 f'''
 @dataclass
-class {b["name"].replace(" ", "").replace("-", "")}(BaseNormalPart):
+class {b["name"].replace(" ", "").replace("-", "")}(BasePart):
     """Class that represents a {b["name"]}.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.{b["name"].replace(" ", "_").replace("-", "_")})
