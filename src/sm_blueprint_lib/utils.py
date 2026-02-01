@@ -93,7 +93,7 @@ def connect(_from, _to, *, parallel=True):
     if isinstance(_from, BaseInteractablePart) and isinstance(_to, BaseInteractablePart):
         _from.connect(_to)
         return
-    
+
     # Helper function to flatten nested iterables efficiently
     def flatten_parts(obj):
         """Flatten nested iterables into a flat list of parts."""
@@ -109,17 +109,17 @@ def connect(_from, _to, *, parallel=True):
                 # Add in reverse order to maintain original sequence
                 stack.extend(reversed(item))
         return parts
-    
+
     # Flatten both inputs
     from_parts = flatten_parts(_from)
     to_parts = flatten_parts(_to)
-    
+
     # Perform connections based on parallel mode
     if parallel:
         # Row-to-row connections (zip longest to handle mismatched lengths)
         for from_part, to_part in zip(from_parts, to_parts):
             from_part.connect(to_part)
-        
+
         # Handle remaining parts (one-to-many or many-to-one)
         if len(from_parts) > len(to_parts):
             for from_part in from_parts[len(to_parts):]:
