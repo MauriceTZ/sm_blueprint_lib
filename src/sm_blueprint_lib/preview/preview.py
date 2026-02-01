@@ -1,37 +1,36 @@
 import os
 from pprint import pp
+from dataclasses import astuple
+
+import pygame as pg
+import moderngl as mgl
+import glm
+import imgui
+# This hack I found on github... https://github.com/pyimgui/pyimgui/issues/375#issuecomment-3138189835
+from imgui.integrations.opengl import ProgrammablePipelineRenderer
+from imgui.integrations.pygame import PygameRenderer
+PygameRenderer.__bases__ = (ProgrammablePipelineRenderer,)
 
 from ..blueprint import Blueprint
+from .renderers import BaseRenderer
+from .camera import Camera
 from ..pos import Pos
 from ..utils import get_paths
-
-from dataclasses import astuple
+from ..bases.parts.basepart import BasePart
 
 
 def preview(bp: Blueprint):
-    """Preview a blueprint in a 3D window.
-    
-    Args:
-        bp (Blueprint): The blueprint to preview
-    """
-    # Import heavy dependencies only when needed
-    import pygame as pg
-    import moderngl as mgl
-    import glm
-    
-    from .renderers import LogicGateRenderer, TimerGateRenderer, BlockRenderer, PartRenderer
-    from .camera import Camera
-
     class BlueprintPreviewEngine:
         def __init__(self, window_size=(1080, 720)):
+            self.all_parts = list(bp.all_parts())
             _, self.game_path = get_paths()
             assert self.game_path, "Your game files ain't filing..."
             pg.init()
 
             self.window_size = window_size
-            self.clear_color = 0.3, 0.3, 0
+            self.clear_color = 0.1, 0.5, 0.3
             self.framerate = 60
-            self.deltatime = 0
+            self.deltatime = 0.0
 
             pg.display.gl_set_attribute(pg.GL_CONTEXT_MAJOR_VERSION, 4)
             pg.display.gl_set_attribute(pg.GL_CONTEXT_MINOR_VERSION, 5)
@@ -49,23 +48,15 @@ def preview(bp: Blueprint):
 
             self.clock = pg.time.Clock()
             self.camera = Camera(self.window_size)
-            self.camera.looking_at = glm.vec3(astuple(sum((p.pos for p in bp.all_parts()), start=Pos(0,0,0)))) / len(list(bp.all_parts()))
-            self.rot_radius = 20
-            self.rot_vec = glm.vec2(0)
+            self.camera.looking_at = glm.vec3(astuple(sum((p.pos if isinstance(p, BasePart) else p.posA for p in self.all_parts), start=Pos(0,0,0)))) / (len(list(self.all_parts)) or 1)
+            self.rot_radius = 80
+            self.rot_vec = glm.vec2(glm.pi() / 4)
             self.start_drag = None
             self.mouse_sensitivity = 0.01
-            self.camera_velocity = 10
+            self.camera_velocity = 20
 
-            base_path = os.path.join(os.path.abspath(os.getcwd()), "src", "sm_blueprint_lib", "preview")
-            shaders_path = os.path.join(base_path, "shaders")
-            meshes_path = os.path.join(base_path, "meshes")
-
-            self.renderers = [
-                PartRenderer(self.context, shaders_path, self.game_path),
-                LogicGateRenderer(self.context, shaders_path, self.game_path),
-                TimerGateRenderer(self.context, shaders_path, self.game_path),
-                BlockRenderer(self.context, shaders_path, self.game_path, meshes_path),
-            ]
+            self.renderer = BaseRenderer(self.context, self.game_path, self.all_parts)
+            self.init_imgui()
 
             self.running = True
         
@@ -79,10 +70,18 @@ def preview(bp: Blueprint):
                 self.deltatime = self.clock.tick(self.framerate) * 0.001
 
         def handle_events(self):
-            for event in pg.event.get():
+            events = pg.event.get()
+            for event in events:
                 match event.type:
                     case pg.QUIT:
                         self.running = False
+                    case pg.WINDOWRESIZED:
+                        self.set_win_size((event.x, event.y))
+            self.imgui_handle_events(events)
+            if self.wants_capture_imgui():
+                return
+            for event in events:
+                match event.type:
                     case pg.MOUSEBUTTONDOWN:
                         self.start_drag = glm.vec2(event.pos)
                     case pg.MOUSEBUTTONUP:
@@ -94,8 +93,6 @@ def preview(bp: Blueprint):
                     case pg.MOUSEWHEEL:
                         self.rot_radius *= 1 - event.precise_y * self.mouse_sensitivity * 10
                         self.rot_vec.x -= event.precise_x * self.mouse_sensitivity * 10
-                    case pg.WINDOWRESIZED:
-                        self.set_win_size((event.x, event.y))
 
             keys = pg.key.get_pressed()
 
@@ -126,13 +123,37 @@ def preview(bp: Blueprint):
             ) * self.rot_radius
 
         def render(self):
-            for renderer in self.renderers:
-                renderer.render(self.camera, bp.all_parts())
-        
+            self.renderer.render(self.camera, self.all_parts)
+            self.render_imgui()
+
         def set_win_size(self, size: tuple[int, int]):
             self.window_size = size
             self.camera.set_viewport(self.window_size)
-            
+            self.imgui_io.display_size = self.window_size
+        
+        def init_imgui(self):
+            imgui.create_context()
+            self.imgui_impl = PygameRenderer()
+            self.imgui_io = imgui.get_io()
+            self.imgui_io.display_size = self.window_size
+        
+        def render_imgui(self):
+            imgui.new_frame()
+            imgui.show_test_window()
+            imgui.render()
+            self.imgui_impl.render(imgui.get_draw_data())
+
+        def wants_capture_imgui(self):
+            return any((
+                self.imgui_io.want_capture_mouse,
+                self.imgui_io.want_capture_keyboard,
+                self.imgui_io.want_text_input
+            ))
+
+        def imgui_handle_events(self, events: list[pg.event.Event]):
+            for event in events:
+                self.imgui_impl.process_event(event)
+            self.imgui_impl.process_inputs()
 
     bpp = BlueprintPreviewEngine()
     bpp.run()
