@@ -8,6 +8,9 @@ import json
 import re
 import logging
 from itertools import groupby
+from os import environ, pathsep
+import sys
+from pathlib import Path
 
 import pygame as pg
 import moderngl as mgl
@@ -82,10 +85,11 @@ class BaseRenderer:
 
 
     def __init__(self, context: mgl.Context, game_dir: PathLike, all_parts: list[BasePart]) -> None:
-        # Load pyassimp from the game (Windows only...)
         self.all_parts = all_parts
-        from os import environ, pathsep
-        environ["PATH"] += pathsep + join(game_dir, "Release")
+        if sys.platform == "win32":
+            environ["PATH"] += pathsep + join(game_dir, "Release")
+        elif sys.platform == "linux":
+            environ['LD_LIBRARY_PATH'] = environ.get('LD_LIBRARY_PATH', "") + pathsep + join(game_dir, "Release")
         global pyassimp
         import pyassimp
         self.context = context
@@ -226,7 +230,6 @@ class BaseRenderer:
 
             if not (lod0["mesh"].lower().endswith(".fbx") or lod0["mesh"].lower().endswith(".mesh")):
                 return logger.warning("Mesh type not supported (yet).")
-            
             model = self.load_model(self.resolve(lod0["mesh"]))
             for mesh in model.meshes:
                 if mesh.material.properties["name"] == "lightcone_mat" or mesh.material.properties["name"] == "lightflare_mat":
@@ -262,8 +265,9 @@ class BaseRenderer:
             self.Parts[object["uuid"]]["textures"][0] = self.load_texture(self.resolve(object["dif"]))
 
     def resolve(self, rel_path):
-        return rel_path.replace("$GAME_DATA", self.GAME_DATA).replace("$SURVIVAL_DATA", self.SURVIVAL_DATA)
-    
+        path = rel_path.replace("$GAME_DATA", self.GAME_DATA).replace("$SURVIVAL_DATA", self.SURVIVAL_DATA)
+        return resolve_absolute_path(path)
+
     def load_texture(self, path: PathLike):
         if (texture := self.TexturesCache.get(basename(path))):
             return texture
@@ -388,3 +392,51 @@ def parse_json_with_comments(fp):
             
     clean_json = re.sub(pattern, replacer, fp.read())
     return json.loads(clean_json)
+
+
+def resolve_absolute_path(messy_path):
+    """
+    Resolves an absolute path with potential casing errors on Linux.
+    Example input:  "/HOME/User/DaTa/file.TXT"
+    Example output: "/home/user/data/file.txt"
+    """
+    # well this shouldnt do anything if we are not in linux
+    if sys.platform != "linux":
+        return messy_path
+
+
+    # 1. Start at the filesystem root
+    current_path = Path("/") 
+    
+    # 2. Break the messy path into parts: ('/', 'HOME', 'User', 'DaTa', 'file.TXT')
+    parts = Path(messy_path).parts
+    
+    for part in parts:
+        # Skip the root anchor ('/') itself so we don't try to find it inside itself
+        if part == '/':
+            continue
+            
+        # If we are somehow traversing '.' or empty strings, skip them
+        if part == '.' or part == '':
+            continue
+            
+        found = False
+        
+        # 3. Look for the case-insensitive match in the current directory
+        try:
+            # Iterate through contents of the current resolved directory
+            for item in current_path.iterdir():
+                if item.name.lower() == part.lower():
+                    current_path = item
+                    found = True
+                    break
+        except PermissionError:
+            # Critical check for Linux: If we hit a folder we can't read, stop.
+            print(f"Permission denied accessing: {current_path}")
+            raise FileNotFoundError
+
+        if not found:
+            print(f"Error: '{part}' not found inside '{current_path}'")
+            raise FileNotFoundError
+            
+    return str(current_path)
