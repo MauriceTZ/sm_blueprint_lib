@@ -70,7 +70,8 @@ class {b["name"].replace(" ", "").replace("-", "").replace("'", "").replace(":",
                             (b["cylinder"]["diameter"],
                              b["cylinder"]["diameter"],
                              b["cylinder"]["depth"]) if b["cylinder"]["axis"] == "Z" else
-                             (1,1,1)) if b.get("cylinder") else 
+                             (1,1,1)) if b.get("cylinder") else
+                         (b['wedge']['x'], b['wedge']['y'], b['wedge']['z']) if b.get('wedge') else
                          (1, 1, 1)}
 '''
     for b in all_parts
