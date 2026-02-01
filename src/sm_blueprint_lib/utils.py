@@ -238,6 +238,16 @@ def get_paths():
     """
     if sys.platform == "linux":
         linux_user = os.getcwd().split("/")[2]
+        if os.path.isdir(f"/home/{linux_user}/.local/share/Steam/steamapps/"):
+            steam_path = f"/home/{linux_user}/.local/share/Steam"
+            game_path = find_game(steam_path)
+            if os.path.isdir(f"{steam_path}/steamapps/compatdata/387990/pfx/drive_c/"):
+                drive = f"{steam_path}/steamapps/compatdata/387990/pfx/drive_c/"
+                if os.path.isdir(f"{drive}users/steamuser/AppData/Roaming"):
+                    appdata_path = f"{drive}users/steamuser/AppData/Roaming"
+                    blueprint_path = find_blueprint_folder(steam_path, appdata_path)
+                    return blueprint_path, game_path
+
         if os.path.isdir(f"/home/{linux_user}/snap/steam/common/.local/share/Steam/steamapps/"):
             steam_path = f"/home/{linux_user}/snap/steam/common/.local/share/Steam"
             game_path = find_game(steam_path)
