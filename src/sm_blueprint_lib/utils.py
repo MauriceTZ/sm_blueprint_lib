@@ -166,24 +166,17 @@ def load_vdf(file):
     Returns:
         Dict: vdf as Dict.
     """
-    import re
-    
-    # Use regex for more efficient single-pass parsing
-    with open(file, "r") as vdf:
-        content = vdf.read()
-    
-    # Remove tabs and newlines, then use regex to format as JSON
-    content = content.replace('\t', '').replace('\n', '')
-    
-    # Convert VDF format to JSON format using regex
-    # Pattern matches: key"value" -> "key":"value"
-    content = re.sub(r'([a-zA-Z0-9_]+)"([^"]*)"', r'"\1":"\2"', content)
-    
-    # Fix VDF-specific patterns
-    content = content.replace('"{', '":{').replace('}"', '},"')
-    content = content.replace('"""', '=_=').replace('""', '","').replace('=_=', '","')
-    
-    return loads("{" + content + "}")
+    temp = "{"
+    with open(file,"r") as vdf:
+        for line in vdf.readlines():
+            temp += line.strip("		").strip("\n").replace('"		"', '":"')
+    temp = temp.replace('"{','":{')
+    temp = temp.replace('}"', '},"')
+    temp = temp.replace('"""', '=_=')
+    temp = temp.replace('""', '","')
+    temp = temp.replace('=_=', '"","')
+    temp+="}"
+    return loads(temp)
 
 
 def find_game(steam_path):
