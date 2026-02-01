@@ -125,7 +125,7 @@ class LargeWarehouseRamp(BasePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._box = vec3(1, 1, 1)
+        self._box = vec3(5, 4, 8)
 
 @dataclass
 class SmallWarehouseRamp(BasePart):
@@ -135,7 +135,7 @@ class SmallWarehouseRamp(BasePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._box = vec3(1, 1, 1)
+        self._box = vec3(5, 1, 2)
 
 @dataclass
 class LargeNarrowWarehouseRamp(BasePart):
@@ -145,7 +145,7 @@ class LargeNarrowWarehouseRamp(BasePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._box = vec3(1, 1, 1)
+        self._box = vec3(1, 4, 8)
 
 @dataclass
 class SmallNarrowWarehouseRamp(BasePart):
@@ -155,7 +155,7 @@ class SmallNarrowWarehouseRamp(BasePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._box = vec3(1, 1, 1)
+        self._box = vec3(1, 1, 2)
 
 @dataclass
 class MetalStorageSupport(BasePart):
@@ -185,7 +185,7 @@ class MetalStorageRamp(BasePart):
 
     def __post_init__(self):
         super().__post_init__()
-        self._box = vec3(1, 1, 1)
+        self._box = vec3(1, 1, 8)
 
 @dataclass
 class LargeMetalStorageLamp(BasePart):
