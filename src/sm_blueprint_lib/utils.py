@@ -6,6 +6,7 @@ import os
 import sys
 import uuid
 import shutil
+import functools
 from dataclasses import asdict
 from json import load, dump, loads, dumps
 from math import ceil, log2
@@ -87,35 +88,51 @@ def connect(_from, _to, *, parallel=True):
 
         Defaults to True.
     """
+    # Fast path for single part connections
     if isinstance(_from, BaseInteractablePart) and isinstance(_to, BaseInteractablePart):
         _from.connect(_to)
         return
-    # Try connect things row-by-row if possible (one to one, one to many, many to many)
+    
+    # Helper function to flatten nested iterables efficiently
+    def flatten_parts(obj):
+        """Flatten nested iterables into a flat list of parts."""
+        if isinstance(obj, BaseInteractablePart):
+            return [obj]
+        parts = []
+        stack = [obj]
+        while stack:
+            item = stack.pop()
+            if isinstance(item, BaseInteractablePart):
+                parts.append(item)
+            else:
+                # Add in reverse order to maintain original sequence
+                stack.extend(reversed(item))
+        return parts
+    
+    # Flatten both inputs
+    from_parts = flatten_parts(_from)
+    to_parts = flatten_parts(_to)
+    
+    # Perform connections based on parallel mode
     if parallel:
-        # Assume both are sequence of parts
-        if not isinstance(_from, BaseInteractablePart) and not isinstance(_to, BaseInteractablePart):
-            for subfrom, subto in zip(_from, _to):
-                connect(subfrom, subto, parallel=parallel)
-        # Assume _from is a sequence of parts
-        elif not isinstance(_from, BaseInteractablePart):
-            for subfrom in _from:
-                connect(subfrom, _to, parallel=parallel)
-        else:                                               # Assume _to is a sequence of parts
-            for subto in _to:
-                connect(_from, subto, parallel=parallel)
-    else:           # Just connect everything to everything lol
-        # Assume both are sequence of parts
-        if not isinstance(_from, BaseInteractablePart) and not isinstance(_to, BaseInteractablePart):
-            for subfrom in _from:
-                for subto in _to:
-                    connect(subfrom, subto, parallel=parallel)
-        # Assume _from is a sequence of parts
-        elif not isinstance(_from, BaseInteractablePart):
-            for subfrom in _from:
-                connect(subfrom, _to, parallel=parallel)
-        else:                                               # Assume _to is a sequence of parts
-            for subto in _to:
-                connect(_from, subto, parallel=parallel)
+        # Row-to-row connections (zip longest to handle mismatched lengths)
+        for from_part, to_part in zip(from_parts, to_parts):
+            from_part.connect(to_part)
+        
+        # Handle remaining parts (one-to-many or many-to-one)
+        if len(from_parts) > len(to_parts):
+            for from_part in from_parts[len(to_parts):]:
+                if to_parts:  # Connect to last part if available
+                    from_part.connect(to_parts[-1])
+        elif len(to_parts) > len(from_parts):
+            for to_part in to_parts[len(from_parts):]:
+                if from_parts:  # Connect from last part if available
+                    from_parts[-1].connect(to_part)
+    else:
+        # Many-to-many connections (cartesian product)
+        for from_part in from_parts:
+            for to_part in to_parts:
+                from_part.connect(to_part)
 
 
 def get_bits_required(number: int | float):
@@ -149,17 +166,24 @@ def load_vdf(file):
     Returns:
         Dict: vdf as Dict.
     """
-    temp = "{"
-    with open(file,"r") as vdf:
-        for line in vdf.readlines():
-            temp += line.strip("		").strip("\n").replace('"		"', '":"')
-    temp = temp.replace('"{','":{')
-    temp = temp.replace('}"', '},"')
-    temp = temp.replace('"""', '=_=')
-    temp = temp.replace('""', '","')
-    temp = temp.replace('=_=', '"","')
-    temp+="}"
-    return loads(temp)
+    import re
+    
+    # Use regex for more efficient single-pass parsing
+    with open(file, "r") as vdf:
+        content = vdf.read()
+    
+    # Remove tabs and newlines, then use regex to format as JSON
+    content = content.replace('\t', '').replace('\n', '')
+    
+    # Convert VDF format to JSON format using regex
+    # Pattern matches: key"value" -> "key":"value"
+    content = re.sub(r'([a-zA-Z0-9_]+)"([^"]*)"', r'"\1":"\2"', content)
+    
+    # Fix VDF-specific patterns
+    content = content.replace('"{', '":{').replace('}"', '},"')
+    content = content.replace('"""', '=_=').replace('""', '","').replace('=_=', '","')
+    
+    return loads("{" + content + "}")
 
 
 def find_game(steam_path):
@@ -210,6 +234,7 @@ def find_blueprint_folder(steam_path,appdata_path):
     return None
 
 
+@functools.lru_cache(maxsize=1)
 def get_paths():
     """Tries to find all paths related to ScrapMechanic.
 
