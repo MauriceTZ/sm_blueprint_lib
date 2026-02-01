@@ -1,22 +1,37 @@
 import os
 from pprint import pp
-import pygame as pg
-import moderngl as mgl
-import glm
 
 from ..blueprint import Blueprint
-from .renderers import LogicGateRenderer, TimerGateRenderer
-from .camera import Camera
+from ..pos import Pos
+from ..utils import get_paths
+
+from dataclasses import astuple
 
 
 def preview(bp: Blueprint):
+    """Preview a blueprint in a 3D window.
+    
+    Args:
+        bp (Blueprint): The blueprint to preview
+    """
+    # Import heavy dependencies only when needed
+    import pygame as pg
+    import moderngl as mgl
+    import glm
+    
+    from .renderers import LogicGateRenderer, TimerGateRenderer, BlockRenderer, PartRenderer
+    from .camera import Camera
+
     class BlueprintPreviewEngine:
         def __init__(self, window_size=(1080, 720)):
+            _, self.game_path = get_paths()
+            assert self.game_path, "Your game files ain't filing..."
             pg.init()
 
             self.window_size = window_size
             self.clear_color = 0.3, 0.3, 0
             self.framerate = 60
+            self.deltatime = 0
 
             pg.display.gl_set_attribute(pg.GL_CONTEXT_MAJOR_VERSION, 4)
             pg.display.gl_set_attribute(pg.GL_CONTEXT_MINOR_VERSION, 5)
@@ -34,19 +49,22 @@ def preview(bp: Blueprint):
 
             self.clock = pg.time.Clock()
             self.camera = Camera(self.window_size)
+            self.camera.looking_at = glm.vec3(astuple(sum((p.pos for p in bp.all_parts()), start=Pos(0,0,0)))) / len(list(bp.all_parts()))
             self.rot_radius = 20
             self.rot_vec = glm.vec2(0)
             self.start_drag = None
             self.mouse_sensitivity = 0.01
+            self.camera_velocity = 10
 
             base_path = os.path.join(os.path.abspath(os.getcwd()), "src", "sm_blueprint_lib", "preview")
             shaders_path = os.path.join(base_path, "shaders")
-            textures_path = os.path.join(base_path, "textures")
             meshes_path = os.path.join(base_path, "meshes")
 
             self.renderers = [
-                LogicGateRenderer(self.context, shaders_path, textures_path, meshes_path),
-                TimerGateRenderer(self.context, shaders_path, textures_path, meshes_path),
+                PartRenderer(self.context, shaders_path, self.game_path),
+                LogicGateRenderer(self.context, shaders_path, self.game_path),
+                TimerGateRenderer(self.context, shaders_path, self.game_path),
+                BlockRenderer(self.context, shaders_path, self.game_path, meshes_path),
             ]
 
             self.running = True
@@ -58,7 +76,7 @@ def preview(bp: Blueprint):
                 self.handle_events()
                 self.render()
                 pg.display.flip()
-                self.clock.tick(self.framerate)
+                self.deltatime = self.clock.tick(self.framerate) * 0.001
 
         def handle_events(self):
             for event in pg.event.get():
@@ -76,14 +94,32 @@ def preview(bp: Blueprint):
                     case pg.MOUSEWHEEL:
                         self.rot_radius *= 1 - event.precise_y * self.mouse_sensitivity * 10
                         self.rot_vec.x -= event.precise_x * self.mouse_sensitivity * 10
-                        # print(self.rot_radius, self.rot_vec.x)
                     case pg.WINDOWRESIZED:
                         self.set_win_size((event.x, event.y))
-            
+
+            keys = pg.key.get_pressed()
+
+            forward = self.camera.looking_at - self.camera.pos
+            forward.z = 0
+            forward = glm.normalize(forward)
+            right = glm.cross(forward, (0, 0, 1))
+            if keys[pg.K_e]:
+                self.camera.looking_at.z += self.camera_velocity * self.deltatime
+            if keys[pg.K_q]:
+                self.camera.looking_at.z -= self.camera_velocity * self.deltatime
+            if keys[pg.K_w]:
+                self.camera.looking_at += forward * self.camera_velocity * self.deltatime
+            if keys[pg.K_a]:
+                self.camera.looking_at -= right * self.camera_velocity * self.deltatime
+            if keys[pg.K_s]:
+                self.camera.looking_at -= forward * self.camera_velocity * self.deltatime
+            if keys[pg.K_d]:
+                self.camera.looking_at += right * self.camera_velocity * self.deltatime
+
             self.rot_vec.y = glm.clamp(
                 self.rot_vec.y, -glm.half_pi() + 0.01, glm.half_pi() - 0.01)
             self.rot_radius = glm.max(self.rot_radius, 1)
-            self.camera.pos = glm.vec3(
+            self.camera.pos = self.camera.looking_at + glm.vec3(
                 -glm.sin(self.rot_vec.x) * glm.cos(self.rot_vec.y),
                 -glm.cos(self.rot_vec.x) * glm.cos(self.rot_vec.y),
                 glm.sin(self.rot_vec.y),

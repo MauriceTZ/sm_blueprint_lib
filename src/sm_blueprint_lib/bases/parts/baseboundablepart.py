@@ -11,10 +11,10 @@ class BaseBoundablePart(BasePart):
     bounds: Bounds
 
     def __post_init__(self):
-        super().__post_init__()
         if not isinstance(self.bounds, Bounds):
             try:
                 self.bounds = Bounds(**self.bounds)
             except TypeError:
                 self.bounds = Bounds(
                     self.bounds[0], self.bounds[1], self.bounds[2])
+        super().__post_init__()

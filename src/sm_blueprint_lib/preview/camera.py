@@ -7,8 +7,8 @@ class Camera:
                  viewport: tuple[int, int],
                  pos: glm.vec3 = glm.vec3(-10, 0, 0),
                  fov: float = 90,
-                 znear: float = 0.1,
-                 zfar: float = 100000,
+                 znear: float = 1,
+                 zfar: float = 500,
                  up: glm.vec3 = glm.vec3(0, 0, 1),
                  looking_at: glm.vec3 = glm.vec3(0, 0, 0)) -> None:
         self.viewport = viewport

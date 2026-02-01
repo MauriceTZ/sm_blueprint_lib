@@ -35,12 +35,15 @@ class Blueprint:
             obj (Any): Can be a instance of BasePart or a subclass. It also can be any nested iterable of instances (list of parts, list of lists of parts, etc).
             body (int, optional): Specify in which blueprint's body the object will be placed. Defaults to 0.
         """
-        for subobj in obj:
-            if isinstance(subobj, BasePart):
-                self.bodies[body].childs.append(subobj)
+        # Use iterative approach with stack to avoid recursion overhead
+        stack = list(obj)
+        while stack:
+            item = stack.pop()
+            if isinstance(item, BasePart):
+                self.bodies[body].childs.append(item)
             else:
-                for subsubobj in subobj:
-                    self.add(subsubobj, body=body)
+                # Add iterable items in reverse order to maintain original order
+                stack.extend(reversed(item))
     
     def all_parts(self):
         for body in self.bodies:

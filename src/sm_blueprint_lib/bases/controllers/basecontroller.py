@@ -14,7 +14,11 @@ class BaseController:
     joints: Optional[list[ID]] = field(kw_only=True, default=None)
 
     def __post_init__(self):
-        try:
-            self.controllers = [ID(**c) for c in self.controllers]
-        except TypeError:
-            pass
+        if self.controllers:
+            self.controllers = [ID(**c)
+                                if not isinstance(c, ID) else
+                                c for c in self.controllers]
+        if self.joints:
+            self.joints = [ID(**jj)
+                           if not isinstance(jj, ID) else
+                           jj for jj in self.joints]
