@@ -2,7 +2,7 @@ from typing import Sequence
 from ..blueprint import Blueprint
 from ..parts import LogicGate
 from ..pos import *
-from ..utils import connect
+from ..utils import _old_connect
 
 
 TAPS = [
@@ -192,9 +192,9 @@ def LFSR(bp: Blueprint,
     assert 168 >= bit_length >= 3, "bit_length must be between 168 and 3."
     tap = next(filter(lambda t: t[0]==bit_length, TAPS))
     print("TAP:", tap)
-    row = [LogicGate(pos + (x, 0, 0), "0000FF", 1 if x != 0 else 5) for x in range(bit_length)]
-    connect(row, row[1:])
+    row = [LogicGate(pos + (x, 0, 0), "0000FF", 1 if x != 0 else 5, xaxis=1, zaxis=-2) for x in range(bit_length)]
+    _old_connect(row, row[1:])
     for i in tap[1]:
-        connect(row[i-1], row[0])
+        _old_connect(row[i-1], row[0])
     bp.add(row)
     return row

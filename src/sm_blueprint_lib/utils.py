@@ -65,6 +65,65 @@ def dump_string_from_blueprint(bp: Blueprint):
     return dumps(asdict(bp), sort_keys=True, separators=(',', ':'))
 
 
+
+def _old_connect(_from, _to, *, parallel=True):
+    """Connect interactable parts together, recursively.
+
+    Args:
+        _from (Any): Must be an instance of BaseInteractablePart or a subclass.
+        It also can be any nested iterable of instances (list of parts, list of lists of parts, etc).
+        _to (Any): Must be an instance of BaseInteractablePart or a subclass.
+        It also can be any nested iterable of instances (list of parts, list of lists of parts, etc).
+        parallel (bool, optional): Defines the behaviour of the connections in the following way:
+
+        With parallel=False, everything connects to everything:
+            from1 🔀 to1
+
+            from2 🔀 to2
+
+        With parallel=True, every row is connected respectively:
+            from1 → to1
+
+            from2 → to2
+
+        Also, if the dimensions does not match it tries to adapt (many to one, one to many, etc)
+
+        Defaults to True.
+    """
+    if isinstance(_from, BaseInteractablePart) and isinstance(_to, BaseInteractablePart):
+        _from.connect(_to)
+        return
+
+                    # Try connect things row-by-row where possible
+                    # (one to one, one to many, many to many)
+                    # (row to matrix, for example)
+    if parallel:
+                                                            # Assume both are sequence of parts
+        if not isinstance(_from, BaseInteractablePart) and not isinstance(_to, BaseInteractablePart):
+            for subfrom, subto in zip(_from, _to):
+                _old_connect(subfrom, subto, parallel=parallel)
+                                                            # Assume _from is a sequence of parts
+        elif not isinstance(_from, BaseInteractablePart):
+            for subfrom in _from:
+                _old_connect(subfrom, _to, parallel=parallel)
+        else:                                               # Assume _to is a sequence of parts
+            for subto in _to:
+                _old_connect(_from, subto, parallel=parallel)
+    else:                                                   # Just connect everything to everything lol
+                                                            # Assume both are sequence of parts
+        if not isinstance(_from, BaseInteractablePart) and not isinstance(_to, BaseInteractablePart):
+            for subfrom in _from:
+                for subto in _to:
+                    _old_connect(subfrom, subto, parallel=parallel)
+                                                            # Assume _from is a sequence of parts
+        elif not isinstance(_from, BaseInteractablePart):
+            for subfrom in _from:
+                _old_connect(subfrom, _to, parallel=parallel)
+        else:                                               # Assume _to is a sequence of parts
+            for subto in _to:
+                _old_connect(_from, subto, parallel=parallel)
+
+
 def connect(_from, _to, *, parallel=True):
     """Connect interactable parts together, recursively.
 
