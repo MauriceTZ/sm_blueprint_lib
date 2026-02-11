@@ -1,7 +1,7 @@
 from itertools import cycle
 from typing import Sequence
 from numpy import ndarray
-from ..utils import get_bits_required, connect
+from ..utils import get_bits_required, _old_connect
 from ..blueprint import Blueprint
 from ..parts import LogicGate
 from ..pos import *
@@ -54,14 +54,14 @@ def ram(bp: Blueprint, bit_length: int, num_address: int, pos: Pos | Sequence = 
         for l3, l2, l1, l0 in arr.reshape((arr.shape[0]*arr.shape[1], 4)):
             l2.connect(l1).connect(l0).connect(l2)
             l0.connect(l3)
-    connect(writers, arr[:, :, 2].T)
-    connect(readers, arr[:, :, 0].T)
-    # connect(inputs, arr[:, :, 1])
+    _old_connect(writers, arr[:, :, 2].T)
+    _old_connect(readers, arr[:, :, 0].T)
+    # _old_connect(inputs, arr[:, :, 1])
     for i, a in zip(cycle(inputs), arr[:, :, 1].T.flat):
-        connect(i, a)
-    # connect(arr[:, :, 0], outputs)
+        _old_connect(i, a)
+    # _old_connect(arr[:, :, 0], outputs)
     for a, o, in zip(arr[:, :, 0].T.flat, cycle(outputs)):
-        connect(a, o)
+        _old_connect(a, o)
     for y in range(get_bits_required(num_address//address_divisor)):
         writers_binary[y, :] = [
             LogicGate(pos + (-2, 2, y), "FF0000", 4, xaxis=1, zaxis=3),

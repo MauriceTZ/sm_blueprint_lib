@@ -1,6 +1,6 @@
 from typing import Sequence
 from numpy import ndarray
-from ..utils import get_bits_required, connect, num_to_bit_list
+from ..utils import get_bits_required, _old_connect, num_to_bit_list
 from ..blueprint import Blueprint
 from ..parts import LogicGate
 from ..pos import *
@@ -37,10 +37,10 @@ def decoder(bp: Blueprint, num_address: int, pos: Pos | Sequence = (0, 0, 0),
     for x in range(num_address):
         bit_mask = num_to_bit_list(
             x//address_divisor, get_bits_required(num_address//address_divisor))
-        connect(inputs_binary[~bit_mask, 0], outputs[x])
-        connect(inputs_binary[bit_mask, 1], outputs[x])
+        _old_connect(inputs_binary[~bit_mask, 0], outputs[x])
+        _old_connect(inputs_binary[bit_mask, 1], outputs[x])
     if with_enable:
-        connect(output_enable, outputs)
+        _old_connect(output_enable, outputs)
 
     if precreated_inputs_binary is None:
         bp.add(inputs_binary)

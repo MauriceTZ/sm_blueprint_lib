@@ -1,7 +1,9 @@
 from itertools import cycle
 from typing import Sequence
-from numpy import array, clip, ndarray
-from ..utils import get_bits_required, connect, num_to_bit_list
+from numpy import append, array, clip, ndarray
+
+from ..blocks import BarrierBlock
+from ..utils import get_bits_required, _old_connect, num_to_bit_list
 from ..bases.parts.baseinteractablepart import BaseInteractablePart
 from ..bases.parts.baselogicpart import BaseLogicPart
 from ..blueprint import Blueprint
@@ -24,17 +26,17 @@ def timer_ram_cached(
         num_timer_banks: int,
         num_caches_per_bank: int,
         pos: Pos | Sequence = (0, 0, 0)):
-    initial_part_count = len(bp.bodies[0].childs)
     total_bits = bit_length*num_address_per_cache*num_timer_banks*num_caches_per_bank
     cached_bits = bit_length*num_address_per_cache*num_caches
     cached_addresses = num_address_per_cache*num_caches
     banked_addresses = num_address_per_cache*num_timer_banks
     total_pages = num_timer_banks*num_caches_per_bank
+    total_addresses = num_address_per_cache*num_timer_banks*num_caches_per_bank
 
     pos = check_pos(pos)
 
     clock = clock40hz(
-        bp, get_bits_required(num_caches_per_bank), pos + (-get_bits_required(total_pages) - 5, 7, num_caches))
+        bp, get_bits_required(num_caches_per_bank), pos + (-get_bits_required(total_pages) - 4, 7, num_caches))
 
     cache = ram(bp,
                 bit_length,
@@ -64,24 +66,27 @@ def timer_ram_cached(
                                             LogicGate(pos + (bit_length*3, 6, -2), "FF0000", 1, xaxis=1, zaxis=3))
 
     cache_pointer = counter(bp, get_bits_required(num_caches),
-                            pos + (-get_bits_required(total_pages) - 5, 5, num_caches))
+                            pos + (-get_bits_required(total_pages) - 4, 5, num_caches))
 
     # cache_table_offset_x = int(
     #     clip(get_bits_required(total_pages) - bit_length + 2, 0, None))
     cache_table = ram(bp,
-                      bit_length=get_bits_required(total_pages) + 2,
+                      bit_length=get_bits_required(total_pages) + 1,  # XD
                       num_address=num_caches,
                       #   pos=pos + (-cache_table_offset_x, 5, cached_addresses+2))
-                      pos=pos + (-get_bits_required(total_pages) - 5, 5, 0))
+                      pos=pos + (-get_bits_required(total_pages) - 4, 5, 0))
 
     cache_table_lookup = ndarray(
         (get_bits_required(total_pages), num_caches), dtype=LogicGate)
-    cache_table_lookup_in = [LogicGate(pos + (x-get_bits_required(total_pages) - 5, 4, -1),
+    cache_table_lookup_in = [LogicGate(pos + (x-get_bits_required(total_pages) - 4, 4, -1),
                                        "ff0000", 1, xaxis=1, zaxis=3) for x in range(get_bits_required(total_pages))]
-    cache_table_lookup_out = array([LogicGate(pos + (x-get_bits_required(total_pages) - 5, 4, -2),
+    cache_table_lookup_out = array([LogicGate(pos + (x-get_bits_required(total_pages) - 4, 4, -2),
                                    "0000ff", 1, xaxis=1, zaxis=3) for x in range(get_bits_required(num_caches)+1)], dtype=LogicGate)
     cache_table_lookup_dec = [LogicGate(pos + (-get_bits_required(
-        total_pages) - 6, 4, z), "000000", xaxis=1, zaxis=3) for z in range(num_caches)]
+        total_pages) - 5, 4, z), "000000", xaxis=1, zaxis=3) for z in range(num_caches)]
+    cache_table_lookup_dec_enable = LogicGate(
+        pos+(-get_bits_required(total_pages) - 5, 4, -1), "ff0000", xaxis=1, zaxis=3, controller=1)
+    cache_table_set_flag = ndarray((num_caches, 2), dtype=LogicGate)
 
     for x in range(bit_length):
         for y in range(cached_addresses):
@@ -132,13 +137,19 @@ def timer_ram_cached(
     for x in range(get_bits_required(total_pages)):
         for z in range(num_caches):
             cache_table_lookup[x, z] = LogicGate(
-                pos + (x-get_bits_required(total_pages) - 5, 5, z+1), "000000", 5, xaxis=1, zaxis=-3)
+                pos + (x-get_bits_required(total_pages) - 4, 5, z+1), "000000", 5, xaxis=1, zaxis=-3)
+    for y in range(num_caches):
+        cache_table_set_flag[y] = [
+            LogicGate(
+                pos + (0-get_bits_required(total_pages) - 4, 4, y+1), "000000", 3, xaxis=1, zaxis=-3),
+            LogicGate(
+                pos + (1-get_bits_required(total_pages) - 4, 4, y+1), "000000", 0, xaxis=1, zaxis=-3)]
 
-    connect(timer_bank[:, :, 4], timer_bank[:, :, 2])
-    connect(timer_bank[:, :, 2], timer_bank[:, :, 3])
-    connect(timer_bank[:, :, 3], timer_bank[:, :, 4])
-    connect(timer_bank[:, :, 4], timer_bank[:, :, 1])
-    connect(timer_bank[:, :, 0], timer_bank[:, :, 3])
+    _old_connect(timer_bank[:, :, 4], timer_bank[:, :, 2])
+    _old_connect(timer_bank[:, :, 2], timer_bank[:, :, 3])
+    _old_connect(timer_bank[:, :, 3], timer_bank[:, :, 4])
+    _old_connect(timer_bank[:, :, 4], timer_bank[:, :, 1])
+    _old_connect(timer_bank[:, :, 0], timer_bank[:, :, 3])
 
     decoder(bp, banked_addresses,
             precreated_outputs=timer_bank_decoder_read,
@@ -158,36 +169,42 @@ def timer_ram_cached(
             precreated_output_enable=timer_bank_decoder_write_keep_enable[1],
             address_divisor=num_address_per_cache)
 
-    connect(timer_bank_decoder_read, timer_bank[:, :, 1].T)
-    connect(timer_bank_decoder_write_keep[:, 0], timer_bank[:, :, 0].T)
-    connect(timer_bank_decoder_write_keep[:, 1], timer_bank[:, :, 2].T)
+    _old_connect(timer_bank_decoder_read, timer_bank[:, :, 1].T)
+    _old_connect(timer_bank_decoder_write_keep[:, 0], timer_bank[:, :, 0].T)
+    _old_connect(timer_bank_decoder_write_keep[:, 1], timer_bank[:, :, 2].T)
 
     for t, c in zip(timer_bank[:, :, 1].T, cycle(cache_full_page_in.T)):
-        connect(t, c)
+        _old_connect(t, c)
 
     for c, t in zip(cycle(cache_full_page_out.T), timer_bank[:, :, 0].T):
-        connect(c, t)
+        _old_connect(c, t)
 
-    connect(cache_table[0][:, :, -1], cache_table_lookup)
-    connect(cache_table[0][-2, :, -1], cache_table_lookup_dec)
-    connect(cache_table_lookup_in, cache_table_lookup)
-    connect(cache_table_lookup.T, cache_table_lookup_dec)
-    connect(cache_table_lookup_dec, cache_table_lookup_out[-1])
+    _old_connect(cache_table[0][:, :, -1], cache_table_lookup)
+    # _old_connect(cache_table[0][-2, :, -1], cache_table_lookup_dec)
+    _old_connect(cache_table_lookup_dec_enable, cache_table_lookup_dec)
+    _old_connect(cache_table[0][-1, :, -1], cache_table_set_flag[:, 0])
+    _old_connect(cache_table_set_flag[:, 1], cache_table[0][-1, :, -1])
+    _old_connect(cache_table_set_flag[:, 0], cache_table_set_flag[:, 1])
+    _old_connect(cache_table_lookup_dec, cache_table_set_flag[:, 1])
+    # _old_connect(cache_table_lookup_dec, cache_table[0][-1, :, -1])
+    _old_connect(cache_table_lookup_in, cache_table_lookup)
+    _old_connect(cache_table_lookup.T, cache_table_lookup_dec)
+    _old_connect(cache_table_lookup_dec, cache_table_lookup_out[-1])
     for x in range(num_caches):
         bit_mask = num_to_bit_list(
             x, get_bits_required(num_caches)+1)
-        connect(cache_table_lookup_dec[x], cache_table_lookup_out[bit_mask])
+        _old_connect(cache_table_lookup_dec[x], cache_table_lookup_out[bit_mask])
 
-    ram(bp,
-        bit_length=bit_length*num_address_per_cache,
-        num_address=cached_addresses,
-        pos=pos + (0, 1, 0),
-        address_divisor=num_address_per_cache,
-        pre_arr=cache_arr,
-        pre_inputs=cache_full_page_in.T.flat,
-        pre_outputs=cache_full_page_out.T.flat)
+    cache_full_page = ram(bp,
+                          bit_length=bit_length*num_address_per_cache,
+                          num_address=cached_addresses,
+                          pos=pos + (0, 1, 0),
+                          address_divisor=num_address_per_cache,
+                          pre_arr=cache_arr,
+                          pre_inputs=cache_full_page_in.T.flat,
+                          pre_outputs=cache_full_page_out.T.flat)
 
-    control_pos = pos+(0, 15, 0)
+    control_pos = pos+(0, 10, -2)
     data_register = register(bp, bit_length=bit_length, pos=control_pos)
     address_register = register(
         bp, bit_length=get_bits_required(total_bits//bit_length), pos=control_pos+(bit_length+1, 0, 0))
@@ -202,185 +219,340 @@ def timer_ram_cached(
 
     address_comparator = [
         # cache_table
-        [LogicGate(pos + (-get_bits_required(total_pages) - 5 + x, 8, num_caches),
-                   "000000",
-                   5, xaxis=1, zaxis=3) for x in range(get_bits_required(num_caches_per_bank))],
-        LogicGate(pos + (-get_bits_required(total_pages) - 5, 8, num_caches+1),
+        [LogicGate(pos + (-get_bits_required(total_pages) - 4 + x, 8, num_caches),
+                   "000000", 5, xaxis=1, zaxis=3)
+         for x in range(get_bits_required(num_caches_per_bank))],
+        LogicGate(pos + (-get_bits_required(total_pages) - 4, 8, num_caches+1),
+                  "000000", 0, xaxis=1, zaxis=3),
+        LogicGate(pos + (-get_bits_required(total_pages) - 3, 8, num_caches+1),
                   "000000", 0, xaxis=1, zaxis=3),
     ]
-    connect(address_comparator[0], address_comparator[1])
-    connect(clock[:, 0], address_comparator[0])
-    connect(cache_table[2], address_comparator[0])
+    _old_connect(address_comparator[0], address_comparator[1])
+    _old_connect(address_comparator[0], address_comparator[2])
+    _old_connect(clock[:, 0], address_comparator[0])
 
-    row_start = control_pos+(-1, -1, 0)
+    rpos = control_pos + (-get_bits_required(total_pages) - 4, 6, 0)
+    routing0 = [
+        [LogicGate(rpos + (x, 0, 0), "000000")  # 0
+         for x in range(get_bits_required(num_caches))],
 
-    selectors = [
-        [LogicGate(row_start+(x,5,0), "000000") for x in range(get_bits_required(total_pages))],
-        [Timer(row_start+(x,6,0), "000000", (0,2)) for x in range(get_bits_required(total_pages))],
-        [LogicGate(row_start+(x,7,0), "000000") for x in range(get_bits_required(total_pages))],
-        [LogicGate(row_start+(x,8,0), "000000") for x in range(get_bits_required(num_caches))],
-        # [Timer(row_start+(x,6,0), "000000", (0,0)) for x in range(get_bits_required(num_caches))],
-        # [LogicGate(row_start+(x,7,0), "000000") for x in range(get_bits_required(num_caches))],
+        [Timer(rpos + (x, 1, 0), "000000", (0, 0))  # 1
+         for x in range(get_bits_required(total_pages))],
+
+        [LogicGate(rpos + (x, 1, 2), "000000")  # 2
+         for x in range(get_bits_required(total_pages))],
+
+        [LogicGate(rpos + (x, 2, 0), "000000")  # 3
+         for x in range(get_bits_required(num_caches))],
+
+        [LogicGate(rpos + (x, 3, 0), "000000")  # 4
+         for x in range(get_bits_required(num_caches))],
+
+        [LogicGate(rpos + (x, 4, 0), "000000")  # 5
+         for x in range(get_bits_required(num_caches_per_bank))],
+
+        [LogicGate(rpos + (x, 5, 0), "000000")  # 6
+         for x in range(get_bits_required(num_timer_banks))],
+
+        [LogicGate(rpos + (x, 6, 0), "000000")  # 7
+         for x in range(get_bits_required(num_caches))],
+
+        [LogicGate(rpos + (x, 7, 0), "000000")  # 8
+         for x in range(get_bits_required(num_caches_per_bank))],
+
+        [LogicGate(rpos + (x, 8, 0), "000000")  # 9
+         for x in range(get_bits_required(num_timer_banks))],
+
+        [LogicGate(rpos + (x, 9, 0), "000000")  # 10
+         for x in range(get_bits_required(num_caches))],
+
+        [LogicGate(rpos + (x, 10, 0), "000000")  # 11
+         for x in range(get_bits_required(total_pages))],
+
+        [LogicGate(rpos + (x, 11, 0), "000000")  # 12
+         for x in range(get_bits_required(num_caches))],
     ]
-    connect(address_register[0][::-1, 1], selectors[0][::-1])
-    connect(selectors[0], cache_table[1])
-    connect(cache_table[2], selectors[1])
-    connect(selectors[1], selectors[2])
-    connect(selectors[2], cache_table[1])
-    connect(cache_table_lookup_out, selectors[3])
-    connect(selectors[3], cache_table[3])
+    rpos1 = rpos + (max(map(lambda p: len(p), routing0)) + 1, 0, 0)
+    routing1 = [
+        [LogicGate(rpos1 + (x, 0, 0), "000000")
+         for x in range(get_bits_required(total_pages))],
 
-    connect(address_register[0][::-1, 1], cache_table_lookup_in[::-1])
-    connect(cache_table_lookup_out[-2::-1], cache[3][::-1])
-    connect(cache_table_lookup_out[-2::-1], cache[6][::-1])
-    connect(address_register[0][:get_bits_required(
-        num_address_per_cache), 1], cache[3])
-    connect(address_register[0][:get_bits_required(
-        num_address_per_cache), 1], cache[6])
-    connect(cache[2], data_register[0][:, -1])
-    connect(data_register[0][:, 1], cache[1])
-    connect(address_register[0][get_bits_required(
-        num_address_per_cache):, 1], cache_table[1])
-    # connect(cache_table_lookup_out, cache_table[3])
-    connect(cache_pointer[0][:, 0], cache_table[6])
+        [Timer(rpos1 + (x, 1, 0), "000000", (0, 0))
+         for x in range(get_bits_required(num_caches))],
 
-    def NODE(t=0, x=0, y=0, z=0, _from=[], _to=[]):
-        if t == 6:
-            g = LogicGate(row_start+(-x, y, z), "000000", 2, xaxis=-1, zaxis=2)
-            connect(g, g)
-        else:
-            g = LogicGate(row_start+(-x, y, z), "000000", t, xaxis=-1, zaxis=2)
-        connect(_from, g)
-        connect(g, _to)
-        bp.add(g)
-        return g
+        [LogicGate(rpos1 + (x, 1, 2), "000000")
+         for x in range(get_bits_required(num_caches))],
 
-    g0 = NODE(x=0, _from=execute)
-    g1 = NODE(x=1, _from=g0, )
-    g2 = NODE(x=2, _from=g1, )
-    g3 = NODE(x=3, _from=g2, )
-    g4 = NODE(x=4, _from=g3, )
-    g5 = NODE(x=5, _from=g4, )
-    # If (page loaded)
-    g6 = NODE(x=6, _from=(g5), )
-    g7 = NODE(x=6, y=1, _from=(cache_table_lookup_out[-1]), )
-    g8 = NODE(x=6, y=2, t=3, _from=(cache_table_lookup_out[-1]), )
-    # Then:
-    g9 = NODE(x=7, _from=(g6, g7), )
-    #   If (read mode)
-    g10 = NODE(x=8, t=1, _from=(g9), _to=(
-        cache_table[1][-1], cache_table[1][-2], cache_table[5]))
-    g11 = NODE(x=8, y=1, _from=(read_write_register[0][:, 1]), )
-    g12 = NODE(x=8, y=2, t=3, _from=(read_write_register[0][:, 1]), )
-    #   Then:
-    g13 = NODE(x=9, _from=(g10, g11), _to=(cache[8]))
-    g14 = NODE(x=10, _from=(g13))
-    g15 = NODE(x=11, _from=(g14))
-    g16 = NODE(x=12, _from=(g15))
-    g17 = NODE(x=13, _from=(g16), _to=(data_register[1], execution_done))
-    #   Else:
-    g18 = NODE(x=9, y=2, _from=(g10, g12), _to=(cache[5], execution_done))
-    # Else:
-    g19 = NODE(x=6, y=3, _from=(g6, g8))
-    # g20 = NODE(x=6, y=4, t=1, _from=(g19), _to=(cache_table[8]))
-    # g21 = NODE(x=7, y=4, _from=(g20))
-    # g22 = NODE(x=8, y=4, _from=(g21))
-    # g23 = NODE(x=9, y=4, _from=(g22))
-    # g24 = NODE(x=10, y=4, _from=(g23))
-    # #   If (Invalid page)
-    # g25 = NODE(x=11, y=4, _from=(g24))
-    # g26 = NODE(x=11, y=5, _from=(cache_table[2][-2]))
-    # g27 = NODE(x=11, y=6, t=3, _from=(cache_table[2][-2]))
-    # #   Then:
-    # g28 = NODE(x=12, y=4, _from=(g25, g27), _to=(selectors[0]))
-    # g29 = NODE(x=13, y=4, _from=(g28), _to=(
-    #     cache_table[1][-1], cache_table[1][-2], cache_table[5]))
-    # g30 = NODE(x=14, y=4, _from=(g29))
-    # g30_1 = NODE(x=15, y=4, _from=(g30), _to=(g10))
-    # #   Else:
-    # #       If (Visited bit set)
-    # g31 = NODE(x=12, y=6, _from=(g25, g26))
-    # g31_1 = NODE(x=11, y=8, _from=(cache_table[2][-1]))
-    # g32 = NODE(x=12, y=7, _from=(g31_1))
-    # g33 = NODE(x=12, y=8, t=3, _from=(g31_1))
-    # #       Then:
-    # g34 = NODE(x=13, y=6, _from=(g31, g32), _to=(selectors[2], cache_pointer[1]))
-    # g35 = NODE(x=14, y=6, _from=(g34), _to=(cache_table[1][-2], cache_table[5]))
+        [LogicGate(rpos1 + (x, 2, 0), "000000")
+         for x in range(get_bits_required(num_address_per_cache))],
 
+        [LogicGate(rpos1 + (x, 3, 0), "000000")
+         for x in range(bit_length)],
+    ]
+    rpos2 = rpos1 + (max(map(lambda p: len(p), routing1)) + 1, 0, 0)
+    routing2 = [
+        [LogicGate(rpos2 + (x, 0, 0), "000000")
+         for x in range(get_bits_required(total_pages))],
+
+        [Timer(rpos2 + (x, 1, 0), "000000", (0, 0))
+         for x in range(get_bits_required(num_caches))],
+
+        [LogicGate(rpos2 + (x, 1, 2), "000000")
+         for x in range(get_bits_required(num_caches))],
+
+        [LogicGate(rpos2 + (x, 2, 0), "000000")
+         for x in range(get_bits_required(num_address_per_cache))],
+
+        [LogicGate(rpos2 + (x, 3, 0), "000000")
+         for x in range(bit_length)],
+    ]
+
+    l0 = [
+        LogicGate(rpos + (0, -2, 0), "000000", 1),
+        LogicGate(rpos + (1, -2, 0), "000000", 3),
+        LogicGate(rpos + (2, -2, 0), "000000", 0),
+    ]
+    _old_connect(l0[0], l0[0])
+    _old_connect(l0[0], l0[1:])
+    _old_connect(l0[1], l0[2])
+    _old_connect(execute, l0[0])
+    for y in range(num_caches):
+        l = num_to_bit_list(y, get_bits_required(num_caches))
+        for i, b in enumerate(l):
+            if b:
+                _old_connect(l0[2], cache_table[0][i, y, 3])
+    rpos3 = rpos1 + (0, 5, 0)
+    l1 = [
+        LogicGate(rpos3 + (0, 0, 0), "000000", 3),
+        LogicGate(rpos3 + (1, 0, 0), "000000", 0),
+        Timer(rpos3 + (2, 0, 0), "000000", divmod(1, TICKS_PER_SECOND)),
+        Timer(rpos3 + (3, 0, 0), "000000", divmod(2, TICKS_PER_SECOND)),
+        LogicGate(rpos3 + (4, 0, 0), "000000", 0),
+        Timer(rpos3 + (5, 0, 0), "000000", divmod(0, TICKS_PER_SECOND)),
+
+        Timer(rpos3 + (3, 1, 0), "000000", divmod(3, TICKS_PER_SECOND)),
+        LogicGate(rpos3 + (4, 1, 0), "000000", 3),
+        LogicGate(rpos3 + (5, 1, 0), "000000", 0),
+    ]
+    rpos4 = rpos3 + (10, 0, 0)
+    l2 = [
+        LogicGate(rpos4 + (0, 0, 0), "000000", 0),
+        LogicGate(rpos4 + (1, 0, 0), "000000", 0),
+        Timer(rpos4 + (2, 0, 0), "000000", divmod(1, TICKS_PER_SECOND)),
+        Timer(rpos4 + (3, 0, 0), "000000", divmod(2, TICKS_PER_SECOND)),
+        LogicGate(rpos4 + (4, 0, 0), "000000", 0),
+        Timer(rpos4 + (5, 0, 0), "000000", divmod(0, TICKS_PER_SECOND)),
+        Timer(rpos4 + (6, 0, 0), "000000", divmod(3, TICKS_PER_SECOND)),
+        Timer(rpos4 + (7, 0, 0), "000000", divmod(0, TICKS_PER_SECOND)),
+
+        Timer(rpos4 + (3, 1, 0), "000000", divmod(3, TICKS_PER_SECOND)),
+        LogicGate(rpos4 + (4, 1, 0), "000000", 3),
+        LogicGate(rpos4 + (5, 1, 0), "000000", 0),
+    ]
+    rpos5 = rpos3 + (0, 3, 0)
+    l3 = [
+        LogicGate(rpos5 + (0, 0, 0), "000000", 1),
+        Timer(rpos5 + (1, 0, 0), "000000", divmod(0, TICKS_PER_SECOND)),
+        Timer(rpos5 + (2, 0, 0), "000000", divmod(3, TICKS_PER_SECOND)),
+        LogicGate(rpos5 + (3, 0, 0), "000000", 0),
+        Timer(rpos5 + (4, 0, 0), "000000", divmod(0, TICKS_PER_SECOND)),
+        Timer(rpos5 + (5, 0, 0), "000000", divmod(0, TICKS_PER_SECOND)),
+
+        Timer(rpos5 + (2, 1, 0), "000000", divmod(4, TICKS_PER_SECOND)),
+        LogicGate(rpos5 + (3, 1, 0), "000000", 3),
+        LogicGate(rpos5 + (4, 1, 0), "000000", 0),  # 8
+        LogicGate(rpos5 + (5, 1, 0), "0000FF", 2),
+        Timer(rpos5 + (6, 1, 0), "000000", divmod(0, TICKS_PER_SECOND)),
+        Timer(rpos5 + (7, 1, 0), "000000", divmod(3, TICKS_PER_SECOND)),
+        Timer(rpos5 + (8, 1, 0), "000000", divmod(4, TICKS_PER_SECOND)),
+
+        LogicGate(rpos5 + (10, 1, 0), "000000", 0),  # 13
+        Timer(rpos5 + (11, 1, 0), "000000", divmod(1, TICKS_PER_SECOND)),
+        LogicGate(rpos5 + (12, 1, 0), "0000FF", 2),
+        Timer(rpos5 + (13, 1, 0), "000000", divmod(4, TICKS_PER_SECOND)),
+
+        # 17
+        Timer(rpos5 + (15, 1, 0), "000000", divmod(1, TICKS_PER_SECOND)),
+        LogicGate(rpos5 + (16, 1, 0), "000000", 0),
+        Timer(rpos5 + (17, 1, 0), "000000", divmod(2, TICKS_PER_SECOND)),
+        Timer(rpos5 + (18, 1, 0), "000000", divmod(0, TICKS_PER_SECOND)),
+
+    ]
+    # l1
+    _old_connect(l1[0:5], l1[1:6])
+    _old_connect(read_write_register[0][:, 1], l1[0])
+    _old_connect(execute, l1[1])
+    _old_connect(l1[1], routing1[0])
+    _old_connect(l1[2], cache_table_lookup_dec_enable)
+    _old_connect(cache_table_lookup_out[-1], l1[4])
+    _old_connect(l1[4], routing1[2])
+    _old_connect(l1[4], routing1[3])
+    _old_connect(l1[4], routing1[4])
+    _old_connect(l1[5], cache[5])
+    _old_connect(l1[5], execution_done)
+
+    _old_connect(l1[2], l1[6])
+    _old_connect(l1[6], l1[8])
+    _old_connect(cache_table_lookup_out[-1], l1[7])
+    _old_connect(l1[7], l1[8])
+    _old_connect(l1[8], l3[0])
+
+    # l2
+    _old_connect(l2[0:7], l2[1:8])
+    _old_connect(read_write_register[0][:, 1], l2[0])
+    _old_connect(execute, l2[1])
+    _old_connect(l2[1], routing2[0])
+    _old_connect(l2[2], cache_table_lookup_dec_enable)
+    _old_connect(l2[2], l2[8])
+    _old_connect(cache_table_lookup_out[-1], l2[4])
+    _old_connect(l2[4], routing2[2])
+    _old_connect(l2[4], routing2[3])
+    _old_connect(l2[5], cache[8])
+    _old_connect(l2[6], routing2[4])
+    _old_connect(l2[7], data_register[1])
+    _old_connect(l2[7], execution_done)
+
+    _old_connect(l2[8], l2[10])
+    _old_connect(cache_table_lookup_out[-1], l2[9])
+    _old_connect(l2[9], l2[10])
+    _old_connect(l2[10], l3[0])
+
+    # l3
+    _old_connect(l3[0:5], l3[1:6])
+    _old_connect(l3[0], routing0[0])
+    _old_connect(l3[1], cache_table[8])
+    _old_connect(l3[1], l3[6])
+    _old_connect(cache_table[2][-1], l3[3])
+    _old_connect(l3[3], routing0[2])
+    _old_connect(l3[3], routing0[3])
+    _old_connect(l3[3], cache_pointer[1])
+    _old_connect(l3[4], cache_table[5])
+    _old_connect(l3[5], l3[0])
+
+    _old_connect(l3[8:12], l3[9:13])
+    _old_connect(l3[6], l3[8])
+    _old_connect(cache_table[2][-1], l3[7])
+    _old_connect(l3[7], l3[8])
+    _old_connect(l3[9], l3[9])
+    _old_connect(l3[9], routing0[4])
+    _old_connect(l3[9], address_comparator[1])
+    _old_connect(l3[10], cache_table[8])
+    _old_connect(l3[11], routing0[5])
+    _old_connect(l3[11], routing0[6])
+    _old_connect(l3[11], routing0[7])
+    _old_connect(l3[12], address_comparator[1])
+
+    _old_connect(l3[13:16], l3[14:17])
+    _old_connect(address_comparator[1], l3[13])
+    _old_connect(l3[13], cache_full_page[8])
+    _old_connect(l3[14], timer_bank_decoder_write_keep_enable)
+    _old_connect(l3[14], l3[9])
+    _old_connect(l3[15], l3[15])
+    _old_connect(l3[15], routing0[8])
+    _old_connect(l3[15], routing0[9])
+    _old_connect(l3[15], routing0[10])
+    _old_connect(l3[15], address_comparator[2])
+    _old_connect(l3[16], address_comparator[2])
+
+    _old_connect(l3[17:20], l3[18:21])
+    _old_connect(address_comparator[2], l3[17])
+    _old_connect(l3[18], timer_bank_decoder_read_enable)
+    _old_connect(l3[19], routing0[11])
+    _old_connect(l3[19], routing0[12])
+    _old_connect(l3[19], cache_full_page[5])
+    _old_connect(l3[20], l3[15])
+    _old_connect(l3[20], cache_table[5])
+    _old_connect(l3[20], execute)
+
+    # _old_connect routing
+    # routing0
+    _old_connect(cache_pointer[0][:, 0], routing0[0])
+    _old_connect(routing0[0], cache_table[6])
+
+    _old_connect(cache_table[2], routing0[1])
+    _old_connect(routing0[1], routing0[2])
+
+    _old_connect(routing0[2], cache_table[1])
+
+    _old_connect(cache_pointer[0][:, 0], routing0[3])
+    _old_connect(routing0[3], cache_table[3])
+
+    _old_connect(cache_pointer[0][:, 0], routing0[4])
+    _old_connect(routing0[4], cache_table[6])
+
+    _old_connect(cache_table[2], routing0[5])
+    _old_connect(routing0[5], address_comparator[0])
+
+    _old_connect(cache_table[2][-get_bits_required(num_timer_banks)-1:],
+            routing0[6])
+    _old_connect(routing0[6], timer_bank_decoder_write_keep_in)
+
+    _old_connect(cache_pointer[0][:, 0], routing0[7])
+    _old_connect(routing0[7], cache_full_page[6])
+
+    _old_connect(address_register[0][get_bits_required(num_address_per_cache):, 1],
+            routing0[8])
+    _old_connect(routing0[8], address_comparator[0])
+
+    _old_connect(address_register[0][-get_bits_required(num_timer_banks):, 1],
+            routing0[9])
+    _old_connect(routing0[9], timer_bank_decoder_read_in)
+
+    _old_connect(cache_pointer[0][:, 0], routing0[10])
+    _old_connect(routing0[10], cache_full_page[3])
+
+    _old_connect(address_register[0][-get_bits_required(total_pages):, 1],
+            routing0[11])
+    _old_connect(routing0[11], cache_table[1])
+
+    _old_connect(cache_pointer[0][:, 0], routing0[12])
+    _old_connect(routing0[12], cache_table[3])
+
+    # routing1
+    _old_connect(address_register[0][-get_bits_required(total_pages):, 1],
+            routing1[0])
+    _old_connect(routing1[0], cache_table_lookup_in)
+
+    _old_connect(cache_table_lookup_out, routing1[1])
+    _old_connect(routing1[1], routing1[2])
+
+    _old_connect(routing1[2],
+            cache[3][-get_bits_required(num_caches):, :])
+
+    _old_connect(address_register[0][:, 1], routing1[3])
+    _old_connect(routing1[3], cache[3])
+
+    _old_connect(data_register[0][:, 1], routing1[4])
+    _old_connect(routing1[4], cache[1])
+
+    # routing2
+    _old_connect(address_register[0][-get_bits_required(total_pages):, 1],
+            routing2[0])
+    _old_connect(routing2[0], cache_table_lookup_in)
+
+    _old_connect(cache_table_lookup_out, routing2[1])
+    _old_connect(routing2[1], routing2[2])
+
+    _old_connect(routing2[2],
+            cache[6][-get_bits_required(num_caches):, :])
+
+    _old_connect(address_register[0][:, 1], routing2[3])
+    _old_connect(routing2[3], cache[6])
+
+    _old_connect(cache[2], routing2[4])
+    _old_connect(routing2[4], data_register[0][:, 3])
 
     bp.add(cache_arr[:, :, :3], cache_full_page_in, cache_full_page_out,
            timer_bank, timer_bank_decoder_read, timer_bank_decoder_read_in, timer_bank_decoder_read_enable,
            timer_bank_decoder_write_keep, timer_bank_decoder_write_keep_in, timer_bank_decoder_write_keep_enable,
-           cache_table_lookup, cache_table_lookup_in, cache_table_lookup_out, cache_table_lookup_dec,
-           execute, execution_done, address_comparator, selectors)
+           cache_table_lookup, cache_table_set_flag, cache_table_lookup_in, cache_table_lookup_out, cache_table_lookup_dec, cache_table_lookup_dec_enable,
+           execute, execution_done, address_comparator,
+           routing0, routing1, routing2,
+           l0, l1, l2, l3,
+           BarrierBlock((-3 - get_bits_required(total_pages) - 1, 0, -3),
+                        "000000",
+                        (bit_length*3 + 1 + 3 + get_bits_required(total_pages) + 1, 27, 1), xaxis=1, zaxis=3))
 
     print(
         f"Total memory: {total_bits/8} bytes, "
         f"Cached memory: {cached_bits/8} bytes, ")
-
-    # timers = ndarray((bit_length, 3), dtype=object)
-    # timer_read_write_enable = LogicGate(pos + (-1, 1, 0), "FF0000", 4)
-    # for x in range(bit_length):
-    #     # timers[x] = [
-    #     #     t0 := Timer(pos + (x % 8, 0, 2*(x//8)), "000000", ((num_address-3) // 40, (num_address-3) % 40)),
-    #     #     l0 := LogicGate(pos + (x % 8, 1, 2*(x//8)), "000000"),
-    #     #     l1 := LogicGate(pos + (x % 8, 1, 2*(x//8)+1), "000000", 1),
-    #     # ]
-    #     timers[x] = [
-    #         t0 := Timer(pos + (x, 0, 0), "000000", ((num_address_per_cache-3) // 40, (num_address_per_cache-3) % 40)),
-    #         l0 := LogicGate(pos + (x, 1, 0), "000000"),
-    #         l1 := LogicGate(pos + (x, 1, 1), "000000", 1),
-    #     ]
-    #     t0.connect(l0).connect(l1).connect(t0)
-    # connect(timer_read_write_enable, timers[:, 1])
-
-    # for z in range(num_caches):
-    #     cpos = pos + (0, 0, z*2)
-    #     data = register(bp, bit_length, pos=cpos + (0, 4, 0))
-    #     timers_readers = [LogicGate(cpos+(x, 3, 0), "000000")
-    #                       for x in range(bit_length)]
-    #     timers_readers_enable = LogicGate(cpos+(-1, 3, 0), "FF0000", 1)
-    #     timers_readers_buffer = LogicGate(cpos+(-1, 5, 0), "000000")
-    #     address = register(bp, get_bits_required(
-    #         num_address_per_cache), pos=cpos + (bit_length+1, 5, 0), OE=False)
-    #     post_rw = register(bp, 2,
-    #                        pos=cpos + (bit_length+1+get_bits_required(num_address_per_cache)+1, 5, 0), OE=False)
-    #     rw_inv = [
-    #         LogicGate(
-    #             cpos + (bit_length+1+get_bits_required(num_address_per_cache)+1, 4, 0), "000000", 3),
-    #         LogicGate(
-    #             cpos + (bit_length+1+get_bits_required(num_address_per_cache)+2, 4, 0), "000000")
-    #     ]
-    #     comparator = [LogicGate(cpos+(x+bit_length+1, 4, 0), "000000", 5)
-    #                   for x in range(get_bits_required(num_address_per_cache))]
-    #     comparator_write = LogicGate(cpos+(bit_length+1, 3, 0), "000000")
-    #     comparator_read = LogicGate(cpos+(bit_length+2, 3, 0), "000000")
-    #     connect(post_rw[0][0, 0], rw_inv)
-    #     connect(address[0][:, 0], comparator)
-    #     connect(clock[:, 0], comparator)
-    #     connect(comparator, comparator_write)
-    #     connect(comparator, comparator_read)
-    #     connect(rw_inv[0], comparator_write)
-    #     connect(rw_inv[1], comparator_read)
-    #     connect(post_rw[0][1, 0], comparator_write)
-    #     connect(post_rw[0][1, 0], comparator_read)
-    #     connect(comparator_write, timer_read_write_enable)
-    #     connect(comparator_write, data[2])
-    #     connect(data[0][:, 0], timers[:, 2])
-    #     connect(comparator_write, post_rw[1])
-    #     connect(comparator_read, post_rw[1])
-    #     connect(comparator_read, timers_readers_enable)
-    #     connect(timers_readers_enable, timers_readers_buffer)
-    #     connect(timers_readers_buffer, data[1])
-    #     connect(timers_readers_enable, timers_readers)
-    #     connect(timers[:, 0], timers_readers)
-    #     connect(timers_readers, data[0][:, 3])
-    #     bp.add(comparator, comparator_write, comparator_read, rw_inv,
-    #            timers_readers, timers_readers_enable, timers_readers_buffer)
-
-    # bp.add(timers, timer_read_write_enable)
-
-    # print(f"Timer ram: {bit_length*num_address_per_cache} bits ({bit_length*num_address_per_cache/8} bytes), "
-    #       f"Max time delay: {
-    #           num_address_per_cache} ticks ({num_address_per_cache/40} seconds), "
-    #       f"Bits per part: {bit_length*num_address_per_cache / (len(bp.bodies[0].childs)-initial_part_count):.2f} bits/part")

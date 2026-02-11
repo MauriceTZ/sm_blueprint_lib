@@ -207,7 +207,7 @@ class LogicGate(BaseLogicPart):
         self._box = vec3(1, 1, 1)
 
 @dataclass
-class Timer(BasePart):
+class Timer(BaseLogicPart):
     """Class that represents a Timer.
     """
     shapeId: str = field(kw_only=True, default=SHAPEID.Timer)

@@ -1,6 +1,6 @@
 from typing import Sequence
 from numpy import ndarray
-from ..utils import get_bits_required, connect, num_to_bit_list
+from ..utils import get_bits_required, _old_connect, num_to_bit_list
 from ..blueprint import Blueprint
 from ..parts import LogicGate
 from ..pos import *
@@ -22,11 +22,11 @@ def counter(bp: Blueprint,
                 pos + (x, 1, 0), "000000"),
         ]
     if precreated_swxors is None:
-        connect(arr[:, 0], arr[:, 0])
-    connect(arr[:, 1], arr[:, 0])
+        _old_connect(arr[:, 0], arr[:, 0])
+    _old_connect(arr[:, 1], arr[:, 0])
     for x in range(bit_length):
-        connect(arr[x, 0], arr[x+1:, 1])
-    connect(count, arr[:, 1])
+        _old_connect(arr[x, 0], arr[x+1:, 1])
+    _old_connect(count, arr[:, 1])
 
     if precreated_swxors is None:
         bp.add(arr[:, 0])
@@ -53,11 +53,11 @@ def counter_decrement(bp: Blueprint,
                 pos + (x, 1, 0), "000000", 4),
         ]
     if precreated_swxors is None:
-        connect(arr[:, 0], arr[:, 0])
-    connect(arr[:, 1], arr[:, 0])
+        _old_connect(arr[:, 0], arr[:, 0])
+    _old_connect(arr[:, 1], arr[:, 0])
     for x in range(bit_length):
-        connect(arr[x, 0], arr[x+1:, 1])
-    connect(count, arr[:, 1])
+        _old_connect(arr[x, 0], arr[x+1:, 1])
+    _old_connect(count, arr[:, 1])
 
     if precreated_swxors is None:
         bp.add(arr[:, 0])

@@ -1,6 +1,6 @@
 from typing import Sequence
 from numpy import ndarray
-from ..utils import get_bits_required, connect, num_to_bit_list
+from ..utils import get_bits_required, _old_connect, num_to_bit_list
 from ..blueprint import Blueprint
 from ..parts import LogicGate
 from ..pos import *
@@ -16,12 +16,12 @@ def clock40hz(bp: Blueprint, bit_length: int, pos: Pos | Sequence = (0, 0, 0)):
             LogicGate(pos + (x, 1, 0), "000000", 0),
         ]
 
-    connect(arr[:, 0], arr[:, 0])
-    connect(arr[1:, 1], arr[1:, 0])
-    connect(arr[0, 0], arr[0, 1])
-    connect(arr[0, 1], arr[1:, 1])
+    _old_connect(arr[:, 0], arr[:, 0])
+    _old_connect(arr[1:, 1], arr[1:, 0])
+    _old_connect(arr[0, 0], arr[0, 1])
+    _old_connect(arr[0, 1], arr[1:, 1])
     for x in range(1, bit_length):
-        connect(arr[x, 0], arr[x+1:, 1])
+        _old_connect(arr[x, 0], arr[x+1:, 1])
 
     bp.add(arr)
 
