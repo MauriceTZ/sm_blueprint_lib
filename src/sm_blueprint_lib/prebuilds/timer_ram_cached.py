@@ -6,8 +6,8 @@ from ..bases.parts.baseinteractablepart import BaseInteractablePart
 from ..bases.parts.baselogicpart import BaseLogicPart
 from ..blueprint import Blueprint
 from ..constants import TICKS_PER_SECOND
-from ..parts.logicgate import LogicGate
-from ..parts.timer import Timer
+from ..parts import LogicGate
+from ..parts import Timer
 from ..pos import *
 from ..prebuilds.clock40hz import clock40hz
 from ..prebuilds.counter import counter

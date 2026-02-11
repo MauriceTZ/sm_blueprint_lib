@@ -1,7 +1,7 @@
 from typing import Sequence
 from numpy import ndarray
 from ..blueprint import Blueprint
-from ..parts.logicgate import LogicGate
+from ..parts import LogicGate
 from ..pos import *
 from ..prebuilds.counter import counter, counter_decrement
 

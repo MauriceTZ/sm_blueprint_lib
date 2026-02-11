@@ -3,7 +3,7 @@ from typing import Sequence
 from numpy import ndarray
 from ..utils import get_bits_required, connect
 from ..blueprint import Blueprint
-from ..parts.logicgate import LogicGate
+from ..parts import LogicGate
 from ..pos import *
 from ..prebuilds.decoder import decoder
 

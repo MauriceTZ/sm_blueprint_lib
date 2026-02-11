@@ -9,6 +9,8 @@ from src.sm_blueprint_lib import *
 
 bp = Blueprint()
 
+LFSR(bp, 32)
+
 # timer_ram_cached(bp,
 #                  bit_length=8,
 #                  num_address_per_cache=8,
@@ -20,7 +22,7 @@ bp = Blueprint()
 
 # simple_adder_subtractor(bp, bit_length=8)
 
-ram(bp, 8, 8)
+# ram(bp, 8, 8)
 
 # counter_register(bp,
 #                  bit_length=6,
@@ -74,6 +76,7 @@ ram(bp, 8, 8)
 # l = LogicGate((0,0,0), "FFFF00", 0)
 # bp.add(l)
 print(f"Prebuild size: {len(bp.bodies[0].childs)} parts")
+save_blueprint("sm lib output", bp)
 # path = get_paths()[0]
 # save_blueprint(bp, path)
-print(dump_string_from_blueprint(bp))
+# print(dump_string_from_blueprint(bp))
