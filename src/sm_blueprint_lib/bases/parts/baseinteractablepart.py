@@ -23,8 +23,20 @@ class BaseInteractablePart(BasePart):
         if not self.controller.controllers:
             self.controller.controllers = []
         if type(o) is int:
+            if ID(o) in self.controller.controllers:
+                raise ValueError(f"You are connecting two objects twice: {self} and {ID(o)}")
             self.controller.controllers.append(ID(o))
             return o
 
+        if ID(o.controller.id) in self.controller.controllers:
+            raise ValueError(f"You are connecting two objects twice: {self} and {o}")
         self.controller.controllers.append(ID(o.controller.id))
+        return o
+
+    def disconnect(self, o):
+        if not self.controller.controllers:
+            self.controller.controllers = []
+        if ID(o.controller.id) not in self.controller.controllers:
+            raise ValueError(f"You are trying to disconnect this two unconnected objects: {self} and {o}")
+        self.controller.controllers.remove(ID(o.controller.id))
         return o

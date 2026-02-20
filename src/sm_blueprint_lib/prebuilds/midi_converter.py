@@ -10,7 +10,6 @@ from ..utils import _old_connect
 
 
 def midi_converter(bp: Blueprint, midi_file: str):
-    # mid = MidiFile(r"C:\Users\mauri\OneDrive\Escritorio\Smashmouth_-_All_Star.mid")
     mid = MidiFile(midi_file)
 
     # for i, track in enumerate(mid.tracks):
@@ -27,38 +26,42 @@ def midi_converter(bp: Blueprint, midi_file: str):
         f"notes used in this piece in midi notes: {midi_notes_to_index.keys()} ({len(midi_notes_to_index)} in total)")
     print(f"number of midi messages: {len(midi_messages)}")
 
-    totebots = [TotebotHead_Bass((0 * 2, 0, 0), "0000FF", (0, _midi_note_to_totebot_pitch(midi_note), 20), xaxis=1, zaxis=-2)
+    totebots = [TotebotHead_Bass((0 * 2, 0, 0), "0000FF", (0, _midi_note_to_totebot_pitch(midi_note), 100), xaxis=1, zaxis=-2)
                 if 48 >= midi_note else
-                (TotebotHead_SynthVoice((0 * 2, 0, 2), "0000FF", (1, _midi_note_to_totebot_pitch(midi_note-12), clip(map_range(midi_note, 48, 100, 100, 50), 0, 100)), xaxis=1, zaxis=-2),
-                 TotebotHead_SynthVoice((0 * 2, 0, 0), "0000FF", (0, _midi_note_to_totebot_pitch(midi_note-12), clip(map_range(midi_note, 48, 100, 0, 25), 0, 100)), xaxis=1, zaxis=-2))
+                TotebotHead_SynthVoice((0 * 2, 0, 0), "FF0000", (0, _midi_note_to_totebot_pitch(midi_note), 70), xaxis=1, zaxis=-2)
                 if 72 >= midi_note >= 49 else
-                (TotebotHead_SynthVoice((0 * 2, 0, 2), "0000FF", (1, _midi_note_to_totebot_pitch(midi_note), clip(map_range(midi_note, 48, 100, 100, 50), 0, 100)), xaxis=1, zaxis=-2),
-                 TotebotHead_SynthVoice((0 * 2, 0, 0), "0000FF", (0, _midi_note_to_totebot_pitch(midi_note), clip(map_range(midi_note, 48, 100, 0, 15), 0, 100)), xaxis=1, zaxis=-2))
+                TotebotHead_Blip((0 * 2, 0, 0), "0000FF", (0, _midi_note_to_totebot_pitch(midi_note), 100), xaxis=1, zaxis=-2)
                 for midi_note, i in midi_notes_to_index.items()]
     xors = [LogicGate((0 * 2 + 1, 1, 0), "0000FF", 2, xaxis=-2, zaxis=-1)
-            for x in range(len(midi_notes_to_index))]
-    # timers = [Timer((x%(len(midi_notes_to_index)*2), 1, x//(len(midi_notes_to_index)*2) * 2), "000000", (0, 1))
-    #           for x in range(len(midi_messages))]
-    timers = []
-    last_timer = Timer((0, 1, 0), "000000", (0, 0))
-    last_time = 0
+            for i in range(len(midi_notes_to_index))]
+
+    timers = [Timer((0, 1, 0), "000000", (0, 0))]
+    msg_iter = iter(midi_messages)
+    last_tick = 0
+    add_tick = 0
     is_percussive = False
-    for midi_message in midi_messages:
-        if midi_message.type == "program_change":
-            is_percussive = 128 >= midi_message.program >= 133
-        if is_percussive:
-            continue
-        if midi_message.type == "note_on" or midi_message.type == "note_off":
-            current_time = math.floor(midi_message.time * 40)
-            if current_time != last_time:
-                last_timer = Timer((0, 1, 0), "000000", divmod(max(0, current_time - last_time - 1), 40))
-                last_time = current_time
-                _old_connect(last_timer, xors[midi_notes_to_index[midi_message.note]])
-                if timers:
-                    _old_connect(timers[-1], last_timer)
-                timers.append(last_timer)
-            else:
-                _old_connect(last_timer, xors[midi_notes_to_index[midi_message.note]])
+    try:
+        while True:
+            msg = next(msg_iter)
+            if msg.type == "program_change":
+                is_percussive = 128 >= msg.program >= 133
+            if not (msg.type == "note_on" or msg.type == "note_off") or is_percussive:
+                continue
+            current_tick = math.floor(msg.time * 40)
+            if current_tick != last_tick:
+                timers.append(Timer((0, 1, 0), "000000", divmod(max(0, current_tick-last_tick-1-add_tick), 40)))
+                last_tick = current_tick
+            try:
+                _old_connect(timers[-1], xors[midi_notes_to_index[msg.note]])
+                add_tick = 0
+            except ValueError:
+                add_tick += 1
+                timers.append(Timer((0, 1, 0), "000000", divmod(0, 40)))
+                _old_connect(timers[-1], xors[midi_notes_to_index[msg.note]])
+                # timers[-1].disconnect(xors[midi_notes_to_index[msg.note]])
+            # print(f"timer: {len(timers)}, tick: {current_tick}, {msg.type}: {msg.note}, velocity: {msg.velocity}")
+    except StopIteration:
+        pass
 
     b = Button((0, 3, 1), "000000")
     tick_gen = [LogicGate((1, 3, 0), "FF0000", 0, xaxis=-2, zaxis=-1),
@@ -70,27 +73,19 @@ def midi_converter(bp: Blueprint, midi_file: str):
     _old_connect(xors, totebots)
     _old_connect(timers, timers[1:])
     bp.add(totebots, xors, timers, b, tick_gen)
-    # for msg in notes[:10]:
-    #     print(msg)
 
 
 def _midi_note_to_totebot_pitch(midi_note: int):
-    while midi_note > 72:
-        midi_note -= 12
-    while midi_note < 48:
-        midi_note += 12
+    while midi_note >= 72:
+        midi_note -= 24
+    while midi_note <= 48:
+        midi_note += 24
     return map_range(midi_note, 48, 72, 0, 1)
 
 # Source - https://stackoverflow.com/a/70659904
 # Posted by CrazyChucky, modified by community. See post 'Timeline' for change history
 # Retrieved 2026-02-18, License - CC BY-SA 4.0
 
+
 def map_range(x, in_min, in_max, out_min, out_max):
-  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
-
-# Source - https://stackoverflow.com/a/58470178
-# Posted by Bill
-# Retrieved 2026-02-19, License - CC BY-SA 4.0
-
-def clip(value, lower, upper):
-    return lower if value < lower else upper if value > upper else value
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
