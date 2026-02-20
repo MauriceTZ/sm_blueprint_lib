@@ -5,11 +5,44 @@ from typing import Sequence
 
 from numpy import array
 from src.sm_blueprint_lib import *
+from src.sm_blueprint_lib.utils import _old_connect
 
 
 bp = Blueprint()
 
-LFSR(bp, 32)
+midi_converter(bp, r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\arabesque_1_(c)oguri.mid")
+
+# m = ndarray((7, 7, 3), dtype=BasePart)
+# for x in range(7):
+#     for y in range(7):
+#         m[x, y, :] = [LogicGate((x, 2, y), "000000", 2, xaxis=3, zaxis=-1),
+#                       LogicGate((x, 1, y), "000000", 0, xaxis=3, zaxis=-1),
+#                       LogicGate((x, 0, y), "FF0000", 2, xaxis=3, zaxis=-1),
+#                       ]
+# _old_connect(m[:, :, 0], m[:, :, 0])
+# _old_connect(m[:, :, 0], m[:, :, 2])
+# _old_connect(m[:, :, 2], m[:, :, 1])
+# _old_connect(m[:, :, 1], m[:, :, 0])
+
+# for y in range(7):
+#     if y % 2 == 0:
+#         _old_connect(m[0:7, y, 0], m[1:7, y, 2])
+#         _old_connect(m[0:7, y, 2], m[1:7, y, 2])
+#         if y != 6:
+#             _old_connect(m[6, y, 0], m[6, y+1, 2])
+#             _old_connect(m[6, y, 2], m[6, y+1, 2])
+#     else:
+#         _old_connect(m[1:, y, 0], m[:, y, 2])
+#         _old_connect(m[1:, y, 2], m[:, y, 2])
+#         if y != 6:
+#             _old_connect(m[0, y, 0], m[0, y+1, 2])
+#             _old_connect(m[0, y, 2], m[0, y+1, 2])
+
+# write = LogicGate((-2, 1, 0), "FF0000", 1)
+# _old_connect(write, m[:, :, 1])
+# bp.add(m, write)
+
+# LFSR(bp, 32)
 
 # timer_ram_cached(bp,
 #                  bit_length=8,

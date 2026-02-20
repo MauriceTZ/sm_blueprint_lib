@@ -11,3 +11,4 @@ from .rom import *
 from .timer_ram_cached import * # not finished
 from .timer_ram_multiclient import *
 from .LFSR import *
+from .midi_converter import *

@@ -12,5 +12,8 @@ class BaseTotebotHeadPart(BaseInteractablePart):
 
     def __post_init__(self):
         if not isinstance(self.controller, TotebotHeadController):
-            self.controller = TotebotHeadController(**self.controller)
+            try:
+                self.controller = TotebotHeadController(**self.controller)
+            except TypeError:
+                self.controller = TotebotHeadController(*self.controller)
         super().__post_init__()

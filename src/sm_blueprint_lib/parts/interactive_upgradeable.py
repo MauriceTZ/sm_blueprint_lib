@@ -688,7 +688,10 @@ class Sensor5(BaseInteractablePart):
 
     def __post_init__(self):
         if not isinstance(self.controller, SensorController):
-            self.controller = SensorController(**self.controller)
+            try:
+                self.controller = SensorController(**self.controller)
+            except TypeError:
+                self.controller = SensorController(*self.controller)
         super().__post_init__()
         self._box = vec3(1, 1, 1)
 
