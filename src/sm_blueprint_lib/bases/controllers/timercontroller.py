@@ -11,6 +11,6 @@ class TimerController(BaseLogicController):
     ticks: int
 
     def __post_init__(self):
-        assert self.seconds >= 0, f"Timer seconds value invalid: {self.seconds}"
-        assert self.ticks >= 0, f"Timer ticks value invalid: {self.ticks}"
+        assert 59 >= self.seconds >= 0, f"Timer seconds value invalid: {self.seconds}"
+        assert 40 >= self.ticks >= 0, f"Timer ticks value invalid: {self.ticks}"
         super().__post_init__()

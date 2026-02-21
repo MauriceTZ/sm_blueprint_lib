@@ -1,6 +1,6 @@
 import math
 
-from mido import MidiFile
+from mido import MidiFile, tick2second
 from mido.midifiles.tracks import _to_abstime
 import numpy as np
 
@@ -11,11 +11,17 @@ from ..utils import _old_connect
 
 def midi_converter(bp: Blueprint, midi_file: str):
     mid = MidiFile(midi_file)
+    tempo = 500000
 
-    # for i, track in enumerate(mid.tracks):
-    #     print('Track {}: {}'.format(i, track.name))
-    #     for msg in track:
-    #         print(msg)
+    for i, track in enumerate(mid.tracks):
+        # print('Track {}: {}'.format(i, track.name))
+        for msg in track:
+            # print(msg)
+            # msg.time = tick2second(msg.time, mid.ticks_per_beat, tempo)
+            if msg.type == 'set_tempo':
+                tempo = msg.tempo
+
+    print(mid.tracks[0].name)
 
     length = mid.length
     midi_messages = [msg for msg in _to_abstime(mid) if not msg.is_meta]
@@ -26,14 +32,15 @@ def midi_converter(bp: Blueprint, midi_file: str):
         f"notes used in this piece in midi notes: {midi_notes_to_index.keys()} ({len(midi_notes_to_index)} in total)")
     print(f"number of midi messages: {len(midi_messages)}")
 
-    totebots = [TotebotHead_Bass((0 * 2, 0, 0), "0000FF", (0, _midi_note_to_totebot_pitch(midi_note), 100), xaxis=1, zaxis=-2)
+    totebots = [TotebotHead_Bass((i * 2, 0, 0), "0000FF", (0, _midi_note_to_totebot_pitch(midi_note), 100), xaxis=1, zaxis=-2)
                 if 48 >= midi_note else
-                TotebotHead_SynthVoice((0 * 2, 0, 0), "FF0000", (0, _midi_note_to_totebot_pitch(midi_note), 70), xaxis=1, zaxis=-2)
+                TotebotHead_SynthVoice((i * 2, 0, 0), "FF0000", (0, _midi_note_to_totebot_pitch(midi_note), 70), xaxis=1, zaxis=-2)
                 if 72 >= midi_note >= 49 else
-                TotebotHead_Blip((0 * 2, 0, 0), "0000FF", (0, _midi_note_to_totebot_pitch(midi_note), 100), xaxis=1, zaxis=-2)
+                TotebotHead_Blip((i * 2, 0, 0), "0000FF", (0, _midi_note_to_totebot_pitch(midi_note), 100), xaxis=1, zaxis=-2)
                 for midi_note, i in midi_notes_to_index.items()]
-    xors = [LogicGate((0 * 2 + 1, 1, 0), "0000FF", 2, xaxis=-2, zaxis=-1)
+    xors = [LogicGate((i * 2 + 1, 1, 0), "0000FF", 2, xaxis=-2, zaxis=-1)
             for i in range(len(midi_notes_to_index))]
+    states = [0] * len(midi_notes_to_index)
 
     timers = [Timer((0, 1, 0), "000000", (0, 0))]
     msg_iter = iter(midi_messages)
@@ -44,19 +51,43 @@ def midi_converter(bp: Blueprint, midi_file: str):
         while True:
             msg = next(msg_iter)
             if msg.type == "program_change":
+                print(msg)
                 is_percussive = 128 >= msg.program >= 133
+            if msg.type == "control_change":
+                print(msg)
             if not (msg.type == "note_on" or msg.type == "note_off") or is_percussive:
                 continue
-            current_tick = math.floor(msg.time * 40)
+            if msg.channel == 9:
+                continue
+
+            if states[midi_notes_to_index[msg.note]] == 0 and msg.type == "note_on" and msg.velocity > 0:
+                states[midi_notes_to_index[msg.note]] = 1
+            elif states[midi_notes_to_index[msg.note]] == 1 and msg.type == "note_on" and msg.velocity > 0:
+                continue
+            elif states[midi_notes_to_index[msg.note]] == 0 and msg.type == "note_on" and msg.velocity == 0:
+                continue
+            elif states[midi_notes_to_index[msg.note]] == 1 and msg.type == "note_on" and msg.velocity == 0:
+                states[midi_notes_to_index[msg.note]] = 0
+            elif states[midi_notes_to_index[msg.note]] == 1 and msg.type == "note_off":
+                states[midi_notes_to_index[msg.note]] = 0
+            elif states[midi_notes_to_index[msg.note]] == 0 and msg.type == "note_off":
+                continue
+            current_tick = math.floor(msg.time * 45)
             if current_tick != last_tick:
-                timers.append(Timer((0, 1, 0), "000000", divmod(max(0, current_tick-last_tick-1-add_tick), 40)))
+                while True:
+                    try:
+                        timers.append(Timer((len(timers)%(2*len(xors)), 1, 2*(len(timers)//(2*len(xors)))), "000000", divmod(max(0, current_tick-last_tick-add_tick-1), 40)))
+                        break
+                    except AssertionError:
+                        timers.append(Timer((len(timers)%(2*len(xors)), 1, 2*(len(timers)//(2*len(xors)))), "000000", (59, 39)))
+                    last_tick += 60 * 40
                 last_tick = current_tick
             try:
                 _old_connect(timers[-1], xors[midi_notes_to_index[msg.note]])
                 add_tick = 0
             except ValueError:
-                add_tick += 1
-                timers.append(Timer((0, 1, 0), "000000", divmod(0, 40)))
+                add_tick = 1
+                timers.append(Timer((len(timers)%(2*len(xors)), 1, 2*(len(timers)//(2*len(xors)))), "000000", divmod(0, 40)))
                 _old_connect(timers[-1], xors[midi_notes_to_index[msg.note]])
                 # timers[-1].disconnect(xors[midi_notes_to_index[msg.note]])
             # print(f"timer: {len(timers)}, tick: {current_tick}, {msg.type}: {msg.note}, velocity: {msg.velocity}")
