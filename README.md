@@ -205,6 +205,9 @@ counter_outputs, counter_count = sm.counter(bp, bit_length=4)
 adder_outputs = sm.simple_adder_subtractor(bp, bit_length=8)
 ```
 
+### MIDI file converter
+To convert MIDI files please take a look at `test_midi_converter.py` for more information.
+
 #### Grid Layouts
 Create organized layouts using NumPy:
 
@@ -314,6 +317,7 @@ pip install -e .
 - **moderngl**: OpenGL rendering for 3D preview
 - **pyglm**: OpenGL mathematics library
 - **PyWavefront**: 3D model loading
+- ...
 
 ## 🤝 Contributing
 
