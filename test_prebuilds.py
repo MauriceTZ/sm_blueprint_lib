@@ -10,12 +10,6 @@ from src.sm_blueprint_lib.utils import _old_connect
 
 bp = Blueprint()
 
-midi_converter(bp, r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\The Entertainer.mid")
-# midi_converter(bp, r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\C. A. Debussy - Clair De Lune (1903).mid")
-# midi_converter(bp, r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\arabesque_1_(c)oguri.mid")
-# midi_converter(bp, r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Smashmouth_-_All_Star.mid")
-# midi_converter(bp, r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\vanessa_carltona_thousand_miles.mid")
-
 # m = ndarray((7, 7, 3), dtype=BasePart)
 # for x in range(7):
 #     for y in range(7):
