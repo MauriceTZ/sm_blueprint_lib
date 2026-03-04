@@ -10,7 +10,7 @@ from ..parts import LogicGate, Timer, TotebotHead_Bass, TotebotHead_Blip, Totebo
 from ..utils import _old_connect
 
 
-def midi_converter(bp: Blueprint, midi_file: str):
+def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=False):
     mid = MidiFile(midi_file)
     # tempo = 500000
     # for i, track in enumerate(mid.tracks):
@@ -73,7 +73,7 @@ def midi_converter(bp: Blueprint, midi_file: str):
     for chan in channels:
         if chan == 9:
             try:
-                totebots[chan] = [TotebotHead_Percussion(((note-min_note) * 2, 0, chan * 2), "00FFFF", (1, map_range(percussion_table[note]+48, 48, 72, 0, 1), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                totebots[chan] = [TotebotHead_Percussion(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), "00FFFF", (1, map_range(percussion_table[note]+48, 48, 72, 0, 1), 60), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
             except KeyError as e:
                 raise KeyError(f"This MIDI percussion instrument is yet to be mapped to a TotebotHead_Percussion note. -> {e.args[0]}")
         else:
@@ -103,63 +103,83 @@ def midi_converter(bp: Blueprint, midi_file: str):
 
                 case _:
                     totebots[chan] = [
-                        (TotebotHead_Bass(((note-min_note) * 2, 0, chan * 2), "00FFFF", (0, _midi_note_to_totebot_pitch(note), 100), xaxis=1, zaxis=-2)
+                        (TotebotHead_Bass(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), "00FFFF", (0, _midi_note_to_totebot_pitch(note), 100), xaxis=1, zaxis=-2)
                         if 48 >= note else
-                        TotebotHead_SynthVoice(((note-min_note) * 2, 0, chan * 2), "00FFFF", (0, _midi_note_to_totebot_pitch(note), 60), xaxis=1, zaxis=-2)
+                        TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), "00FFFF", (0, _midi_note_to_totebot_pitch(note), 60), xaxis=1, zaxis=-2)
                         if 72 >= note else
-                        TotebotHead_Blip(((note-min_note) * 2, 0, chan * 2), "00FFFF", (0, _midi_note_to_totebot_pitch(note), 100), xaxis=1, zaxis=-2))
+                        TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), "00FFFF", (0, _midi_note_to_totebot_pitch(note), 100), xaxis=1, zaxis=-2)
+                        if not noblip else
+                        (TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), "00FFFF", (0, _midi_note_to_totebot_pitch(note), 40), xaxis=1, zaxis=-2),
+                         TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), "00FFFF", (1, _midi_note_to_totebot_pitch(note), 100), xaxis=1, zaxis=-2)))
                         for note in notes_per_channel[chan]]
-        xors[chan] = [LogicGate(((note-min_note) * 2 + 1, 1, chan * 2), "00FFFF",
-                                2, xaxis=-2, zaxis=-1) for note in notes_per_channel[chan]]
-    _old_connect(xors.values(), xors.values())
-    _old_connect(xors.values(), totebots.values())
+        xors[chan] = [[LogicGate(((note-min_note) * 2 * (not doglitchweld) + 1, 1, chan * 2 * (not doglitchweld)), "00FFFF", 2, xaxis=-2, zaxis=-1),
+                       LogicGate(((note-min_note) * 2 * (not doglitchweld) + 1, 3, chan * 2 * (not doglitchweld)), "000000", 1, xaxis=-2, zaxis=-1)] for note in notes_per_channel[chan]]
+    for chan in channels:
+        for i in range(len(notes_per_channel[chan])):
+            _old_connect(xors[chan][i][0], totebots[chan][i])
+            _old_connect(xors[chan][i][0], xors[chan][i][0])
 
     timers = [Timer((0, 1, 0), "000000", (0, 0))]
     iter_messages = iter(all_messages)
     last_tick = 0
-    add_tick = 0
+    lost_ticks = 0
     try:
         while True:
             msg = next(iter_messages)
-            # if msg.channel == 9:
-            #     print(msg)
-            #     # continue
             if not (msg.type == "note_on" or msg.type == "note_off"):
                 continue
             current_tick = math.floor(msg.time * 40)
+            dt = 0
             if current_tick != last_tick:
+                if lost_ticks > 0:
+                    dt = current_tick - last_tick - 1 - lost_ticks
+                    if dt < 0:
+                        lost_ticks += dt
+                        dt = 0
+                    else:
+                        lost_ticks = 0
+                else:
+                    dt = current_tick - last_tick - 1
                 while True:
                     try:
-                        timers.append(Timer((len(timers) % (2*length_creation), 1, 2*(len(timers)//(
-                            2*length_creation))), "000000", divmod(max(0, current_tick-last_tick-add_tick-1), 40)))
-                        break
+                        timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 1, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
+                                            divmod(dt, 40)))
                     except AssertionError:
-                        timers.append(Timer((len(timers) % (
-                            2*length_creation), 1, 2*(len(timers)//(2*length_creation))), "000000", (59, 39)))
-                    last_tick += 60 * 40
-                last_tick = current_tick
-            try:
-                _old_connect(timers[-1], xors[msg.channel]
-                             [notes_to_index[msg.channel][msg.note]])
-                add_tick = 0
-            except ValueError:
-                add_tick += 1
-                timers.append(Timer((len(timers) % (
-                    2*length_creation), 1, 2*(len(timers)//(2*length_creation))), "000000", divmod(0, 40)))
-                _old_connect(timers[-1], xors[msg.channel]
-                             [notes_to_index[msg.channel][msg.note]])
-                # timers[-1].disconnect(xors[midi_notes_to_index[msg.note]])
-            # print(f"timer: {len(timers)}, tick: {current_tick}, {msg.type}: {msg.note}, velocity: {msg.velocity}")
+                        timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 1, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
+                                            (59, 40)))
+                        dt -= 2399
+                        continue
+                    break
+
+            buffer = xors[msg.channel][notes_to_index[msg.channel][msg.note]]
+            while True:
+                try:
+                    _old_connect(timers[-1], buffer[-1])
+                except IndexError:
+                    buffer.append(LogicGate(buffer[-1].pos + (0, 1, 0), "000000", 1, xaxis=-2, zaxis=-1))
+                    continue
+                except ValueError:
+                    timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 1, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
+                                        divmod(0, 40)))
+                    lost_ticks += 1
+                    continue
+                break
+            last_tick = current_tick
     except StopIteration:
         pass
 
-    b = Button((0, 3, 1), "000000")
-    tick_gen = [LogicGate((1, 3, 0), "FF0000", 0, xaxis=-2, zaxis=-1),
-                LogicGate((1, 4, 0), "FF0000", 3, xaxis=-2, zaxis=-1)]
+    b = Button((-1, 2, 1), "000000")
+    tick_gen = [LogicGate((0, 2, 0), "FF0000", 0, xaxis=-2, zaxis=-1),
+                LogicGate((0, 3, 0), "FF0000", 3, xaxis=-2, zaxis=-1)]
     _old_connect(b, tick_gen)
     tick_gen[1].connect(tick_gen[0])
     _old_connect(tick_gen[0], timers[0])
     _old_connect(timers, timers[1:])
+    # for l in xors.values():
+    #     _old_connect(l[:-1], l[-1])
+    for chan in channels:
+        for i in range(len(notes_per_channel[chan])):
+            _old_connect(xors[chan][i][1:], xors[chan][i][0])
     bp.add(totebots.values(), xors.values(), timers, b, tick_gen)
 
 

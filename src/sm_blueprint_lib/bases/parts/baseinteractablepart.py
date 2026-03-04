@@ -18,6 +18,7 @@ class BaseInteractablePart(BasePart):
         if not isinstance(self.controller, BaseController):
             self.controller = BaseController(**self.controller)
         super().__post_init__()
+        self._parent_count = 0
 
     def connect(self, o):
         if not self.controller.controllers:
@@ -30,7 +31,11 @@ class BaseInteractablePart(BasePart):
 
         if ID(o.controller.id) in self.controller.controllers:
             raise ValueError(f"You are connecting two objects twice: {self} and {o}")
+        
+        if len(self.controller.controllers) > 255 or o._parent_count == 255:
+            raise IndexError(f"You exceeded the number of connections to a single part (>255).")
         self.controller.controllers.append(ID(o.controller.id))
+        o._parent_count += 1
         return o
 
     def disconnect(self, o):
@@ -39,4 +44,5 @@ class BaseInteractablePart(BasePart):
         if ID(o.controller.id) not in self.controller.controllers:
             raise ValueError(f"You are trying to disconnect this two unconnected objects: {self} and {o}")
         self.controller.controllers.remove(ID(o.controller.id))
+        o._parent_count -= 1
         return o
