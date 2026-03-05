@@ -8,9 +8,10 @@ import numpy as np
 from ..blueprint import Blueprint
 from ..parts import LogicGate, Timer, TotebotHead_Bass, TotebotHead_Blip, TotebotHead_SynthVoice, TotebotHead_Percussion, Button
 from ..utils import _old_connect
+from ..constants import TICKS_PER_SECOND
 
 
-def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=False):
+def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=False, speed=1.0):
     mid = MidiFile(midi_file)
     # tempo = 500000
     # for i, track in enumerate(mid.tracks):
@@ -128,7 +129,7 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
             msg = next(iter_messages)
             if not (msg.type == "note_on" or msg.type == "note_off"):
                 continue
-            current_tick = math.floor(msg.time * 40)
+            current_tick = math.floor(msg.time * TICKS_PER_SECOND * 1 / speed)
             dt = 0
             if current_tick != last_tick:
                 if lost_ticks > 0:
