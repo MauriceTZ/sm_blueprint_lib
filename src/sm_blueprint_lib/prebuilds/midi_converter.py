@@ -11,7 +11,7 @@ from ..utils import _old_connect
 from ..constants import TICKS_PER_SECOND
 
 
-def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=False, speed=1.0):
+def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=False, dosustain=False, speed=1.0):
     mid = MidiFile(midi_file)
     # tempo = 500000
     # for i, track in enumerate(mid.tracks):
@@ -47,6 +47,7 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
         notes)} for chan, notes in notes_per_channel.items()}
 
     totebots = {}
+    states = {}
     xors = {}
     min_note = min(note for l in notes_per_channel.values() for note in l)
     max_note = max(note for l in notes_per_channel.values() for note in l)
@@ -110,11 +111,13 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
                         if 72 >= note else
                         TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), "00FFFF", (0, _midi_note_to_totebot_pitch(note), 100), xaxis=1, zaxis=-2)
                         if not noblip else
-                        (TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), "00FFFF", (0, _midi_note_to_totebot_pitch(note), 40), xaxis=1, zaxis=-2),
+                        (TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), "00FFFF", (0, _midi_note_to_totebot_pitch(note), 30), xaxis=1, zaxis=-2),
                          TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), "00FFFF", (1, _midi_note_to_totebot_pitch(note), 100), xaxis=1, zaxis=-2)))
                         for note in notes_per_channel[chan]]
         xors[chan] = [[LogicGate(((note-min_note) * 2 * (not doglitchweld) + 1, 1, chan * 2 * (not doglitchweld)), "00FFFF", 2, xaxis=-2, zaxis=-1),
                        LogicGate(((note-min_note) * 2 * (not doglitchweld) + 1, 3, chan * 2 * (not doglitchweld)), "000000", 1, xaxis=-2, zaxis=-1)] for note in notes_per_channel[chan]]
+        states[chan] = {"sustain": False,
+                        "notes": set()}
     for chan in channels:
         for i in range(len(notes_per_channel[chan])):
             _old_connect(xors[chan][i][0], totebots[chan][i])
@@ -127,6 +130,48 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
     try:
         while True:
             msg = next(iter_messages)
+            if dosustain:
+                if msg.is_cc(64):
+                    print("pedal", msg.channel, msg.value)
+                    states[msg.channel]["sustain"] = 64 >= msg.value
+                    if msg.value < 64:
+                        for chan, note in states[msg.channel]["notes"]:
+                            buffer = xors[chan][notes_to_index[chan][note]]
+                            while True:
+                                try:
+                                    _old_connect(timers[-1], buffer[-1])
+                                except IndexError:
+                                    buffer.append(LogicGate(buffer[-1].pos + (0, 1, 0), "000000", 1, xaxis=-2, zaxis=-1))
+                                    continue
+                                except ValueError:
+                                    timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 1, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
+                                                        divmod(0, 40)))
+                                    lost_ticks += 1
+                                    continue
+                                break
+                        states[msg.channel]["notes"].clear()
+                elif msg.type == "note_off" or (msg.type == "note_on" and msg.velocity == 0):
+                    note_id = (msg.channel, msg.note)
+                    if states[msg.channel]["sustain"]:
+                        states[msg.channel]["notes"].add(note_id)
+                        continue
+                elif msg.type == "note_on":
+                    note_id = (msg.channel, msg.note)
+                    if note_id in states[msg.channel]["notes"]:
+                        buffer = xors[msg.channel][notes_to_index[msg.channel][msg.note]]
+                        while True:
+                            try:
+                                _old_connect(timers[-1], buffer[-1])
+                            except IndexError:
+                                buffer.append(LogicGate(buffer[-1].pos + (0, 1, 0), "000000", 1, xaxis=-2, zaxis=-1))
+                                continue
+                            except ValueError:
+                                timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 1, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
+                                                    divmod(0, 40)))
+                                lost_ticks += 1
+                                continue
+                            break
+                        states[msg.channel]["notes"].remove(note_id)
             if not (msg.type == "note_on" or msg.type == "note_off"):
                 continue
             current_tick = math.floor(msg.time * TICKS_PER_SECOND * 1 / speed)
