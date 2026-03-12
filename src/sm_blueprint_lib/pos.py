@@ -15,6 +15,9 @@ class Pos:
             return Pos(self.x + o.x, self.y + o.y, self.z + o.z)
         return Pos(self.x + o[0], self.y + o[1], self.z + o[2])
 
+    def __mul__(self, o: int):
+        return Pos(self.x * o, self.y * o, self.z * o)
+
 
 def check_pos(pos: Sequence | dict) -> Pos:
     """Converts a Sequence or dict into a Pos class if it wasn't already.
