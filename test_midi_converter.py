@@ -4,8 +4,8 @@ from src.sm_blueprint_lib import *
 bp = Blueprint()
 
 # Put here the path to your MIDI file, here are some examples:
-# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Careless-Whisper.mid"
-file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Thomas The Tank Engine Theme (MIDI).mid"
+file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Careless-Whisper.mid"
+# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Thomas The Tank Engine Theme (MIDI).mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\ussr.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\arabesque_1_(c)oguri.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Hungarian Dance No.5.mid"
@@ -20,7 +20,7 @@ file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Thomas The 
 # file = r"demo_MIDIs\vanessa_carltona_thousand_miles.mid"
 
 # Call midi_converter() to make the conversion
-midi_converter(bp, file, noblip=True, doglitchweld=True, dosustain=True, transpose=0, speed=1)
+midi_converter(bp, file, noblip=True, doglitchweld=False, dosustain=True, transpose=0, speed=1)
 
 print(f"Prebuild size: {len(bp.bodies[0].childs)} parts")
 # Save the creation into an existing blueprint in your lift, for example "MIDI converter output"

@@ -9,6 +9,7 @@ from ..blueprint import Blueprint
 from ..parts import LogicGate, Timer, TotebotHead_Bass, TotebotHead_Blip, TotebotHead_SynthVoice, TotebotHead_Percussion, Button
 from ..utils import _old_connect
 from ..constants import TICKS_PER_SECOND
+from ..pos import Pos
 
 
 def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=False, dosustain=False, transpose=0, speed=1.0):
@@ -140,7 +141,6 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
             msg = next(iter_messages)
             if dosustain:
                 if msg.is_cc(64):
-                    print("pedal", msg.channel, msg.value)
                     states[msg.channel]["sustain"] = 64 >= msg.value
                     if msg.value < 64:
                         for chan, note in states[msg.channel]["notes"]:
@@ -210,7 +210,7 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
                 try:
                     _old_connect(timers[-1], buffer[-1])
                 except IndexError:
-                    buffer.append(LogicGate((buffer[-1].pos + (0, 1, 0)) * (not doglitchweld), "000000", 1, xaxis=-2, zaxis=-1))
+                    buffer.append(LogicGate(buffer[-1].pos + Pos(0, 1, 0) * (not doglitchweld), "000000", 1, xaxis=-2, zaxis=-1))
                     continue
                 except ValueError:
                     timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 1, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
