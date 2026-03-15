@@ -77,6 +77,7 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
         54: (23, 1),
         55: (20, 1),
         57: (21, 1),
+        59: (21, 1),
         63: (19, 0),
         64: (3, 0),
         82: (14, 1)
