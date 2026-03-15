@@ -207,6 +207,8 @@ adder_outputs = sm.simple_adder_subtractor(bp, bit_length=8)
 
 ### MIDI file converter
 To convert MIDI files please take a look at `test_midi_converter.py` for more information.
+[You can check some files that I converted while making this part of the library if interested... click here](https://steamcommunity.com/sharedfiles/filedetails/?id=3684436665)
+
 
 #### Grid Layouts
 Create organized layouts using NumPy:
