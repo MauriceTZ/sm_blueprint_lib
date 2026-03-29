@@ -123,76 +123,76 @@ def _old_connect(_from, _to, *, parallel=True):
             for subto in _to:
                 _old_connect(_from, subto, parallel=parallel)
 
+connect = _old_connect
+# def connect(_from, _to, *, parallel=True):
+#     """Connect interactable parts together, recursively.
 
-def connect(_from, _to, *, parallel=True):
-    """Connect interactable parts together, recursively.
+#     Args:
+#         _from (Any): Must be an instance of BaseInteractablePart or a subclass.
+#         Also it can be any nested iterable of instances (list of parts, list of lists of parts, etc).
+#         _to (Any): Must be an instance of BaseInteractablePart or a subclass.
+#         Also it can be any nested iterable of instances (list of parts, list of lists of parts, etc).
+#         parallel (bool, optional): Defines the behaviour of the connections in the following way:
 
-    Args:
-        _from (Any): Must be an instance of BaseInteractablePart or a subclass.
-        Also it can be any nested iterable of instances (list of parts, list of lists of parts, etc).
-        _to (Any): Must be an instance of BaseInteractablePart or a subclass.
-        Also it can be any nested iterable of instances (list of parts, list of lists of parts, etc).
-        parallel (bool, optional): Defines the behaviour of the connections in the following way:
+#         With parallel=False, everything connects to everything:
+#             from1 🔀 to1
 
-        With parallel=False, everything connects to everything:
-            from1 🔀 to1
+#             from2 🔀 to2
 
-            from2 🔀 to2
+#         With parallel=True, every row is connected respectively:
+#             from1 → to1
 
-        With parallel=True, every row is connected respectively:
-            from1 → to1
+#             from2 → to2
 
-            from2 → to2
+#         Also, if the dimensions does not match it tries to adapt (many to one, one to many, etc)
 
-        Also, if the dimensions does not match it tries to adapt (many to one, one to many, etc)
+#         Defaults to True.
+#     """
+#     # Fast path for single part connections
+#     if isinstance(_from, BaseInteractablePart) and isinstance(_to, BaseInteractablePart):
+#         _from.connect(_to)
+#         return
 
-        Defaults to True.
-    """
-    # Fast path for single part connections
-    if isinstance(_from, BaseInteractablePart) and isinstance(_to, BaseInteractablePart):
-        _from.connect(_to)
-        return
+#     # Helper function to flatten nested iterables efficiently
+#     def flatten_parts(obj):
+#         """Flatten nested iterables into a flat list of parts."""
+#         if isinstance(obj, BaseInteractablePart):
+#             return [obj]
+#         parts = []
+#         stack = [obj]
+#         while stack:
+#             item = stack.pop()
+#             if isinstance(item, BaseInteractablePart):
+#                 parts.append(item)
+#             else:
+#                 # Add in reverse order to maintain original sequence
+#                 stack.extend(reversed(item))
+#         return parts
 
-    # Helper function to flatten nested iterables efficiently
-    def flatten_parts(obj):
-        """Flatten nested iterables into a flat list of parts."""
-        if isinstance(obj, BaseInteractablePart):
-            return [obj]
-        parts = []
-        stack = [obj]
-        while stack:
-            item = stack.pop()
-            if isinstance(item, BaseInteractablePart):
-                parts.append(item)
-            else:
-                # Add in reverse order to maintain original sequence
-                stack.extend(reversed(item))
-        return parts
+#     # Flatten both inputs
+#     from_parts = flatten_parts(_from)
+#     to_parts = flatten_parts(_to)
 
-    # Flatten both inputs
-    from_parts = flatten_parts(_from)
-    to_parts = flatten_parts(_to)
+#     # Perform connections based on parallel mode
+#     if parallel:
+#         # Row-to-row connections (zip longest to handle mismatched lengths)
+#         for from_part, to_part in zip(from_parts, to_parts):
+#             from_part.connect(to_part)
 
-    # Perform connections based on parallel mode
-    if parallel:
-        # Row-to-row connections (zip longest to handle mismatched lengths)
-        for from_part, to_part in zip(from_parts, to_parts):
-            from_part.connect(to_part)
-
-        # Handle remaining parts (one-to-many or many-to-one)
-        if len(from_parts) > len(to_parts):
-            for from_part in from_parts[len(to_parts):]:
-                if to_parts:  # Connect to last part if available
-                    from_part.connect(to_parts[-1])
-        elif len(to_parts) > len(from_parts):
-            for to_part in to_parts[len(from_parts):]:
-                if from_parts:  # Connect from last part if available
-                    from_parts[-1].connect(to_part)
-    else:
-        # Many-to-many connections (cartesian product)
-        for from_part in from_parts:
-            for to_part in to_parts:
-                from_part.connect(to_part)
+#         # Handle remaining parts (one-to-many or many-to-one)
+#         if len(from_parts) > len(to_parts):
+#             for from_part in from_parts[len(to_parts):]:
+#                 if to_parts:  # Connect to last part if available
+#                     from_part.connect(to_parts[-1])
+#         elif len(to_parts) > len(from_parts):
+#             for to_part in to_parts[len(from_parts):]:
+#                 if from_parts:  # Connect from last part if available
+#                     from_parts[-1].connect(to_part)
+#     else:
+#         # Many-to-many connections (cartesian product)
+#         for from_part in from_parts:
+#             for to_part in to_parts:
+#                 from_part.connect(to_part)
 
 
 def get_bits_required(number: int | float):

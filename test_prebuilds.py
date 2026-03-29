@@ -64,7 +64,7 @@ bp = Blueprint()
 
 # clock40hz(bp, 10)
 
-# timer_ram_multiclient(bp, bit_length=32, num_address=16, num_clients=1)
+timer_ram_multiclient(bp, bit_length=16, num_address=256, num_clients=1)
 
 # timer_ram_cached(bp,
 #                  bit_length=32,
