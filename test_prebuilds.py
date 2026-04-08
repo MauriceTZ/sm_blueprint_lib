@@ -51,7 +51,7 @@ bp = Blueprint()
 
 # comparator(bp, bit_length=32)
 
-# simple_adder_subtractor(bp, bit_length=8)
+# simple_adder_subtractor(bp, bit_length=16)
 
 # ram(bp, 8, 8)
 
@@ -64,7 +64,7 @@ bp = Blueprint()
 
 # clock40hz(bp, 10)
 
-timer_ram_multiclient(bp, bit_length=16, num_address=256, num_clients=1)
+# timer_ram_multiclient(bp, bit_length=16, num_address=256, num_clients=1)
 
 # timer_ram_cached(bp,
 #                  bit_length=32,
@@ -92,13 +92,13 @@ timer_ram_multiclient(bp, bit_length=16, num_address=256, num_clients=1)
 #            data=micro_ins)
 
 
-# register(bp, pos=(15,-5,0), bit_length=24, OE=False)
+register(bp, pos=(15,-5,0), bit_length=16, OE=False)
 
 # decoder(bp, pos=(30, 5, 0), num_address=16)
 
 # ram(bp, pos=(20,5,0),
-#     bit_length=8,
-#     num_address=8)
+#     bit_length=16,
+#     num_address=4)
 
 # reg = register(bp, pos=(0, -10, 0), bit_length=32)
 # c = counter(bp, pos=(0, -9, 1), bit_length=32,

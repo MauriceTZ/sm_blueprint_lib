@@ -4,7 +4,8 @@ from src.sm_blueprint_lib import *
 bp = Blueprint()
 
 # Put here the path to your MIDI file, here are some examples:
-file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\FE!N - Travis Scott (fein).mid"
+file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Rick_Astley_Never_Gonna_Give_You_Up.mid"
+# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\FE!N - Travis Scott (fein).mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\chopin-ballade3.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Undertale_-_Megalovania.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Erika - German Folk Song.mid"
