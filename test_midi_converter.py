@@ -4,8 +4,8 @@ from src.sm_blueprint_lib import *
 bp = Blueprint()
 
 # Put here the path to your MIDI file, here are some examples:
+file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\E1M1.MID"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Black Sabbath - Iron Man [MIDIfind.com].mid"
-file = r"/home/mauri/Downloads/E1M1.MID"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Rick_Astley_Never_Gonna_Give_You_Up.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\FE!N - Travis Scott (fein).mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\chopin-ballade3.mid"
@@ -25,12 +25,12 @@ file = r"/home/mauri/Downloads/E1M1.MID"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Chopin_Nocturne_Op9_No2.mid"
 # file = r"demo_MIDIs\C. A. Debussy - Clair De Lune (1903).mid"
 # file = r"demo_MIDIs\Smashmouth_-_All_Star.mid"
-file = r"demo_MIDIs\vanessa_carltona_thousand_miles.mid"
+# file = r"demo_MIDIs\vanessa_carltona_thousand_miles.mid"
 
 # Call midi_converter() to make the conversion
 midi_converter(bp, file, 
                noblip=False, doglitchweld=True, dosustain=False, transpose=0, 
-               color="FF0000", tryImitateInstruments=False, speed=1.0)
+               color="882211", tryImitateInstruments=True, speed=1.0)
 
 print(f"Prebuild size: {len(bp.bodies[0].childs)} parts")
 # Save the creation into an existing blueprint in your lift, for example "MIDI converter output"
