@@ -70,6 +70,7 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
         44: (14, 1),
         45: (2, 1),
         46: (12, 1),
+        47: (1, 0),
         48: (13, 0),
         49: (20, 1),
         51: (21, 1),
@@ -89,77 +90,77 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
     for chan in channels:
         if chan == 9:
             try:
-                totebots[chan] = [TotebotHead_Percussion(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (percussion_table[note][1], map_range(percussion_table[note][0]+48, 48, 72, 0, 1), 60), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                totebots[chan] = [TotebotHead_Percussion(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (percussion_table[note][1], map_range(percussion_table[note][0]+48, 48, 72, 0, 1), 50), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
             except KeyError as e:
                 raise KeyError(f"This MIDI percussion instrument is yet to be mapped to a TotebotHead_Percussion note. -> {e.args[0]}")
         else:
             if not tryImitateInstruments:
                 totebots[chan] = [
-                    (TotebotHead_Bass(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 100), xaxis=1, zaxis=-2)
+                    (TotebotHead_Bass(((note-min_note) * 2 * (not doglitchweld), 0, 2 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 100), xaxis=1, zaxis=-2)
                     if 48 >= note else
-                    TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 60), xaxis=1, zaxis=-2)
+                    TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 60), xaxis=1, zaxis=-2)
                     if 72 >= note else
-                    TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 100), xaxis=1, zaxis=-2)
+                    TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, 6 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 100), xaxis=1, zaxis=-2)
                     if not noblip else
-                    (TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 30), xaxis=1, zaxis=-2),
-                    TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch((note+transpose)), 100), xaxis=1, zaxis=-2)))
+                    (TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 30), xaxis=1, zaxis=-2),
+                    TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch((note+transpose)), 100), xaxis=1, zaxis=-2)))
                     for note in notes_per_channel[chan]]
             else:
                 match program_per_channel[chan]:
                     case 4:
-                        totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                        totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
                     case 6 | 7:
-                        totebots[chan] = [TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                        totebots[chan] = [TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, 6 * doglitchweld + chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
                     case prog if 7 >= prog >= 0:
-                        totebots[chan] = [TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose), 50), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                        totebots[chan] = [TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, 6 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose), 50), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
 
                     case prog if 15 >= prog >= 8:
-                        totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                        totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
 
                     case prog if 23 >= prog >= 16:
-                        totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                        totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
 
                     case 25 | 27 | 29 | 30 | 31:
-                        totebots[chan] = [TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose+12), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                        totebots[chan] = [TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, 6 * doglitchweld + chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose+12), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
                     case prog if 31 >= prog >= 24:
-                        totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                        totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
 
                     case prog if 38 >= prog >= 36:
-                        totebots[chan] = [TotebotHead_Bass(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 40), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                        totebots[chan] = [TotebotHead_Bass(((note-min_note) * 2 * (not doglitchweld), 0, 2 * doglitchweld + chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 40), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
                     case prog if 39 >= prog >= 32:
-                        totebots[chan] = [TotebotHead_Bass(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                        totebots[chan] = [TotebotHead_Bass(((note-min_note) * 2 * (not doglitchweld), 0, 2 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose), 70), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
 
                     case 65:
-                        totebots[chan] = [TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose+12), 50), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                        totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
                     case 66:
-                        totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                        totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
 
                     case 48:
-                        totebots[chan] = [TotebotHead_Bass(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                        totebots[chan] = [TotebotHead_Bass(((note-min_note) * 2 * (not doglitchweld), 0, 2 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
                     case 49:
-                        totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                        totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
 
 
                     case 79:
-                        totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                        totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
                     case 80:
-                        totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                        totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
 
                     case 81:
-                        totebots[chan] = [(TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose), 30), xaxis=1, zaxis=-2),
-                                           TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 70), xaxis=1, zaxis=-2)) for note in notes_per_channel[chan]]
+                        totebots[chan] = [(TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, 6 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose), 30), xaxis=1, zaxis=-2),
+                                           TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, 6 * doglitchweld + chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 70), xaxis=1, zaxis=-2)) for note in notes_per_channel[chan]]
 
                     case unknown:
                         print(f"unknown program: {unknown}")
                         totebots[chan] = [
-                            (TotebotHead_Bass(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 100), xaxis=1, zaxis=-2)
+                            (TotebotHead_Bass(((note-min_note) * 2 * (not doglitchweld), 0, 2 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 100), xaxis=1, zaxis=-2)
                             if 48 >= note else
-                            TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 60), xaxis=1, zaxis=-2)
+                            TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 60), xaxis=1, zaxis=-2)
                             if 72 >= note else
-                            TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 100), xaxis=1, zaxis=-2)
+                            TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, 6 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 100), xaxis=1, zaxis=-2)
                             if not noblip else
-                            (TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 30), xaxis=1, zaxis=-2),
-                            TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch((note+transpose)), 100), xaxis=1, zaxis=-2)))
+                            (TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 30), xaxis=1, zaxis=-2),
+                            TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch((note+transpose)), 100), xaxis=1, zaxis=-2)))
                             for note in notes_per_channel[chan]]
         xors[chan] = [[LogicGate(((note-min_note) * 2 * (not doglitchweld) + 1, 1, chan * 2 * (not doglitchweld)), color, 2, xaxis=-2, zaxis=-1),
                        LogicGate(((note-min_note) * 2 * (not doglitchweld) + 1, 3, chan * 2 * (not doglitchweld)), "000000", 1, xaxis=-2, zaxis=-1)] for note in notes_per_channel[chan]]
@@ -170,7 +171,7 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
             _old_connect(xors[chan][i][0], totebots[chan][i])
             _old_connect(xors[chan][i][0], xors[chan][i][0])
 
-    timers = [Timer((0, 1, 0), "000000", (0, 0))]
+    timers = [Timer((0, 2, 0), "000000", (0, 0))]
     iter_messages = iter(all_messages)
     last_tick = 0
     lost_ticks = 0
@@ -190,7 +191,7 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
                                     buffer.append(LogicGate((buffer[-1].pos + (0, 1, 0)) * (not doglitchweld), "000000", 1, xaxis=-2, zaxis=-1))
                                     continue
                                 except ValueError:
-                                    timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 1, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
+                                    timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 2, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
                                                         divmod(0, 40)))
                                     lost_ticks += 1
                                     continue
@@ -212,7 +213,7 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
                                 buffer.append(LogicGate((buffer[-1].pos + (0, 1, 0)) * (not doglitchweld), "000000", 1, xaxis=-2, zaxis=-1))
                                 continue
                             except ValueError:
-                                timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 1, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
+                                timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 2, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
                                                     divmod(0, 40)))
                                 lost_ticks += 1
                                 continue
@@ -234,10 +235,10 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
                     dt = current_tick - last_tick - 1
                 while True:
                     try:
-                        timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 1, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
+                        timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 2, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
                                             divmod(dt, 40)))
                     except AssertionError:
-                        timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 1, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
+                        timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 2, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
                                             (59, 40)))
                         dt -= 2399
                         continue
@@ -251,7 +252,7 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
                     buffer.append(LogicGate(buffer[-1].pos + Pos(0, 1, 0) * (not doglitchweld), "000000", 1, xaxis=-2, zaxis=-1))
                     continue
                 except ValueError:
-                    timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 1, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
+                    timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 2, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
                                         divmod(0, 40)))
                     lost_ticks += 1
                     continue
