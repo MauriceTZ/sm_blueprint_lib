@@ -4,7 +4,11 @@ from src.sm_blueprint_lib import *
 bp = Blueprint()
 
 # Put here the path to your MIDI file, here are some examples:
-file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\E1M1.MID"
+file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\sade-kiss_of_life.mid"
+# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Sade - Kiss Of Life___WWW.MIDISFREE.COM.mid"
+# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\California gurls.mid"
+# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Katy Perry - California Gurls Feat Snoop Dogg___WWW.MIDISFREE.COM.mid"
+# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\E1M1.MID"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Black Sabbath - Iron Man [MIDIfind.com].mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Rick_Astley_Never_Gonna_Give_You_Up.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\FE!N - Travis Scott (fein).mid"
@@ -28,8 +32,8 @@ file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\E1M1.MID"
 # file = r"demo_MIDIs\vanessa_carltona_thousand_miles.mid"
 
 # Call midi_converter() to make the conversion
-midi_converter(bp, file, 
-               noblip=False, doglitchweld=True, dosustain=False, transpose=0, 
+midi_converter(bp, file,
+               noblip=False, doglitchweld=False, dosustain=False, transpose=0, 
                color="882211", tryImitateInstruments=True, speed=1.0)
 
 print(f"Prebuild size: {len(bp.bodies[0].childs)} parts")

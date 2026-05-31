@@ -10,6 +10,26 @@ from src.sm_blueprint_lib.utils import _old_connect
 
 bp = Blueprint()
 
+finite_state_machine(bp=bp,
+                     input_alphabet=["a", "b", "c"],
+                     state_set=["state1", "state2", "state3"],
+                     initial_state="state3",
+                     state_transition_table={
+                         ("state1", "a"): "state2",
+                         ("state2", "a"): "state3",
+                         ("state3", "a"): "state1",
+                         
+                         ("state2", "b"): "state1",
+                         ("state3", "c"): "state1"
+                     },
+                     # Optional
+                     color_per_state={"state1": "801111",
+                                      "state2": "118011",
+                                      "state3": "111180"},
+                     color_per_input={"a": "808011",
+                                      "b": "118080",
+                                      "c": "801180"})
+
 # m = ndarray((7, 7, 3), dtype=BasePart)
 # for x in range(7):
 #     for y in range(7):
@@ -92,7 +112,7 @@ bp = Blueprint()
 #            data=micro_ins)
 
 
-register(bp, pos=(15,-5,0), bit_length=16, OE=False)
+# register(bp, pos=(15,-5,0), bit_length=16, OE=False)
 
 # decoder(bp, pos=(30, 5, 0), num_address=16)
 

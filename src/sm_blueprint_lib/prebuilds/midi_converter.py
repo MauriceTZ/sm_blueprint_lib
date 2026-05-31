@@ -58,6 +58,7 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
     # TODO: add the rest of the cases
     percussion_table = {
         # midi percussion note to TotebotHead_Percussion equivalent
+        # reference: https://soundprogramming.net/file-formats/general-midi-drum-note-numbers/
         35: (2, 1),
         36: (2, 1),
         37: (0, 1),
@@ -86,12 +87,15 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
         62: (19, 0),
         63: (19, 0),
         64: (3, 0),
+        67: (17, 0),
+        68: (19, 0),
+        69: (13, 1),
         82: (14, 1)
     }
     for chan in channels:
         if chan == 9:
             try:
-                totebots[chan] = [TotebotHead_Percussion(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (percussion_table[note][1], map_range(percussion_table[note][0]+48, 48, 72, 0, 1), 50), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                totebots[chan] = [TotebotHead_Percussion(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (percussion_table[note][1], map_range(percussion_table[note][0]+48, 48, 72, 0, 1), 30), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
             except KeyError as e:
                 raise KeyError(f"This MIDI percussion instrument is yet to be mapped to a TotebotHead_Percussion note. -> {e.args[0]}")
         else:
