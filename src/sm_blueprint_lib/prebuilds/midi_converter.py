@@ -13,7 +13,7 @@ from ..pos import Pos
 
 
 def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=False, dosustain=False, transpose=0, color="00FFFF", tryImitateInstruments=True, speed=1.0):
-    mid = MidiFile(midi_file)
+    mid = MidiFile(midi_file, clip=True)
     # tempo = 500000
     # for i, track in enumerate(mid.tracks):
     #     # print('Track {}: {}'.format(i, track.name))
@@ -90,6 +90,7 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
         67: (17, 0),
         68: (19, 0),
         69: (13, 1),
+        80: (12, 0),
         82: (14, 1)
     }
     for chan in channels:
@@ -144,7 +145,7 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
                         totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
 
                     case 48:
-                        totebots[chan] = [TotebotHead_Bass(((note-min_note) * 2 * (not doglitchweld), 0, 2 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                        totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 2 * doglitchweld + chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 50), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
                     case 49:
                         totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
 
