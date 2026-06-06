@@ -4,7 +4,7 @@ from src.sm_blueprint_lib import *
 bp = Blueprint()
 
 # Put here the path to your MIDI file, here are some examples:
-file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Theme__pink_panther.mid"
+# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Theme__pink_panther.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\sade-kiss_of_life.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Sade - Kiss Of Life___WWW.MIDISFREE.COM.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\California gurls.mid"
@@ -28,14 +28,14 @@ file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Theme__pink
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Toccato-&-Fugue-in-D-Minor.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\The Entertainer.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Chopin_Nocturne_Op9_No2.mid"
-# file = r"demo_MIDIs\C. A. Debussy - Clair De Lune (1903).mid"
+file = r"demo_MIDIs\C. A. Debussy - Clair De Lune (1903).mid"
 # file = r"demo_MIDIs\Smashmouth_-_All_Star.mid"
 # file = r"demo_MIDIs\vanessa_carltona_thousand_miles.mid"
 
 # Call midi_converter() to make the conversion
 midi_converter(bp, file,
-               noblip=False, doglitchweld=True, dosustain=False, transpose=0, 
-               color="882211", tryImitateInstruments=True, speed=1.0)
+               noblip=False, doglitchweld=True, dosustain=True, transpose=0, 
+               color="1020DE", tryImitateInstruments=False, speed=1.0, pitch_bend_semitones=2)
 
 print(f"Prebuild size: {len(bp.bodies[0].childs)} parts")
 # Save the creation into an existing blueprint in your lift, for example "MIDI converter output"

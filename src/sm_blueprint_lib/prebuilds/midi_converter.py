@@ -12,13 +12,13 @@ from ..constants import TICKS_PER_SECOND
 from ..pos import Pos
 
 
-def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=False, dosustain=False, transpose=0, color="00FFFF", tryImitateInstruments=True, speed=1.0):
+def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=False, dosustain=False, transpose=0, color="00FFFF", tryImitateInstruments=True, speed=1.0, pitch_bend_semitones=2):
     mid = MidiFile(midi_file, clip=True)
     # tempo = 500000
-    # for i, track in enumerate(mid.tracks):
-    #     # print('Track {}: {}'.format(i, track.name))
-    #     for msg in track:
-    #         # print(msg)
+    for i, track in enumerate(mid.tracks):
+        print('Track {}: {}'.format(i, track.name))
+        for msg in track:
+            print(msg)
     #         if msg.type == 'set_tempo':
     #             tempo = msg.tempo
     #         msg.time = tick2second(msg.time, mid.ticks_per_beat, tempo)
@@ -27,13 +27,29 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
     all_messages = [msg for msg in _to_abstime(
         mid) if not msg.is_meta and hasattr(msg, "channel")]
     channels = sorted(set(msg.channel for msg in all_messages))
+    
     messages_per_channel = {}
     for msg in all_messages:
         messages_per_channel.setdefault(msg.channel, []).append(msg)
     print("Messages per channel:")
     pp({chan: len(msgs) for chan, msgs in messages_per_channel.items()})
-    notes_per_channel = {chan: sorted(set(msg.note for msg in msgs if hasattr(
-        msg, "note"))) for chan, msgs in messages_per_channel.items()}
+    
+    # NUEVA LÓGICA: Añadir notas adyacentes para el pitch bend
+    notes_per_channel = {}
+    for chan, msgs in messages_per_channel.items():
+        base_notes = set(msg.note for msg in msgs if hasattr(msg, "note"))
+        has_pitchwheel = any(msg.type == 'pitchwheel' for msg in msgs)
+        
+        if has_pitchwheel and chan != 9:  # Evitamos hacer bend al canal de percusión
+            bent_notes = set()
+            for note in base_notes:
+                # Añadimos el margen basado en el parámetro dinámico
+                for bend in range(-pitch_bend_semitones, pitch_bend_semitones + 1):
+                    bent_notes.add(max(0, min(127, note + bend)))
+            notes_per_channel[chan] = sorted(bent_notes)
+        else:
+            notes_per_channel[chan] = sorted(base_notes)
+
     print("Notes per channel:")
     pp(notes_per_channel)
     program_per_channel = {chan: ([msg.program for msg in msgs if msg.type == "program_change"] or [
@@ -54,7 +70,7 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
     max_note = max(note for l in notes_per_channel.values() for note in l)
     length_creation = max_note - min_note + 1
     print(f"min note: {min_note}")
-    print(f"min note: {max_note}")
+    print(f"max note: {max_note}")
     # TODO: add the rest of the cases
     percussion_table = {
         # midi percussion note to TotebotHead_Percussion equivalent
@@ -130,7 +146,7 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
                         totebots[chan] = [(TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, 6 * doglitchweld + chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose+12), 100), xaxis=1, zaxis=-2)
                                            if 48 >= note else
                                           (TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, 6 * doglitchweld + chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose+12), 100), xaxis=1, zaxis=-2),
-                                           TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, 6 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 20), xaxis=1, zaxis=-2))) for note in notes_per_channel[chan]]
+                                           TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, 6 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 40), xaxis=1, zaxis=-2))) for note in notes_per_channel[chan]]
                     case prog if 31 >= prog >= 24:
                         totebots[chan] = [TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (1, _midi_note_to_totebot_pitch(note+transpose), 100), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
 
@@ -173,8 +189,15 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
                             for note in notes_per_channel[chan]]
         xors[chan] = [[LogicGate(((note-min_note) * 2 * (not doglitchweld) + 1, 1, chan * 2 * (not doglitchweld)), color, 2, xaxis=-2, zaxis=-1),
                        LogicGate(((note-min_note) * 2 * (not doglitchweld) + 1, 3, chan * 2 * (not doglitchweld)), "000000", 1, xaxis=-2, zaxis=-1)] for note in notes_per_channel[chan]]
-        states[chan] = {"sustain": False,
-                        "notes": set()}
+        
+        # NUEVO ESTADO: Separamos sustenidas de activas y guardamos el offset
+        states[chan] = {
+            "sustain": False,
+            "sustained_notes": set(),
+            "active_base_notes": set(),
+            "pitch_offset": 0
+        }
+        
     for chan in channels:
         for i in range(len(notes_per_channel[chan])):
             _old_connect(xors[chan][i][0], totebots[chan][i])
@@ -184,89 +207,121 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
     iter_messages = iter(all_messages)
     last_tick = 0
     lost_ticks = 0
+    
+    # FUNCIONES AUXILIARES PARA REFACTORIZAR EL MANEJO DEL BÚFER
+    def advance_time(msg_time):
+        nonlocal last_tick, lost_ticks
+        current_tick = math.floor(msg_time * TICKS_PER_SECOND * 1 / speed)
+        dt = 0
+        if current_tick != last_tick:
+            if lost_ticks > 0:
+                dt = current_tick - last_tick - 1 - lost_ticks
+                if dt < 0:
+                    lost_ticks += dt
+                    dt = 0
+                else:
+                    lost_ticks = 0
+            else:
+                dt = current_tick - last_tick - 1
+            while True:
+                try:
+                    timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 2, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000", divmod(dt, 40)))
+                except AssertionError:
+                    timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 2, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000", (59, 40)))
+                    dt -= 2399
+                    continue
+                break
+            last_tick = current_tick
+
+    def send_signal(chan, physical_note):
+        nonlocal lost_ticks
+        if physical_note not in notes_to_index[chan]:
+            return
+        buffer = xors[chan][notes_to_index[chan][physical_note]]
+        while True:
+            try:
+                _old_connect(timers[-1], buffer[-1])
+            except IndexError:
+                buffer.append(LogicGate(buffer[-1].pos + Pos(0, 1, 0) * (not doglitchweld), "000000", 1, xaxis=-2, zaxis=-1))
+                continue
+            except ValueError:
+                timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 2, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000", divmod(0, 40)))
+                lost_ticks += 1
+                continue
+            break
+
     try:
         while True:
             msg = next(iter_messages)
+            
             if dosustain:
                 if msg.is_cc(64):
                     states[msg.channel]["sustain"] = 64 >= msg.value
                     if msg.value < 64:
-                        for chan, note in states[msg.channel]["notes"]:
-                            buffer = xors[chan][notes_to_index[chan][note]]
-                            while True:
-                                try:
-                                    _old_connect(timers[-1], buffer[-1])
-                                except IndexError:
-                                    buffer.append(LogicGate((buffer[-1].pos + (0, 1, 0)) * (not doglitchweld), "000000", 1, xaxis=-2, zaxis=-1))
-                                    continue
-                                except ValueError:
-                                    timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 2, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
-                                                        divmod(0, 40)))
-                                    lost_ticks += 1
-                                    continue
-                                break
-                        states[msg.channel]["notes"].clear()
+                        # Se liberó el sustain: apagar las notas físicamente
+                        advance_time(msg.time)
+                        for base_note in states[msg.channel]["sustained_notes"]:
+                            physical_note = base_note + states[msg.channel]["pitch_offset"]
+                            send_signal(msg.channel, physical_note)
+                        states[msg.channel]["sustained_notes"].clear()
+                
                 elif msg.type == "note_off" or (msg.type == "note_on" and msg.velocity == 0):
-                    note_id = (msg.channel, msg.note)
+                    base_note = msg.note
+                    states[msg.channel]["active_base_notes"].discard(base_note)
                     if states[msg.channel]["sustain"]:
-                        states[msg.channel]["notes"].add(note_id)
-                        continue
+                        states[msg.channel]["sustained_notes"].add(base_note)
+                        continue # Evita enviar la señal de apagado al buffer físico
+                        
                 elif msg.type == "note_on":
-                    note_id = (msg.channel, msg.note)
-                    if note_id in states[msg.channel]["notes"]:
-                        buffer = xors[msg.channel][notes_to_index[msg.channel][msg.note]]
-                        while True:
-                            try:
-                                _old_connect(timers[-1], buffer[-1])
-                            except IndexError:
-                                buffer.append(LogicGate((buffer[-1].pos + (0, 1, 0)) * (not doglitchweld), "000000", 1, xaxis=-2, zaxis=-1))
-                                continue
-                            except ValueError:
-                                timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 2, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
-                                                    divmod(0, 40)))
-                                lost_ticks += 1
-                                continue
-                            break
-                        states[msg.channel]["notes"].remove(note_id)
+                    base_note = msg.note
+                    states[msg.channel]["active_base_notes"].add(base_note)
+                    if base_note in states[msg.channel]["sustained_notes"]:
+                        # Retriggering: si estaba sostenida, apagarla físicamente antes del note_on
+                        advance_time(msg.time)
+                        physical_note = base_note + states[msg.channel]["pitch_offset"]
+                        send_signal(msg.channel, physical_note)
+                        states[msg.channel]["sustained_notes"].remove(base_note)
+            else:
+                if msg.type == "note_off" or (msg.type == "note_on" and msg.velocity == 0):
+                    states[msg.channel]["active_base_notes"].discard(msg.note)
+                elif msg.type == "note_on":
+                    states[msg.channel]["active_base_notes"].add(msg.note)
+
+            # LÓGICA PITCH WHEEL INTERCEPTADA
+            if msg.type == 'pitchwheel' and msg.channel != 9:
+                
+                # Calculamos dinámicamente cuántos "puntos" de msg.pitch equivalen a 1 semitono
+                points_per_semitone = 8192 / pitch_bend_semitones
+                
+                # Convertimos a semitono discreto aproximado
+                new_offset = round(msg.pitch / points_per_semitone)
+                
+                # Aseguramos que el offset no exceda el límite establecido
+                new_offset = max(-pitch_bend_semitones, min(pitch_bend_semitones, new_offset))
+                
+                if new_offset != states[msg.channel]["pitch_offset"]:
+                    old_offset = states[msg.channel]["pitch_offset"]
+                    states[msg.channel]["pitch_offset"] = new_offset
+                    
+                    # Intercambiamos solo las notas que están sonando en este instante
+                    all_playing = states[msg.channel]["active_base_notes"] | states[msg.channel].get("sustained_notes", set())
+                    if all_playing:
+                        advance_time(msg.time)
+                        for base_note in all_playing:
+                            old_physical = base_note + old_offset
+                            new_physical = base_note + new_offset
+                            send_signal(msg.channel, old_physical)
+                            send_signal(msg.channel, new_physical)
+                continue
+                
             if not (msg.type == "note_on" or msg.type == "note_off"):
                 continue
-            current_tick = math.floor(msg.time * TICKS_PER_SECOND * 1 / speed)
-            dt = 0
-            if current_tick != last_tick:
-                if lost_ticks > 0:
-                    dt = current_tick - last_tick - 1 - lost_ticks
-                    if dt < 0:
-                        lost_ticks += dt
-                        dt = 0
-                    else:
-                        lost_ticks = 0
-                else:
-                    dt = current_tick - last_tick - 1
-                while True:
-                    try:
-                        timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 2, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
-                                            divmod(dt, 40)))
-                    except AssertionError:
-                        timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 2, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
-                                            (59, 40)))
-                        dt -= 2399
-                        continue
-                    break
 
-            buffer = xors[msg.channel][notes_to_index[msg.channel][msg.note]]
-            while True:
-                try:
-                    _old_connect(timers[-1], buffer[-1])
-                except IndexError:
-                    buffer.append(LogicGate(buffer[-1].pos + Pos(0, 1, 0) * (not doglitchweld), "000000", 1, xaxis=-2, zaxis=-1))
-                    continue
-                except ValueError:
-                    timers.append(Timer((len(timers) % (2*length_creation) * (not doglitchweld), 2, 2*(len(timers)//(2*length_creation)) * (not doglitchweld)), "000000",
-                                        divmod(0, 40)))
-                    lost_ticks += 1
-                    continue
-                break
-            last_tick = current_tick
+            # FLUJO ESTÁNDAR NOTE_ON / NOTE_OFF CON OFFSET APLICADO
+            advance_time(msg.time)
+            physical_note = msg.note + states[msg.channel]["pitch_offset"]
+            send_signal(msg.channel, physical_note)
+
     except StopIteration:
         pass
 
