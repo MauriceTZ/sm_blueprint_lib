@@ -45,6 +45,7 @@ def finite_state_machine(bp: Blueprint,
     dec_state_bits = array([LogicGate((-1, -3-y, 0), color_per_state.get(state, "000000"), 0)
                             for y, state in enumerate(state_set)], dtype=LogicGate)
     initial_state_index = state_set.index(initial_state)
+    transition_gates = {}
     print("State Transition table (top view):")
     for i, state in reversed(list(enumerate(state_set))):
         curr_state_index = (i-initial_state_index) % len(state_set)
@@ -55,16 +56,17 @@ def finite_state_machine(bp: Blueprint,
         for j, input_sym in reversed(list(enumerate(input_alphabet))):
             if (next_state := state_transition_table.get((state, input_sym))) is not None:
                 g = LogicGate((-1-len(input_alphabet)+j, -3-i, 0), "000000", 0)
+                transition_gates.setdefault((state, input_sym), []).append(g)
                 connect((dec_state_bits[i], input_signals[j, 2]), g)
                 next_state_index = (state_set.index(
                     next_state)-initial_state_index) % len(state_set)
                 mask = curr_state_index ^ next_state_index
                 connect(g, state_bits[num_to_bit_list(mask, n_bit_states), 0])
-                bp.add(g)
             print("(%s, %s) -> %s" % (state, input_sym, next_state), end="\t")
         print()
 
     # for i, ((curr_state, input_sym), next_state) in enumerate(state_transition_table.items()):
     #     print(i, (curr_state, input_sym), next_state)
 
-    bp.add(state_bits, input_signals, dec_state_bits)
+    bp.add(state_bits, input_signals, dec_state_bits, transition_gates.values())
+    return state_bits, input_signals, dec_state_bits, transition_gates

@@ -75,11 +75,11 @@ finite_state_machine(bp=bp,
 
 # ram(bp, 8, 8)
 
-# counter_register(bp,
-#                  bit_length=6,
-#                  OE=True,
-#                  with_increment=True,
-#                  with_decrement=True)
+counter_register(bp,
+                 bit_length=6,
+                 OE=True,
+                 with_increment=True,
+                 with_decrement=True)
 
 
 # clock40hz(bp, 10)

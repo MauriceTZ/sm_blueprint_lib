@@ -16,7 +16,7 @@ bp = Blueprint()
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\chopin-ballade3.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Undertale_-_Megalovania.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Erika - German Folk Song.mid"
-# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\QueenGreatest_hits_Bohemian_Rhapsody.mid"
+file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\QueenGreatest_hits_Bohemian_Rhapsody.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Careless-Whisper.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Thomas The Tank Engine Theme (MIDI).mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\ussr.mid"
@@ -28,13 +28,13 @@ bp = Blueprint()
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Toccato-&-Fugue-in-D-Minor.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\The Entertainer.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Chopin_Nocturne_Op9_No2.mid"
-file = r"demo_MIDIs\C. A. Debussy - Clair De Lune (1903).mid"
+# file = r"demo_MIDIs\C. A. Debussy - Clair De Lune (1903).mid"
 # file = r"demo_MIDIs\Smashmouth_-_All_Star.mid"
 # file = r"demo_MIDIs\vanessa_carltona_thousand_miles.mid"
 
 # Call midi_converter() to make the conversion
 midi_converter(bp, file,
-               noblip=False, doglitchweld=True, dosustain=True, transpose=0, 
+               noblip=False, doglitchweld=True, dosustain=True, transpose=0,
                color="1020DE", tryImitateInstruments=False, speed=1.0, pitch_bend_semitones=2)
 
 print(f"Prebuild size: {len(bp.bodies[0].childs)} parts")

@@ -11,7 +11,7 @@ from dataclasses import asdict
 from json import load, dump, loads, dumps
 from math import ceil, log2
 
-from numpy import ndarray
+from numpy import ndarray, array
 
 from .bases.parts.baseinteractablepart import BaseInteractablePart
 from .blueprint import Blueprint
@@ -204,16 +204,26 @@ def get_bits_required(number: int | float):
     return ceil(log2(number))
 
 
-def num_to_bit_list(number: int, bit_length: int):
+def num_to_bit_list(number: int, bit_length: int = None):
     """Converts a number to a numpy array of its bits.
 
     Args:
         number (int): The number to convert.
         bit_length (int): The number of bits the list will have.
     """
-    output = ndarray(bit_length, dtype=bool)
-    for b in range(bit_length):
-        output[b] = bool((number >> b) & 1)
+    if bit_length is not None:
+        output = ndarray(bit_length, dtype=bool)
+        for b in range(bit_length):
+            output[b] = bool((number >> b) & 1)
+    else:
+        assert number >= 0, "number must be positive in order to convert to list of bits."
+        output = []
+        while True:
+            output.append(number & 1)
+            number >>= 1
+            if number == 0:
+                break
+        output = array(output, dtype=bool)
     return output
 
 
