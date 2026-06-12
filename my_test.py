@@ -8,12 +8,14 @@ bp = Blueprint()
 
 
 class Thread:
-    def __init__(self, axis, initial, dir, bp=bp):
+    def __init__(self, axis, initial, dir, bp=bp, _from=None):
         self.axis = axis
         self.prev = initial
         self.dir = dir
         self.bp = bp
         self.bp.add(self.prev)
+        if _from is not None:
+            connect(_from, self.prev)
 
     def node(self, mode="and", _from=None, _to=None, chain=True, pos=None):
         if isinstance(mode, str):
@@ -37,9 +39,11 @@ class Thread:
         return g
 
 
-code = Thread({"xaxis": 3, "zaxis": -1},
-               LogicGate((-2, 2, 0), "FF0000", 1, xaxis=3, zaxis=-1),
-               (0, 0, 1))
+axis = {"xaxis": 3, "zaxis": -1}
+dir = Pos(0, 0, 1)
+code = Thread(axis,
+              LogicGate((-2, 2, 0), "FF0000", 1, **axis),
+              dir)
 
 ADDR_SIZE = 16
 START_ADDR = 0x1000
@@ -113,6 +117,31 @@ connect(internal_bus, reg_din(reg_adder_b))
 connect(adder_out, internal_bus)
 
 
+left_shifter = [
+    [LogicGate((-2-ADDR_SIZE+x, 18, 0), "0000FF", 0)
+     for x in range(1, ADDR_SIZE)],
+    [LogicGate((-2-ADDR_SIZE+x, 19, 0), "FF0000", 1)
+     for x in range(ADDR_SIZE-1)],
+    LogicGate((-2-ADDR_SIZE, 18, 0), "FF0000", 1)
+]
+connect(internal_bus, left_shifter[1])
+connect(left_shifter[1], left_shifter[0])
+connect(left_shifter[2], left_shifter[0])
+connect(left_shifter[0], internal_bus[1:])
+
+right_shifter = [
+    [LogicGate((-2-ADDR_SIZE+x, 21, 0), "0000FF", 0)
+     for x in range(ADDR_SIZE-1)],
+    [LogicGate((-2-ADDR_SIZE+x, 22, 0), "FF0000", 1)
+     for x in range(1, ADDR_SIZE)],
+    LogicGate((-3-ADDR_SIZE, 21, 0), "FF0000", 1)
+]
+connect(internal_bus[1:], right_shifter[1])
+connect(right_shifter[1], right_shifter[0])
+connect(right_shifter[2], right_shifter[0])
+connect(right_shifter[0], internal_bus)
+
+
 reset_signal = [
     Button((-2, 3, 2), "000000"),
     LogicGate((-2, 3, 1), "000000", 3),
@@ -124,7 +153,7 @@ connect(reset_signal[2], code.prev)
 
 
 bp.add(internal_bus, reset_signal, adder_out,
-       adder_out_enable, adder_mode_select)
+       adder_out_enable, adder_mode_select, left_shifter, right_shifter)
 
 
 def add(t, reg_a, reg_b, reg_out):
@@ -133,7 +162,7 @@ def add(t, reg_a, reg_b, reg_out):
     t.node(_to=adder_mode_select[3])
     t.node(_to=reg_write(reg_adder_a))
     t.node(_to=reg_write(reg_adder_b))
-    t.node(36, _to=adder_out_enable)
+    t.node(5+2*ADDR_SIZE, _to=adder_out_enable)
     t.node(_to=adder_mode_select[3])
     t.node()
     t.node(_to=reg_write(reg_out))
@@ -167,24 +196,75 @@ def move(t, reg_from, reg_to):
 def set_reg(t, reg, value):
     g = t.node("or", _to=mask(internal_bus, value))
     t.node(_to=reg_write(reg))
+    t.node()
     return g
 
 
 def jump(t, g):
-    return t.node("or", _to=g)
+    gg = t.node("or", _to=g)
+    ggg = t.node("or", chain=False, pos=t.prev.pos + t.dir)
+    t.prev = ggg
+    return gg
 
 
-# reset
+def jump_if_carry(t, g):
+    gg = t.node("or")
+    c0 = t.node("nand", chain=False,
+                pos=t.prev.pos + t.dir,
+                _from=adder[4][-1])
+    c1 = t.node("and", chain=False,
+                pos=t.prev.pos + t.dir + (-1, 0, 0),
+                _from=adder[4][-1])
+    t0 = Thread(t.axis,
+                LogicGate(t.prev.pos + 2*t.dir, "FF0000", 0, **t.axis),
+                t.dir, _from=(c0, t.prev))
+    t1 = Thread(t.axis,
+                LogicGate(t.prev.pos + 2*t.dir +
+                          (-1, 0, 0), "FF0000", 0, **t.axis),
+                t.dir, _from=(c1, t.prev))
+    jump(t1, g)
+    t.prev = t0.prev
+    return gg
+
+
+def left_shift(t, reg_from, reg_to):
+    g = t.node("or", _to=reg_read(reg_from))
+    t.node()
+    t.node()
+    t.node(_to=left_shifter[2])
+    t.node()
+    t.node()
+    t.node(_to=reg_write(reg_to))
+    t.node()
+    return g
+
+
+def right_shift(t, reg_from, reg_to):
+    g = t.node("or", _to=reg_read(reg_from))
+    t.node()
+    t.node()
+    t.node(_to=right_shifter[2])
+    t.node()
+    t.node()
+    t.node(_to=reg_write(reg_to))
+    t.node()
+    return g
+
+
+# initialization
 code.node(_to=mask(internal_bus, START_ADDR))
 code.node(_to=PC_write)
 code.node(_to=[reg_write(r) for r in registers])
 code.node(_to=adder_mode_select[3])
 
-# test program
-set_reg(code, registers[0], 1)
+
+
+# fibonacci
+reset = set_reg(code, registers[0], 1)
 set_reg(code, registers[1], 1)
 set_reg(code, registers[2], 0)
 loop = add(code, registers[0], registers[1], registers[2])
+jump_if_carry(code, reset)
 move(code, registers[1], registers[0])
 move(code, registers[2], registers[1])
 jump(code, loop)
