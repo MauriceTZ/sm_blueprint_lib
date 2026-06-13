@@ -152,8 +152,19 @@ connect(reset_signal[1], reset_signal[2])
 connect(reset_signal[2], code.prev)
 
 
+ram_module = ram(bp, ADDR_SIZE, 8, (-2-ADDR_SIZE, 25, 2))
+ram_din = [LogicGate((-2-ADDR_SIZE+x, 26, 0), "FF0000", 1)
+           for x in range(ADDR_SIZE)]
+connect(internal_bus, ram_din)
+connect(ram_din, ram_module[1])
+connect(ram_module[2], internal_bus)
+connect(internal_bus, ram_module[3])
+connect(internal_bus, ram_module[6])
+
+
 bp.add(internal_bus, reset_signal, adder_out,
-       adder_out_enable, adder_mode_select, left_shifter, right_shifter)
+       adder_out_enable, adder_mode_select, left_shifter, right_shifter,
+       ram_din)
 
 
 def add(t, reg_a, reg_b, reg_out):
@@ -251,23 +262,76 @@ def right_shift(t, reg_from, reg_to):
     return g
 
 
+def write_ram(t, reg_data_out, reg_addr):
+    g = t.node("or", _to=reg_read(reg_data_out))
+    t.node(_to=reg_read(reg_addr))
+    t.node()
+    t.node()
+    t.node(_to=ram_module[5])
+    t.node()
+    return g
+
+
+def read_ram(t, reg_data_in, reg_addr):
+    g = t.node("or", _to=reg_read(reg_addr))
+    t.node()
+    t.node()
+    t.node(_to=ram_module[8])
+    t.node()
+    t.node()
+    t.node()
+    t.node()
+    t.node(_to=reg_write(reg_data_in))
+    t.node()
+    return g
+
+
+def write_ram_address(t, reg_data_out, addr_value):
+    g = t.node("or", _to=reg_read(reg_data_out))
+    t.node()
+    t.node()
+    t.node(_to=mask(internal_bus, addr_value))
+    t.node(_to=ram_module[5])
+    t.node()
+    return g
+
+
+def read_ram_address(t, reg_data_in, addr_value):
+    g = t.node("or",_to=mask(internal_bus, addr_value))
+    t.node(_to=ram_module[8])
+    t.node()
+    t.node()
+    t.node()
+    t.node()
+    t.node(_to=reg_write(reg_data_in))
+    t.node()
+    return g
+
+
 # initialization
 code.node(_to=mask(internal_bus, START_ADDR))
 code.node(_to=PC_write)
 code.node(_to=[reg_write(r) for r in registers])
 code.node(_to=adder_mode_select[3])
 
+set_reg(code, registers[0], 10)
+write_ram_address(code, registers[0], 2)
+read_ram_address(code, registers[1], 2)
+# set_reg(code, registers[0], 10)
+# set_reg(code, registers[1], 3)
+# write_ram(code, registers[0], registers[1])
+# read_ram(code, registers[3], registers[1])
 
 
-# fibonacci
-reset = set_reg(code, registers[0], 1)
-set_reg(code, registers[1], 1)
-set_reg(code, registers[2], 0)
-loop = add(code, registers[0], registers[1], registers[2])
-jump_if_carry(code, reset)
-move(code, registers[1], registers[0])
-move(code, registers[2], registers[1])
-jump(code, loop)
+# # fibonacci
+# reset = set_reg(code, registers[0], 1)
+# set_reg(code, registers[1], 1)
+# set_reg(code, registers[2], 0)
+# loop = add(code, registers[0], registers[1], registers[2])
+# jump_if_carry(code, reset)
+# move(code, registers[1], registers[0])
+# move(code, registers[2], registers[1])
+# jump(code, loop)
 
 
 print(f"Prebuild size: {len(bp.bodies[0].childs)} parts")
