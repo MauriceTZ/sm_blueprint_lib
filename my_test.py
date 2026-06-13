@@ -92,26 +92,30 @@ for r in registers:
     connect(reg_dout(r), internal_bus)
     connect(internal_bus, reg_din(r))
 
-
-adder = simple_adder_subtractor(bp, ADDR_SIZE, (-2-ADDR_SIZE, 10, 0))
+adder = cla_1tick(bp, ADDR_SIZE, (-3-2*ADDR_SIZE, 10, 0))
+# adder = simple_adder_subtractor(bp, ADDR_SIZE, (-2-ADDR_SIZE, 10, 0))
 reg_adder_a = register(bp, ADDR_SIZE, OE=False, pos=(-2-ADDR_SIZE, 12, 2))
 reg_adder_b = register(bp, ADDR_SIZE, OE=False, pos=(-2-ADDR_SIZE, 12, 0))
-adder_out = [LogicGate((-2-ADDR_SIZE+x, 7, 0), "0000FF")
-             for x in range(ADDR_SIZE)]
-adder_out_enable = LogicGate((-3-ADDR_SIZE, 7, 0), "FF0000", 1)
-adder_mode_select = [LogicGate((-3-ADDR_SIZE, 9, 0), "0000FF", 2),
-                     LogicGate((-3-ADDR_SIZE, 10, 0), "000000", 0),
-                     LogicGate((-3-ADDR_SIZE, 11, 0), "FF0000", 2),
-                     LogicGate((-4-ADDR_SIZE, 10, 0), "FF0000", 1)]
+adder_out = adder[8]
+adder_out_enable = adder[10]
+carry = adder[6][-1]
+carry_inverted = adder[7]
+# adder_out = [LogicGate((-2-ADDR_SIZE+x, 7, 0), "0000FF")
+#              for x in range(ADDR_SIZE)]
+# adder_out_enable = LogicGate((-3-ADDR_SIZE, 7, 0), "FF0000", 1)
+adder_mode_select = [LogicGate((-4-ADDR_SIZE, 12, 0), "0000FF", 2),
+                     LogicGate((-4-ADDR_SIZE, 13, 0), "000000", 0),
+                     LogicGate((-4-ADDR_SIZE, 14, 0), "FF0000", 2),
+                     LogicGate((-5-ADDR_SIZE, 13, 0), "FF0000", 1)]
 adder_mode_select[2].connect(adder_mode_select[1]).connect(
     adder_mode_select[0]).connect(adder_mode_select[0]).connect(adder_mode_select[2])
 adder_mode_select[3].connect(adder_mode_select[1])
-adder_mode_select[0].connect(adder[7])
+adder_mode_select[0].connect(adder[9])
 
 connect(reg_dout(reg_adder_a), adder[0])
 connect(reg_dout(reg_adder_b), adder[1])
-connect(adder[6], adder_out)
-connect(adder_out_enable, adder_out)
+# connect(adder[6], adder_out)
+# connect(adder_out_enable, adder_out)
 connect(internal_bus, reg_din(reg_adder_a))
 connect(internal_bus, reg_din(reg_adder_b))
 connect(adder_out, internal_bus)
@@ -162,9 +166,8 @@ connect(internal_bus, ram_module[3])
 connect(internal_bus, ram_module[6])
 
 
-bp.add(internal_bus, reset_signal, adder_out,
-       adder_out_enable, adder_mode_select, left_shifter, right_shifter,
-       ram_din)
+bp.add(internal_bus, reset_signal, adder_mode_select,
+       left_shifter, right_shifter, ram_din)
 
 
 def add(t, reg_a, reg_b, reg_out):
@@ -173,7 +176,7 @@ def add(t, reg_a, reg_b, reg_out):
     t.node(_to=adder_mode_select[3])
     t.node(_to=reg_write(reg_adder_a))
     t.node(_to=reg_write(reg_adder_b))
-    t.node(5+2*ADDR_SIZE, _to=adder_out_enable)
+    t.node(8, _to=adder_out_enable)
     t.node(_to=adder_mode_select[3])
     t.node()
     t.node(_to=reg_write(reg_out))
@@ -187,7 +190,7 @@ def sub(t, reg_a, reg_b, reg_out):
     t.node(_to=(adder_mode_select[3], adder_mode_select[2]))
     t.node(_to=reg_write(reg_adder_a))
     t.node(_to=reg_write(reg_adder_b))
-    t.node(36, _to=adder_out_enable)
+    t.node(8, _to=adder_out_enable)
     t.node(_to=adder_mode_select[3])
     t.node()
     t.node(_to=reg_write(reg_out))
@@ -222,10 +225,10 @@ def jump_if_carry(t, g):
     gg = t.node("or")
     c0 = t.node("nand", chain=False,
                 pos=t.prev.pos + t.dir,
-                _from=adder[4][-1])
+                _from=carry)
     c1 = t.node("and", chain=False,
                 pos=t.prev.pos + t.dir + (-1, 0, 0),
-                _from=adder[4][-1])
+                _from=carry)
     t0 = Thread(t.axis,
                 LogicGate(t.prev.pos + 2*t.dir, "FF0000", 0, **t.axis),
                 t.dir, _from=(c0, t.prev))
@@ -297,7 +300,7 @@ def write_ram_address(t, reg_data_out, addr_value):
 
 
 def read_ram_address(t, reg_data_in, addr_value):
-    g = t.node("or",_to=mask(internal_bus, addr_value))
+    g = t.node("or", _to=mask(internal_bus, addr_value))
     t.node(_to=ram_module[8])
     t.node()
     t.node()
@@ -314,24 +317,24 @@ code.node(_to=PC_write)
 code.node(_to=[reg_write(r) for r in registers])
 code.node(_to=adder_mode_select[3])
 
-set_reg(code, registers[0], 10)
-write_ram_address(code, registers[0], 2)
-read_ram_address(code, registers[1], 2)
 # set_reg(code, registers[0], 10)
-# set_reg(code, registers[1], 3)
-# write_ram(code, registers[0], registers[1])
-# read_ram(code, registers[3], registers[1])
+# write_ram_address(code, registers[0], 2)
+# read_ram_address(code, registers[1], 2)
+# # set_reg(code, registers[0], 10)
+# # set_reg(code, registers[1], 3)
+# # write_ram(code, registers[0], registers[1])
+# # read_ram(code, registers[3], registers[1])
 
 
-# # fibonacci
-# reset = set_reg(code, registers[0], 1)
-# set_reg(code, registers[1], 1)
-# set_reg(code, registers[2], 0)
-# loop = add(code, registers[0], registers[1], registers[2])
-# jump_if_carry(code, reset)
-# move(code, registers[1], registers[0])
-# move(code, registers[2], registers[1])
-# jump(code, loop)
+# fibonacci
+reset = set_reg(code, registers[0], 1)
+set_reg(code, registers[1], 1)
+set_reg(code, registers[2], 0)
+loop = add(code, registers[0], registers[1], registers[2])
+jump_if_carry(code, reset)
+move(code, registers[1], registers[0])
+move(code, registers[2], registers[1])
+jump(code, loop)
 
 
 print(f"Prebuild size: {len(bp.bodies[0].childs)} parts")
