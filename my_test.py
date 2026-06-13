@@ -176,7 +176,21 @@ def add(t, reg_a, reg_b, reg_out):
     t.node(_to=adder_mode_select[3])
     t.node(_to=reg_write(reg_adder_a))
     t.node(_to=reg_write(reg_adder_b))
-    t.node(8, _to=adder_out_enable)
+    t.node(7, _to=adder_out_enable)
+    t.node(_to=adder_mode_select[3])
+    t.node()
+    t.node(_to=reg_write(reg_out))
+    t.node()
+    return g
+
+
+def add_immediate(t, reg_a, imm_value, reg_out):
+    g = t.node("or", _to=reg_read(reg_a))
+    t.node(_to=(adder_mode_select[3], mask(internal_bus, imm_value)))
+    t.node(_to=reg_write(reg_adder_b))
+    t.node(_to=reg_write(reg_adder_a))
+    t.node()
+    t.node(6, _to=adder_out_enable)
     t.node(_to=adder_mode_select[3])
     t.node()
     t.node(_to=reg_write(reg_out))
@@ -190,7 +204,21 @@ def sub(t, reg_a, reg_b, reg_out):
     t.node(_to=(adder_mode_select[3], adder_mode_select[2]))
     t.node(_to=reg_write(reg_adder_a))
     t.node(_to=reg_write(reg_adder_b))
-    t.node(8, _to=adder_out_enable)
+    t.node(7, _to=adder_out_enable)
+    t.node(_to=adder_mode_select[3])
+    t.node()
+    t.node(_to=reg_write(reg_out))
+    t.node()
+    return g
+
+
+def sub_immediate(t, reg_a, imm_value, reg_out):
+    g = t.node("or", _to=reg_read(reg_a))
+    t.node(_to=(adder_mode_select[3], adder_mode_select[2], mask(internal_bus, imm_value)))
+    t.node(_to=reg_write(reg_adder_b))
+    t.node(_to=reg_write(reg_adder_a))
+    t.node()
+    t.node(6, _to=adder_out_enable)
     t.node(_to=adder_mode_select[3])
     t.node()
     t.node(_to=reg_write(reg_out))
@@ -317,6 +345,12 @@ code.node(_to=PC_write)
 code.node(_to=[reg_write(r) for r in registers])
 code.node(_to=adder_mode_select[3])
 
+set_reg(code, registers[0], 0)
+loop = write_ram(code, registers[0], registers[0])
+add_immediate(code, registers[0], 1, registers[0])
+jump(code, loop)
+
+# # testing ram
 # set_reg(code, registers[0], 10)
 # write_ram_address(code, registers[0], 2)
 # read_ram_address(code, registers[1], 2)
@@ -326,15 +360,15 @@ code.node(_to=adder_mode_select[3])
 # # read_ram(code, registers[3], registers[1])
 
 
-# fibonacci
-reset = set_reg(code, registers[0], 1)
-set_reg(code, registers[1], 1)
-set_reg(code, registers[2], 0)
-loop = add(code, registers[0], registers[1], registers[2])
-jump_if_carry(code, reset)
-move(code, registers[1], registers[0])
-move(code, registers[2], registers[1])
-jump(code, loop)
+# # fibonacci
+# reset = set_reg(code, registers[0], 1)
+# set_reg(code, registers[1], 1)
+# set_reg(code, registers[2], 0)
+# loop = add(code, registers[0], registers[1], registers[2])
+# jump_if_carry(code, reset)
+# move(code, registers[1], registers[0])
+# move(code, registers[2], registers[1])
+# jump(code, loop)
 
 
 print(f"Prebuild size: {len(bp.bodies[0].childs)} parts")
