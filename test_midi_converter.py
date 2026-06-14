@@ -4,7 +4,7 @@ from src.sm_blueprint_lib import *
 bp = Blueprint()
 
 # Put here the path to your MIDI file, here are some examples:
-# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Theme__pink_panther.mid"
+file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Theme__pink_panther.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\sade-kiss_of_life.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Sade - Kiss Of Life___WWW.MIDISFREE.COM.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\California gurls.mid"
@@ -16,7 +16,7 @@ bp = Blueprint()
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\chopin-ballade3.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Undertale_-_Megalovania.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Erika - German Folk Song.mid"
-file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\QueenGreatest_hits_Bohemian_Rhapsody.mid"
+# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\QueenGreatest_hits_Bohemian_Rhapsody.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Careless-Whisper.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Thomas The Tank Engine Theme (MIDI).mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\ussr.mid"
@@ -35,7 +35,7 @@ file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\QueenGreate
 # Call midi_converter() to make the conversion
 midi_converter(bp, file,
                noblip=False, doglitchweld=True, dosustain=True, transpose=0,
-               color="1020DE", tryImitateInstruments=False, speed=1.0, pitch_bend_semitones=2)
+               color="B43864", tryImitateInstruments=True, speed=1.0)
 
 print(f"Prebuild size: {len(bp.bodies[0].childs)} parts")
 # Save the creation into an existing blueprint in your lift, for example "MIDI converter output"

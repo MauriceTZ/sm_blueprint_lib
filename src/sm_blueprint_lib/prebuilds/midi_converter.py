@@ -12,13 +12,13 @@ from ..constants import TICKS_PER_SECOND
 from ..pos import Pos
 
 
-def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=False, dosustain=False, transpose=0, color="00FFFF", tryImitateInstruments=True, speed=1.0, pitch_bend_semitones=2):
+def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=False, dosustain=False, transpose=0, color="00FFFF", tryImitateInstruments=True, speed=1.0):
     mid = MidiFile(midi_file, clip=True)
     # tempo = 500000
-    for i, track in enumerate(mid.tracks):
-        print('Track {}: {}'.format(i, track.name))
-        for msg in track:
-            print(msg)
+    # for i, track in enumerate(mid.tracks):
+    #     print('Track {}: {}'.format(i, track.name))
+    #     for msg in track:
+    #         print(msg)
     #         if msg.type == 'set_tempo':
     #             tempo = msg.tempo
     #         msg.time = tick2second(msg.time, mid.ticks_per_beat, tempo)
@@ -33,6 +33,20 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
         messages_per_channel.setdefault(msg.channel, []).append(msg)
     print("Messages per channel:")
     pp({chan: len(msgs) for chan, msgs in messages_per_channel.items()})
+
+    pitch_bend_ranges = {i: 2 for i in range(16)}  # Default is 2 semitones
+    rpn_msb = {i: None for i in range(16)}
+    rpn_lsb = {i: None for i in range(16)}
+    for msg in all_messages:
+        if msg.is_cc(101):
+            rpn_msb[msg.channel] = msg.value
+        elif msg.is_cc(100):
+            rpn_lsb[msg.channel] = msg.value
+        elif msg.is_cc(6):
+            # Check if the active RPN is Pitch Bend Sensitivity (0, 0)
+            if rpn_msb.get(msg.channel) == 0 and rpn_lsb.get(msg.channel) == 0:
+                pitch_bend_ranges[msg.channel] = msg.value
+                print(f"Channel {msg.channel}: Pitch bend range set to ±{msg.value} semitones")
     
     # NUEVA LÓGICA: Añadir notas adyacentes para el pitch bend
     notes_per_channel = {}
@@ -44,7 +58,7 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
             bent_notes = set()
             for note in base_notes:
                 # Añadimos el margen basado en el parámetro dinámico
-                for bend in range(-pitch_bend_semitones, pitch_bend_semitones + 1):
+                for bend in range(-pitch_bend_ranges[chan], pitch_bend_ranges[chan] + 1):
                     bent_notes.add(max(0, min(127, note + bend)))
             notes_per_channel[chan] = sorted(bent_notes)
         else:
@@ -289,15 +303,8 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
 
             # LÓGICA PITCH WHEEL INTERCEPTADA
             if msg.type == 'pitchwheel' and msg.channel != 9:
-                
-                # Calculamos dinámicamente cuántos "puntos" de msg.pitch equivalen a 1 semitono
-                points_per_semitone = 8192 / pitch_bend_semitones
-                
-                # Convertimos a semitono discreto aproximado
-                new_offset = round(msg.pitch / points_per_semitone)
-                
-                # Aseguramos que el offset no exceda el límite establecido
-                new_offset = max(-pitch_bend_semitones, min(pitch_bend_semitones, new_offset))
+                current_range = pitch_bend_ranges[msg.channel]
+                new_offset = round(current_range * (msg.pitch / 8192))
                 
                 if new_offset != states[msg.channel]["pitch_offset"]:
                     old_offset = states[msg.channel]["pitch_offset"]
