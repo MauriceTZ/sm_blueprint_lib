@@ -45,7 +45,7 @@ code = Thread(axis,
               LogicGate((-2, 2, 0), "FF0000", 1, **axis),
               dir)
 
-ADDR_SIZE = 16
+ADDR_SIZE = 8
 START_ADDR = 0x1000
 NUM_REGISTERS = 8
 
@@ -92,17 +92,13 @@ for r in registers:
     connect(reg_dout(r), internal_bus)
     connect(internal_bus, reg_din(r))
 
-adder = cla_1tick(bp, ADDR_SIZE, (-3-2*ADDR_SIZE, 10, 0))
-# adder = simple_adder_subtractor(bp, ADDR_SIZE, (-2-ADDR_SIZE, 10, 0))
+adder_subtractor = cla_1tick(bp, ADDR_SIZE, (-3-2*ADDR_SIZE, 10, 0))
 reg_adder_a = register(bp, ADDR_SIZE, OE=False, pos=(-2-ADDR_SIZE, 12, 2))
 reg_adder_b = register(bp, ADDR_SIZE, OE=False, pos=(-2-ADDR_SIZE, 12, 0))
-adder_out = adder[8]
-adder_out_enable = adder[10]
-carry = adder[6][-1]
-carry_inverted = adder[7]
-# adder_out = [LogicGate((-2-ADDR_SIZE+x, 7, 0), "0000FF")
-#              for x in range(ADDR_SIZE)]
-# adder_out_enable = LogicGate((-3-ADDR_SIZE, 7, 0), "FF0000", 1)
+adder_out = adder_subtractor[8]
+adder_out_enable = adder_subtractor[10]
+carry_flag = adder_subtractor[6][-1]
+carry_flag_inverted = adder_subtractor[7]
 adder_mode_select = [LogicGate((-4-ADDR_SIZE, 12, 0), "0000FF", 2),
                      LogicGate((-4-ADDR_SIZE, 13, 0), "000000", 0),
                      LogicGate((-4-ADDR_SIZE, 14, 0), "FF0000", 2),
@@ -110,15 +106,27 @@ adder_mode_select = [LogicGate((-4-ADDR_SIZE, 12, 0), "0000FF", 2),
 adder_mode_select[2].connect(adder_mode_select[1]).connect(
     adder_mode_select[0]).connect(adder_mode_select[0]).connect(adder_mode_select[2])
 adder_mode_select[3].connect(adder_mode_select[1])
-adder_mode_select[0].connect(adder[9])
+adder_mode_select[0].connect(adder_subtractor[9])
 
-connect(reg_dout(reg_adder_a), adder[0])
-connect(reg_dout(reg_adder_b), adder[1])
-# connect(adder[6], adder_out)
-# connect(adder_out_enable, adder_out)
+connect(reg_dout(reg_adder_a), adder_subtractor[0])
+connect(reg_dout(reg_adder_b), adder_subtractor[1])
 connect(internal_bus, reg_din(reg_adder_a))
 connect(internal_bus, reg_din(reg_adder_b))
 connect(adder_out, internal_bus)
+zero_flag = LogicGate((-4, 5, 0), "0000FF", 4)
+nonzero_flag = LogicGate((-4, 6, 0), "0000FF", 1)
+sign_flag = adder_subtractor[4][-1]
+connect(adder_subtractor[4], zero_flag)
+connect(adder_subtractor[4], nonzero_flag)
+equal_flag = zero_flag
+overflow_flag = LogicGate((-5, 6, 0), "0000FF", 2)
+connect((adder_subtractor[6][-1], adder_subtractor[6][-2]), overflow_flag)
+lt_flag = LogicGate((-6, 6, 0), "0000FF", 2)
+connect((sign_flag, overflow_flag), lt_flag)
+gte_flag = LogicGate((-6, 5, 0), "0000FF", 5)
+connect((sign_flag, overflow_flag), gte_flag)
+gt_flag = LogicGate((-7, 6, 0), "0000FF", 0)
+connect((nonzero_flag, gte_flag), gt_flag)
 
 
 left_shifter = [
@@ -166,8 +174,8 @@ connect(internal_bus, ram_module[3])
 connect(internal_bus, ram_module[6])
 
 
-bp.add(internal_bus, reset_signal, adder_mode_select,
-       left_shifter, right_shifter, ram_din)
+bp.add(internal_bus, reset_signal, adder_mode_select, left_shifter,
+       right_shifter, ram_din, zero_flag, nonzero_flag, overflow_flag, lt_flag, gte_flag, gt_flag)
 
 
 def add(t, reg_a, reg_b, reg_out):
@@ -177,7 +185,7 @@ def add(t, reg_a, reg_b, reg_out):
     t.node(_to=reg_write(reg_adder_a))
     t.node(_to=reg_write(reg_adder_b))
     t.node(7, _to=adder_out_enable)
-    t.node(_to=adder_mode_select[3])
+    t.node()
     t.node()
     t.node(_to=reg_write(reg_out))
     t.node()
@@ -191,7 +199,7 @@ def add_immediate(t, reg_a, imm_value, reg_out):
     t.node(_to=reg_write(reg_adder_a))
     t.node()
     t.node(6, _to=adder_out_enable)
-    t.node(_to=adder_mode_select[3])
+    t.node()
     t.node()
     t.node(_to=reg_write(reg_out))
     t.node()
@@ -205,7 +213,7 @@ def sub(t, reg_a, reg_b, reg_out):
     t.node(_to=reg_write(reg_adder_a))
     t.node(_to=reg_write(reg_adder_b))
     t.node(7, _to=adder_out_enable)
-    t.node(_to=adder_mode_select[3])
+    t.node()
     t.node()
     t.node(_to=reg_write(reg_out))
     t.node()
@@ -214,14 +222,27 @@ def sub(t, reg_a, reg_b, reg_out):
 
 def sub_immediate(t, reg_a, imm_value, reg_out):
     g = t.node("or", _to=reg_read(reg_a))
-    t.node(_to=(adder_mode_select[3], adder_mode_select[2], mask(internal_bus, imm_value)))
+    t.node(_to=(adder_mode_select[3], adder_mode_select[2], mask(
+        internal_bus, imm_value)))
     t.node(_to=reg_write(reg_adder_b))
     t.node(_to=reg_write(reg_adder_a))
     t.node()
     t.node(6, _to=adder_out_enable)
-    t.node(_to=adder_mode_select[3])
+    t.node()
     t.node()
     t.node(_to=reg_write(reg_out))
+    t.node()
+    return g
+
+
+def compare(t, reg_a, reg_b):
+    g = t.node("or", _to=reg_read(reg_a))
+    t.node(_to=reg_read(reg_b))
+    t.node(_to=(adder_mode_select[3], adder_mode_select[2]))
+    t.node(_to=reg_write(reg_adder_a))
+    t.node(_to=reg_write(reg_adder_b))
+    t.node(7)
+    t.node()
     t.node()
     return g
 
@@ -253,10 +274,10 @@ def jump_if_carry(t, g):
     gg = t.node("or")
     c0 = t.node("nand", chain=False,
                 pos=t.prev.pos + t.dir,
-                _from=carry)
+                _from=carry_flag)
     c1 = t.node("and", chain=False,
                 pos=t.prev.pos + t.dir + (-1, 0, 0),
-                _from=carry)
+                _from=carry_flag)
     t0 = Thread(t.axis,
                 LogicGate(t.prev.pos + 2*t.dir, "FF0000", 0, **t.axis),
                 t.dir, _from=(c0, t.prev))
