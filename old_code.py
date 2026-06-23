@@ -315,6 +315,7 @@ def right_shift(t, reg_from, reg_to):
 
 
 def write_ram(t, reg_data_out, reg_addr):
+    """Uses reg_addr as a pointer."""
     g = t.node("or", _to=reg_read(reg_data_out))
     t.node(_to=reg_read(reg_addr))
     t.node()
@@ -325,6 +326,7 @@ def write_ram(t, reg_data_out, reg_addr):
 
 
 def read_ram(t, reg_data_in, reg_addr):
+    """Uses reg_addr as a pointer."""
     g = t.node("or", _to=reg_read(reg_addr))
     t.node()
     t.node()
@@ -339,6 +341,7 @@ def read_ram(t, reg_data_in, reg_addr):
 
 
 def write_ram_address(t, reg_data_out, addr_value):
+    """Uses addr_value as a direct ram address."""
     g = t.node("or", _to=reg_read(reg_data_out))
     t.node()
     t.node()
@@ -349,6 +352,7 @@ def write_ram_address(t, reg_data_out, addr_value):
 
 
 def read_ram_address(t, reg_data_in, addr_value):
+    """Uses addr_value as a direct ram address."""
     g = t.node("or", _to=mask(internal_bus, addr_value))
     t.node(_to=ram_module[8])
     t.node()

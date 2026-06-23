@@ -274,11 +274,58 @@ class WRITERAM(Instruction):
         connect(parts_list[:-1], parts_list[1:])
 
 
+class READRAM(Instruction):
+    parts = ["or", "and", "and", "and", "and", "and", "and", "and", "and", "and"]
+
+    @staticmethod
+    def connect(parts_list, args, hw_map, label_map):
+        reg_data_in = hw_map["get_reg"](args[0])
+        reg_addr = hw_map["get_reg"](args[1])
+
+        connect(parts_list[0], hw_map["reg_read"](reg_addr))
+        connect(parts_list[3], hw_map["ram_module"][8]) # Read Enable
+        connect(parts_list[8], hw_map["reg_write"](reg_data_in))
+        
+        connect(parts_list[:-1], parts_list[1:])
+
+
+class WRITERAMA(Instruction):
+    parts = ["or", "and", "and", "and", "and", "and"]
+
+    @staticmethod
+    def connect(parts_list, args, hw_map, label_map):
+        reg_data_out = hw_map["get_reg"](args[0])
+        addr_value = args[1]
+
+        connect(parts_list[0], hw_map["reg_read"](reg_data_out))
+        connect(parts_list[3], hw_map["mask"](hw_map["internal_bus"], addr_value))
+        connect(parts_list[4], hw_map["ram_module"][5]) # Write Enable
+        
+        connect(parts_list[:-1], parts_list[1:])
+
+
+class READRAMA(Instruction):
+    parts = ["or", "and", "and", "and", "and", "and", "and", "and"]
+
+    @staticmethod
+    def connect(parts_list, args, hw_map, label_map):
+        reg_data_in = hw_map["get_reg"](args[0])
+        addr_value = args[1]
+
+        connect(parts_list[0], hw_map["mask"](hw_map["internal_bus"], addr_value))
+        connect(parts_list[1], hw_map["ram_module"][8]) # Read Enable
+        connect(parts_list[6], hw_map["reg_write"](reg_data_in))
+        
+        connect(parts_list[:-1], parts_list[1:])
+
+
 INSTRUCTION_SET = {
     "ADD": ADD, "ADDI": ADDI, 
     "SUB": SUB, "SET": SET, 
     "MOVE": MOVE, "JUMP": JUMP, 
-    "JC": JC, "WRITERAM": WRITERAM
+    "JC": JC, "WRITERAM": WRITERAM,
+    "READRAM": READRAM, "WRITERAMA": WRITERAMA,
+    "READRAMA": READRAMA
 }
 
 
@@ -428,5 +475,5 @@ if __name__ == "__main__":
     # Add compiled instructions
     bp.add(*all_generated_instruction_parts)
     
-    save_blueprint("sm lib output", bp)
+    save_blueprint("compiler output", bp)
     print("Compilation successful. Saved to blueprint.")
