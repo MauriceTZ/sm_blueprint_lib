@@ -6,15 +6,17 @@ import numpy as np
 
 # Assuming you are running this from outside the src directory, or adjust imports as needed
 from src.sm_blueprint_lib import Blueprint, LogicGate, Timer, Pos, check_pos
-from src.sm_blueprint_lib.utils import connect, num_to_bit_list, save_blueprint
+from src.sm_blueprint_lib.utils import connect, get_bits_required, num_to_bit_list, save_blueprint
 from src.sm_blueprint_lib.prebuilds.adder import cla_1tick
 from src.sm_blueprint_lib.prebuilds.register import register, counter_register
 from src.sm_blueprint_lib.prebuilds.ram import ram
+from src.sm_blueprint_lib.prebuilds.timer_ram_multiclient import timer_ram_multiclient
 
 TICKS_PER_SECOND = 40
 ADDR_SIZE = 8
 START_ADDR = 0x1000
 NUM_REGISTERS = 8
+NUM_ADDR_TIMER_RAM = 256
 
 # ==============================================================================
 # 1. AST AND PARSER DEFINITIONS
@@ -319,13 +321,56 @@ class READRAMA(Instruction):
         connect(parts_list[:-1], parts_list[1:])
 
 
+class WRITETRAM(Instruction):
+    parts = ["or", "and", "and", "and", "and", "xor", "and", "and"]
+
+    @staticmethod
+    def connect(parts_list, args, hw_map, label_map):
+        reg_data_out = hw_map["get_reg"](args[0])
+        reg_addr = hw_map["get_reg"](args[1])
+
+        connect(parts_list[0], hw_map["reg_read"](reg_data_out))
+        connect(parts_list[1], hw_map["reg_read"](reg_addr))
+        connect(parts_list[3], hw_map["timer_ram_module"][3][0][7][1])
+        connect(parts_list[4], (hw_map["timer_ram_module"][3][0][8][1],
+                                hw_map["timer_ram_module"][3][0][9][1],
+                                hw_map["timer_ram_module"][3][0][9][0][1, 2]))
+        connect(parts_list[5], parts_list[5]) # Selfwired xor gate to wait for timer ram operation to finish
+        connect(parts_list[7], parts_list[5])
+        connect(hw_map["timer_ram_module"][3][0][11], parts_list[6])
+        
+        connect(parts_list[:-1], parts_list[1:])
+
+
+class READTRAM(Instruction):
+    parts = ["or", "and", "and", "and", "xor", "and", "and", "and", "and", "and"]
+
+    @staticmethod
+    def connect(parts_list, args, hw_map, label_map):
+        reg_data_in = hw_map["get_reg"](args[0])
+        reg_addr = hw_map["get_reg"](args[1])
+
+        connect(parts_list[0], hw_map["reg_read"](reg_addr))
+        connect(parts_list[3], (hw_map["timer_ram_module"][3][0][8][1],
+                                hw_map["timer_ram_module"][3][0][9][1],
+                                hw_map["timer_ram_module"][3][0][9][0][[0, 1], 2]))
+        connect(parts_list[4], parts_list[4]) # Selfwired xor gate to wait for timer ram operation to finish
+        connect(parts_list[6], parts_list[4])
+        connect(hw_map["timer_ram_module"][3][0][11], parts_list[5])
+        connect(parts_list[5], hw_map["timer_ram_module"][3][0][13])
+        connect(parts_list[8], hw_map["reg_write"](reg_data_in))
+        
+        connect(parts_list[:-1], parts_list[1:])
+
+
 INSTRUCTION_SET = {
     "ADD": ADD, "ADDI": ADDI, 
     "SUB": SUB, "SET": SET, 
     "MOVE": MOVE, "JUMP": JUMP, 
-    "JC": JC, "WRITERAM": WRITERAM,
-    "READRAM": READRAM, "WRITERAMA": WRITERAMA,
-    "READRAMA": READRAMA
+    "JC": JC,
+    "WRITERAM": WRITERAM, "READRAM": READRAM,
+    "WRITERAMA": WRITERAMA,"READRAMA": READRAMA,
+    "WRITETRAM": WRITETRAM, "READTRAM": READTRAM,
 }
 
 
@@ -395,13 +440,23 @@ if __name__ == "__main__":
     connect(internal_bus, reg_din(reg_adder_b))
     connect(adder_out, internal_bus)
 
-    ram_module = ram(bp, ADDR_SIZE, 8, (-2-ADDR_SIZE, 25, 2))
-    ram_din = [LogicGate((-2-ADDR_SIZE+x, 26, 0), "FF0000", 1) for x in range(ADDR_SIZE)]
+    ram_module = ram(bp, ADDR_SIZE, 8, (-2-ADDR_SIZE, 26, 2))
+    ram_din = [LogicGate((-2-ADDR_SIZE+x, 27, 0), "FF0000", 1) for x in range(ADDR_SIZE)]
     connect(internal_bus, ram_din)
     connect(ram_din, ram_module[1])
     connect(ram_module[2], internal_bus)
     connect(internal_bus, ram_module[3])
     connect(internal_bus, ram_module[6])
+
+    timer_ram_module = timer_ram_multiclient(bp,
+                                      bit_length=ADDR_SIZE,
+                                      num_address=NUM_ADDR_TIMER_RAM,
+                                      num_clients=1,
+                                      pos=(-5-get_bits_required(NUM_ADDR_TIMER_RAM)-ADDR_SIZE, 17, 0))
+    connect(internal_bus, timer_ram_module[3][0][7][0][:, 3])
+    connect(internal_bus, timer_ram_module[3][0][8][0][:, 2])
+    connect(timer_ram_module[3][0][12], internal_bus)
+
 
     # Ensure HW dependencies are bound for the compiler
     hw_map = {
@@ -415,16 +470,19 @@ if __name__ == "__main__":
         "adder_mode_select": adder_mode_select,
         "adder_out_enable": adder_out_enable,
         "carry_flag": carry_flag,
-        "ram_module": ram_module
+        "ram_module": ram_module,
+        "timer_ram_module": timer_ram_module,
     }
 
     # --- B. Run the Parser ---
     assembly_code = """
     .segment code
     entry_point:
-        SET r0, 0
+        SET r0, 1
+        SET r1, 10
     loop:
-        WRITERAM r0, r0
+        WRITETRAM r0, r0
+        READTRAM r2, r0
         ADDI r0, 1, r0
         JUMP loop
     """

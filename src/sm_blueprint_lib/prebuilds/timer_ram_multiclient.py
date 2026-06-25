@@ -1,5 +1,7 @@
 from typing import Sequence
 from numpy import ndarray
+
+from ..constants import TICKS_PER_SECOND
 from ..utils import get_bits_required, connect
 from ..blueprint import Blueprint
 from ..parts import LogicGate
@@ -34,9 +36,13 @@ def timer_ram_multiclient(bp: Blueprint, bit_length: int, num_address: int, num_
         t0.connect(l0).connect(l1).connect(t0)
     connect(timer_read_write_enable, timers[:, 1])
 
+    clients = []
     for z in range(num_clients):
         cpos = pos + (0, 0, z*2)
         data = register(bp, bit_length, pos=cpos + (0, 4, 0))
+        data_out = [LogicGate(cpos+(x, 2, 0), "0000FF")
+                    for x in range(bit_length)]
+        data_out_enable = LogicGate(cpos+(-1, 2, 0), "FF0000", 1)
         timers_readers = [LogicGate(cpos+(x, 3, 0), "000000")
                           for x in range(bit_length)]
         timers_readers_enable = LogicGate(cpos+(-1, 3, 0), "FF0000", 1)
@@ -55,6 +61,10 @@ def timer_ram_multiclient(bp: Blueprint, bit_length: int, num_address: int, num_
                       for x in range(get_bits_required(num_address))]
         comparator_write = LogicGate(cpos+(bit_length+1, 3, 0), "000000")
         comparator_read = LogicGate(cpos+(bit_length+2, 3, 0), "000000")
+        operation_completed = LogicGate(cpos+(bit_length+3, 3, 0), "000000", 1)
+        operation_completed_buffer = Timer(cpos+(bit_length+4, 3, 1), "0000FF", (0, 3), xaxis=-3, zaxis=-2)
+        connect(operation_completed, operation_completed_buffer)
+        connect((comparator_write, comparator_read), operation_completed)
         connect(post_rw[0][0, 0], rw_inv)
         connect(address[0][:, 0], comparator)
         connect(clock[:, 0], comparator)
@@ -75,11 +85,20 @@ def timer_ram_multiclient(bp: Blueprint, bit_length: int, num_address: int, num_
         connect(timers_readers_enable, timers_readers)
         connect(timers[:, 0], timers_readers)
         connect(timers_readers, data[0][:, 3])
+        connect(data[0][:, 1], data_out)
+        connect(data_out_enable, data_out)
         bp.add(comparator, comparator_write, comparator_read, rw_inv,
-               timers_readers, timers_readers_enable, timers_readers_buffer)
+               timers_readers, timers_readers_enable, timers_readers_buffer,
+               operation_completed, operation_completed_buffer, data_out, data_out_enable)
+        clients.append([comparator, comparator_write, comparator_read, rw_inv,
+                        timers_readers, timers_readers_enable, timers_readers_buffer,
+                        data, address, post_rw, operation_completed, operation_completed_buffer,
+                        data_out, data_out_enable])
 
     bp.add(timers, timer_read_write_enable)
 
     print(f"Timer ram: {bit_length*num_address} bits ({bit_length*num_address/8} bytes), "
-          f"Max time delay: {num_address} ticks ({num_address/40} seconds), "
+          f"Max time delay: {num_address} ticks ({num_address/TICKS_PER_SECOND} seconds), "
           f"Bits per part: {bit_length*num_address / (len(bp.bodies[0].childs)-initial_part_count):.2f} bits/part")
+
+    return clock, timers, timer_read_write_enable, clients

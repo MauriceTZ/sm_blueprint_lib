@@ -13,3 +13,4 @@ from .timer_ram_multiclient import *
 from .LFSR import *
 from .midi_converter import *
 from .finite_state_machine import *
+from .screens.timer_character_screen import *

@@ -10,7 +10,9 @@ from src.sm_blueprint_lib.utils import _old_connect
 
 bp = Blueprint()
 
-cla_1tick(bp, 16, (0, 0, 0))
+timer_character_screen(bp, 16, 2, pos=(0, 0, 0), do_preview=False)
+
+# cla_1tick(bp, 16, (0, 0, 0))
 
 # finite_state_machine(bp=bp,
 #                      input_alphabet=["a", "b", "c"],
@@ -20,7 +22,7 @@ cla_1tick(bp, 16, (0, 0, 0))
 #                          ("state1", "a"): "state2",
 #                          ("state2", "a"): "state3",
 #                          ("state3", "a"): "state1",
-                         
+
 #                          ("state2", "b"): "state1",
 #                          ("state3", "c"): "state1"
 #                      },
@@ -86,7 +88,7 @@ cla_1tick(bp, 16, (0, 0, 0))
 
 # clock40hz(bp, 10)
 
-# timer_ram_multiclient(bp, bit_length=16, num_address=256, num_clients=1)
+# timer_ram_multiclient(bp, bit_length=5*8, num_address=16*2, num_clients=1)
 
 # timer_ram_cached(bp,
 #                  bit_length=32,

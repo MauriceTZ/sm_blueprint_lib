@@ -479,3 +479,7 @@ def hex_to_rgb(hex):
     """
     hex = hex.lstrip("#")
     return tuple(int(hex[i:i + 2], 16) for i in (0, 2, 4))
+
+def mask(array_bus, mask_val: int, bit_length: int):
+    """Returns the specific logic gates from the bus that should be lit for the value"""
+    return array_bus[num_to_bit_list(mask_val, bit_length)]
