@@ -14,7 +14,7 @@ from ...pos import *
 from ..decoder import decoder
 
 
-def timer_character_screen(bp: Blueprint, ncols: int, nrows: int, do_preview: bool = False, pos: Pos | Sequence = (0, 0, 0)):
+def timer_character_screen(bp: Blueprint, ncols: int, nrows: int, do_preview: bool = False, monitor_ghosting: int = 1, pos: Pos | Sequence = (0, 0, 0)):
     pos = check_pos(pos)
     num_chars = ncols * nrows
     timer_ram = timer_ram_multiclient(
@@ -37,7 +37,8 @@ def timer_character_screen(bp: Blueprint, ncols: int, nrows: int, do_preview: bo
                         LogicGate(pos + (2*charx+11*x, 1,
                                   chary+2+9*y), "000000"),
                         Timer(pos + (2*charx+11*x, 2, 1+chary+2+9*y),
-                              "000000", divmod(num_chars, TICKS_PER_SECOND),
+                              "000000", divmod(
+                                  int(num_chars * monitor_ghosting), TICKS_PER_SECOND),
                               xaxis=-3, zaxis=-2)
                     )
                     connect(timer_write_enable[x + y * ncols],
@@ -47,7 +48,7 @@ def timer_character_screen(bp: Blueprint, ncols: int, nrows: int, do_preview: bo
             connect(timer_ram[1][:, 0],
                     timer_screen[x, y, :, :, 0].flatten(order="F"))
     dec = decoder(bp, num_chars, pos + (-1, 2, 1),
-                  with_enable=False, precreated_outputs=timer_write_enable)
+                  with_enable=False, precreated_outputs=flip(timer_write_enable))
     clock_buffer = [LogicGate(pos + (5*8+x, 0, 1), "000000", 1)
                     for x in range(get_bits_required(num_chars))]
     connect(timer_ram[0][:, 0], clock_buffer)
@@ -143,3 +144,4 @@ def timer_character_screen(bp: Blueprint, ncols: int, nrows: int, do_preview: bo
 
     bp.add(timer_write_enable, timer_screen,
            clock_buffer, char_input, char_decoder)
+    return (timer_write_enable, timer_screen, clock_buffer, char_input, char_decoder, timer_ram)

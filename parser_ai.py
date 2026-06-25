@@ -12,6 +12,7 @@ from src.sm_blueprint_lib.prebuilds.adder import cla_1tick
 from src.sm_blueprint_lib.prebuilds.register import register, counter_register
 from src.sm_blueprint_lib.prebuilds.ram import ram
 from src.sm_blueprint_lib.prebuilds.timer_ram_multiclient import timer_ram_multiclient
+from src.sm_blueprint_lib.prebuilds.screens.timer_character_screen import timer_character_screen
 
 
 ADDR_SIZE = 8
@@ -364,6 +365,27 @@ class READTRAM(Instruction):
         connect(parts_list[:-1], parts_list[1:])
 
 
+class PUTCHAR(Instruction):
+    parts = ["or", "and", "and", "and", "and", "and", "xor", "and", "and"]
+
+    @staticmethod
+    def connect(parts_list, args, hw_map, label_map):
+        reg_char = hw_map["get_reg"](args[0])
+        reg_char_index = hw_map["get_reg"](args[1])
+
+        connect(parts_list[0], hw_map["reg_read"](reg_char))
+        connect(parts_list[1], hw_map["reg_read"](reg_char_index))
+        connect(parts_list[4], hw_map["screen0"][5][3][0][8][1])
+        connect(parts_list[5], (hw_map["screen0"][5][3][0][7][1],
+                                hw_map["screen0"][5][3][0][9][1], # mode selector register
+                                hw_map["screen0"][5][3][0][9][0][1, 2]))  # write mode
+        connect(parts_list[6], parts_list[6]) # Selfwired xor gate to wait for screen operation to finish (wait bit)
+        connect(hw_map["screen0"][5][3][0][11], parts_list[7]) # Operation complete.
+        connect(parts_list[8], parts_list[6]) # Clear wait bit 
+
+        connect(parts_list[:-1], parts_list[1:])
+
+
 INSTRUCTION_SET = {
     "ADD": ADD, "ADDI": ADDI, 
     "SUB": SUB, "SET": SET, 
@@ -372,6 +394,7 @@ INSTRUCTION_SET = {
     "WRITERAM": WRITERAM, "READRAM": READRAM,
     "WRITERAMA": WRITERAMA,"READRAMA": READRAMA,
     "WRITETRAM": WRITETRAM, "READTRAM": READTRAM,
+    "PUTCHAR": PUTCHAR,
 }
 
 
@@ -458,6 +481,10 @@ if __name__ == "__main__":
     connect(internal_bus, timer_ram_module[3][0][8][0][:, 2])
     connect(timer_ram_module[3][0][12], internal_bus)
 
+    screen0 = timer_character_screen(bp, 16, 2, pos=(0, -20, 0), do_preview=False, monitor_ghosting=2)
+    connect(internal_bus, screen0[3])
+    connect(internal_bus, screen0[5][3][0][8][0][:, 2]) # timer screen address register
+
 
     # Ensure HW dependencies are bound for the compiler
     hw_map = {
@@ -473,19 +500,24 @@ if __name__ == "__main__":
         "carry_flag": carry_flag,
         "ram_module": ram_module,
         "timer_ram_module": timer_ram_module,
+        "screen0": screen0,
     }
 
     # --- B. Run the Parser ---
     assembly_code = """
     .segment code
     entry_point:
-        SET r0, 1
-        SET r1, 10
+        SET r0, 97
+        SET r1, 0
     loop:
-        WRITETRAM r0, r0
-        READTRAM r2, r0
+        PUTCHAR r0, r1
+        ADDI r1, 1, r1
         ADDI r0, 1, r0
         JUMP loop
+        # WRITETRAM r0, r0
+        # READTRAM r2, r0
+        # ADDI r0, 1, r0
+        # JUMP loop
     """
 
     parser = AssemblyParser()
