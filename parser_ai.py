@@ -332,13 +332,13 @@ class WRITETRAM(Instruction):
 
         connect(parts_list[0], hw_map["reg_read"](reg_data_out))
         connect(parts_list[1], hw_map["reg_read"](reg_addr))
-        connect(parts_list[3], hw_map["timer_ram_module"][3][0][7][1])
-        connect(parts_list[4], (hw_map["timer_ram_module"][3][0][8][1],
-                                hw_map["timer_ram_module"][3][0][9][1],
-                                hw_map["timer_ram_module"][3][0][9][0][1, 2]))
-        connect(parts_list[5], parts_list[5]) # Selfwired xor gate to wait for timer ram operation to finish
-        connect(parts_list[7], parts_list[5])
-        connect(hw_map["timer_ram_module"][3][0][11], parts_list[6])
+        connect(parts_list[3], hw_map["timer_ram_module"][3][0][7][1])  # timer ram data register
+        connect(parts_list[4], (hw_map["timer_ram_module"][3][0][8][1], # timer ram address register
+                                hw_map["timer_ram_module"][3][0][9][1], # mode selector register
+                                hw_map["timer_ram_module"][3][0][9][0][1, 2]))  # write mode
+        connect(parts_list[5], parts_list[5]) # Selfwired xor gate to wait for timer ram operation to finish (wait bit)
+        connect(hw_map["timer_ram_module"][3][0][11], parts_list[6]) # Operation complete.
+        connect(parts_list[7], parts_list[5]) # Clear wait bit
         
         connect(parts_list[:-1], parts_list[1:])
 
@@ -352,13 +352,13 @@ class READTRAM(Instruction):
         reg_addr = hw_map["get_reg"](args[1])
 
         connect(parts_list[0], hw_map["reg_read"](reg_addr))
-        connect(parts_list[3], (hw_map["timer_ram_module"][3][0][8][1],
-                                hw_map["timer_ram_module"][3][0][9][1],
-                                hw_map["timer_ram_module"][3][0][9][0][[0, 1], 2]))
-        connect(parts_list[4], parts_list[4]) # Selfwired xor gate to wait for timer ram operation to finish
-        connect(parts_list[6], parts_list[4])
-        connect(hw_map["timer_ram_module"][3][0][11], parts_list[5])
-        connect(parts_list[5], hw_map["timer_ram_module"][3][0][13])
+        connect(parts_list[3], (hw_map["timer_ram_module"][3][0][8][1], # timer ram address register
+                                hw_map["timer_ram_module"][3][0][9][1], # mode selector register
+                                hw_map["timer_ram_module"][3][0][9][0][[0, 1], 2])) # read mode
+        connect(parts_list[4], parts_list[4]) # Selfwired xor gate to wait for timer ram operation to finish (wait bit)
+        connect(hw_map["timer_ram_module"][3][0][11], parts_list[5]) # Operation complete.
+        connect(parts_list[6], parts_list[4]) # Clear wait bit
+        connect(parts_list[5], hw_map["timer_ram_module"][3][0][13])    # timer ram data register out
         connect(parts_list[8], hw_map["reg_write"](reg_data_in))
         
         connect(parts_list[:-1], parts_list[1:])
