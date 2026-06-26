@@ -5,6 +5,7 @@ from numpy import array
 import numpy as np
 
 # Assuming you are running this from outside the src directory, or adjust imports as needed
+from src.sm_blueprint_lib.prebuilds.rom import rom
 from src.sm_blueprint_lib.prebuilds.decoder import decoder
 from src.sm_blueprint_lib.constants import TICKS_PER_SECOND
 from src.sm_blueprint_lib import Blueprint, LogicGate, Timer, Pos, check_pos
@@ -20,7 +21,8 @@ ADDR_SIZE = 8
 START_ADDR = 0x1000
 NUM_REGISTERS = 8
 NUM_ADDR_TIMER_RAM = 64
-SCREEN_SIZE = 16, 4
+SCREEN_SIZE = 8, 8
+PAGE_SIZE = ADDR_SIZE, 8
 
 # ==============================================================================
 # 1. AST AND PARSER DEFINITIONS
@@ -55,6 +57,42 @@ class AssemblyParser:
         self.labels: dict[str, Statement] = {}
         self.label_counter: int = 0
         self.instruction_counter: int = 0
+        self.rom_data: list[int] = []
+
+    def resolve_rom_data(self):
+        """Pass to calculate ROM addresses and flatten data directives into a 1D array."""
+        if "rom" not in self.segments:
+            return
+
+        # Pass 1: Assign addresses based on data lengths
+        current_address = 0
+        for stmt in self.segments["rom"].statements:
+            if stmt.label:
+                stmt.data_address = current_address
+
+            if stmt.name == ".word":
+                current_address += len(stmt.args)
+            elif stmt.name == ".asciiz":
+                current_address += len(stmt.args[0])
+
+        # Pass 2: Extract data into the 1D rom_data array
+        for stmt in self.segments["rom"].statements:
+            if stmt.name == ".word":
+                for arg in stmt.args:
+                    if isinstance(arg, str) and arg in self.labels:
+                        # Allow .word to store pointers to other labels!
+                        target = self.labels[arg]
+                        if target.data_address is not None:
+                            self.rom_data.append(target.data_address)
+                        elif target.instruction_index is not None:
+                            self.rom_data.append(target.instruction_index)
+                        else:
+                            self.rom_data.append(0)
+                    else:
+                        self.rom_data.append(int(arg))
+            elif stmt.name == ".asciiz":
+                for char in stmt.args[0]:
+                    self.rom_data.append(ord(char))
 
     def _strip_comments(self, line: str) -> str:
         """Safely removes comments, ignoring '#' characters inside quoted strings."""
@@ -118,6 +156,7 @@ class AssemblyParser:
                         self.current_segment_name)
                 continue
 
+            # 2. Handle Labels
             if tokens[0].endswith(':'):
                 pending_label = tokens[0][:-1]  # Strip the colon
                 tokens = tokens[1:]             # Consume the token
@@ -150,6 +189,7 @@ class AssemblyParser:
                 statement)
             pending_label = None  # Reset label once it is attached to a statement
 
+        self.resolve_rom_data()
         return self.segments
 
 
@@ -165,6 +205,17 @@ class Instruction:
     def get_fallthrough_part(parts_list):
         """Returns the part that should connect to the next instruction."""
         return parts_list[-1]
+
+    @staticmethod
+    def resolve_immediate(val, label_map):
+        """If the immediate value is a label string, swap it out for its memory/instruction address."""
+        if isinstance(val, str) and val in label_map:
+            target = label_map[val]
+            if target.data_address is not None:
+                return target.data_address
+            if target.instruction_index is not None:
+                return target.instruction_index
+        return val
 
     @staticmethod
     def connect(parts_list: list, args: list, hw_map: dict, label_map: dict):
@@ -197,7 +248,7 @@ class ADDI(Instruction):
     @staticmethod
     def connect(parts_list, args, hw_map, label_map):
         reg_a = hw_map["get_reg"](args[0])
-        imm_val = args[1]
+        imm_val = Instruction.resolve_immediate(args[1], label_map)
         reg_out = hw_map["get_reg"](args[2])
 
         connect(parts_list[0], hw_map["reg_read"](reg_a))
@@ -238,7 +289,7 @@ class SUBI(Instruction):
     @staticmethod
     def connect(parts_list, args, hw_map, label_map):
         reg_a = hw_map["get_reg"](args[0])
-        imm_val = args[1]
+        imm_val = Instruction.resolve_immediate(args[1], label_map)
         reg_out = hw_map["get_reg"](args[2])
 
         connect(parts_list[0], hw_map["reg_read"](reg_a))
@@ -259,7 +310,7 @@ class SET(Instruction):
     @staticmethod
     def connect(parts_list, args, hw_map, label_map):
         reg = hw_map["get_reg"](args[0])
-        imm_val = args[1]
+        imm_val = Instruction.resolve_immediate(args[1], label_map)
 
         connect(parts_list[0], hw_map["mask"](hw_map["internal_bus"], imm_val))
         connect(parts_list[1], hw_map["reg_write"](reg))
@@ -293,24 +344,25 @@ class JUMP(Instruction):
 
 
 class JC(Instruction):
-    parts = ["or", "nand", "and"]
+    parts = ["or", "nand", "and", "and"]
 
     @staticmethod
     def get_fallthrough_part(parts_list):
-        # The NAND gate acts as the fallthrough trigger if Carry == 0
-        return parts_list[1]
+        # The AND gate acts as the fallthrough trigger if Carry == 0
+        return parts_list[2]
 
     @staticmethod
     def connect(parts_list, args, hw_map, label_map):
         target_label = args[0]
         carry_flag = hw_map["carry_flag"]
 
-        connect(parts_list[0], [parts_list[1], parts_list[2]])
+        connect(parts_list[0], [parts_list[2], parts_list[3]])
         connect(carry_flag, [parts_list[1], parts_list[2]])
+        connect(parts_list[1], parts_list[3])
 
         if target_label in label_map and label_map[target_label].parts:
             # AND triggers JUMP
-            connect(parts_list[2], label_map[target_label].parts[0])
+            connect(parts_list[3], label_map[target_label].parts[0])
 
 
 class WRITERAM(Instruction):
@@ -350,7 +402,7 @@ class WRITERAMA(Instruction):
     @staticmethod
     def connect(parts_list, args, hw_map, label_map):
         reg_data_out = hw_map["get_reg"](args[0])
-        addr_value = args[1]
+        addr_value = Instruction.resolve_immediate(args[1], label_map)
 
         connect(parts_list[0], hw_map["reg_read"](reg_data_out))
         connect(parts_list[3], hw_map["mask"](
@@ -366,7 +418,7 @@ class READRAMA(Instruction):
     @staticmethod
     def connect(parts_list, args, hw_map, label_map):
         reg_data_in = hw_map["get_reg"](args[0])
-        addr_value = args[1]
+        addr_value = Instruction.resolve_immediate(args[1], label_map)
 
         connect(parts_list[0], hw_map["mask"](
             hw_map["internal_bus"], addr_value))
@@ -471,7 +523,8 @@ class CALL(Instruction):
         # Tick 0: Push r0 to internal_bus (RAM Address)
         connect(parts_list[0], hw_map["reg_read"](r0))
         # Tick 1: Push return_idx to internal_bus
-        connect(parts_list[1], hw_map["mask"](hw_map["internal_bus"], return_idx))
+        connect(parts_list[1], hw_map["mask"](
+            hw_map["internal_bus"], return_idx))
         # Tick 3: Trigger RAM Write Enable
         connect(parts_list[3], hw_map["ram_module"][5])
 
@@ -538,6 +591,22 @@ class RET(Instruction):
         connect(parts_list[:-1], parts_list[1:])
 
 
+class READROM(Instruction):
+    parts = ["or", "and", "and", "and", "and",
+             "and", "and", "and", "and", "and", "and"]
+
+    @staticmethod
+    def connect(parts_list, args, hw_map, label_map):
+        reg_data_in = hw_map["get_reg"](args[0])
+        reg_addr = hw_map["get_reg"](args[1])
+
+        connect(parts_list[0], hw_map["reg_read"](reg_addr))
+        connect(parts_list[3], hw_map["rom_module"][6])  # Read Enable
+        connect(parts_list[9], hw_map["reg_write"](reg_data_in))
+
+        connect(parts_list[:-1], parts_list[1:])
+
+
 INSTRUCTION_SET = {
     "ADD": ADD, "ADDI": ADDI,
     "SUB": SUB, "SUBI": SUBI,
@@ -549,6 +618,7 @@ INSTRUCTION_SET = {
     "WRITETRAM": WRITETRAM, "READTRAM": READTRAM,
     "PUTCHAR": PUTCHAR,
     "CALL": CALL, "RET": RET,
+    "READROM": READROM,
 }
 
 
@@ -669,33 +739,42 @@ if __name__ == "__main__":
 
     # --- B. Run the Parser ---
     assembly_code = """
-    
-    .segment code
-    entry_point:
-        SET r0, 3
-        SET r1, 32
-        SET r2, 0
+.segment rom
+    string0: .asciiz "Hi"
+.segment code
+entry_point:
+    SET r0, 0   # Initialize stack pointer to 0
+
+    SET r3, 0   # screen index
     loop:
-        CALL my_subroutine
+        SET r1, string0 # pointer string position
+        CALL print_string
         JUMP loop
     
-    my_subroutine:
-        CALL print
-        ADDI r1, 1, r1
+print_string:
+        READROM r2, r1  # Read from ROM at address in r1 into r2
+        SUBI r2, 1, r4  # Subtract 1 from r2 and store in r4 (check for null terminator)
+        JC print_string_end_loop
+        PUTCHAR r2, r3   # Output character in r2 to screen at index in r3
+        ADDI r1, 1, r1   # Increment ROM address in r1
+        ADDI r3, 1, r3   # Increment screen index in r3
+        JUMP print_string
+    print_string_end_loop:
         RET
-    print:
-        PUTCHAR r1, r2
-        ADDI r2, 1, r2
-        RET
-        
-        # WRITETRAM r0, r0
-        # READTRAM r2, r0
-        # ADDI r0, 1, r0
-        # JUMP loop
+END_PROGRAM:
     """
 
     parser = AssemblyParser()
     parsed_ast = parser.parse(assembly_code)
+    print(parser.rom_data)
+    print(bytes(parser.rom_data))
+
+    rom_module = rom(bp=bp, data=parser.rom_data,
+                     page_size=PAGE_SIZE, pos=(-2-ADDR_SIZE, 30+PAGE_SIZE[1], 0))
+    connect(internal_bus, np.append(rom_module[2], rom_module[4], axis=0))
+    connect(rom_module[3], internal_bus)
+    hw_map["rom_module"] = rom_module
+
     code_initial_position = Pos(-2, 2, 0)
     label_map = parser.labels
     # Here is where we will store the instruction indexers (AND gates) for the return decoder

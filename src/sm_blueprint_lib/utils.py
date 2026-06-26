@@ -201,7 +201,8 @@ def get_bits_required(number: int | float):
     Args:
         number (int | float): The target number.
     """
-    return ceil(log2(number))
+    v = ceil(log2(number))
+    return v if v >= 1 else 1
 
 
 def num_to_bit_list(number: int, bit_length: int = None):

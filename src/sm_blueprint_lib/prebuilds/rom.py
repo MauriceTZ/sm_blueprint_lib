@@ -37,7 +37,7 @@ def rom(
     page_read[:] = [LogicGate(pos + (-1, y, 0), "000000", 0)
                     for y in range(page_size[1])]
     page_read2[:] = [LogicGate(pos + (-1, y, 1), "000000", 0)
-                    for y in range(page_size[1])]
+                     for y in range(page_size[1])]
     offset0 = (-get_bits_required(page_size[1]) -
                get_bits_required(len(data)/page_size[1])-1)
     for x in range(get_bits_required(page_size[1])):
@@ -60,7 +60,7 @@ def rom(
             pos + (-2-i//(page_size[1]), i % (page_size[1]) - 1, 0), "000000", 0)
         page_writers.append(g0)
         for j, d in enumerate(reversed(data_batch)):
-            connect(g0, arr[:, j, 1][num_to_bit_list(d, page_size[0])])
+            connect(g0, arr[:, (page_size[1] - len(data_batch)) + j, 1][num_to_bit_list(d, page_size[0])])
 
     connect(arr[:, :, 1], arr[:, :, 0])
     connect(arr[:, :, 0], data_out)

@@ -10,7 +10,9 @@ from src.sm_blueprint_lib.utils import _old_connect
 
 bp = Blueprint()
 
-timer_character_screen(bp, 16, 2, pos=(0, 0, 0), do_preview=False, monitor_ghosting=2)
+rom(bp, page_size=(8, 4), data=[1, 2, 3, 4, 5])
+
+# timer_character_screen(bp, 16, 2, pos=(0, 0, 0), do_preview=False, monitor_ghosting=2)
 
 # cla_1tick(bp, 16, (0, 0, 0))
 
