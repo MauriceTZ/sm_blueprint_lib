@@ -21,7 +21,7 @@ ADDR_SIZE = 8
 START_ADDR = 0x1000
 NUM_REGISTERS = 8
 NUM_ADDR_TIMER_RAM = 64
-SCREEN_SIZE = 8, 8
+SCREEN_SIZE = 16, 2
 PAGE_SIZE = ADDR_SIZE, 8
 
 # ==============================================================================

@@ -8,9 +8,10 @@ from .distance_sensor import *
 from .ram import *
 from .register import *
 from .rom import *
-from .timer_ram_cached import * # not finished
+from .timer_ram_cached import *  # not finished
 from .timer_ram_multiclient import *
 from .LFSR import *
 from .midi_converter import *
 from .finite_state_machine import *
 from .screens.timer_character_screen import *
+from .bitwise_alu import *
