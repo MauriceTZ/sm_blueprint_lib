@@ -4,16 +4,8 @@ from src.sm_blueprint_lib import *
 bp = Blueprint()
 
 # Put here the path to your MIDI file, here are some examples:
-# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Il Vento d'oro (Giorno Theme) - Jojo's Bizarre Adventure Vento Aureo.mid"
-# 3
-# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\JOJO-s-Bizarre-Adventure-Golden-Wind-OST-I-ll-D-oro-Vento-Anonymous-20211215202138-nonstop2k.com.mid"
-# 2
-# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\JoJo's Bizarre Adventure - Il Vento D'Oro (Giorno's Theme)- (midi by Carlo Prato) (www.cprato.com).mid"
-# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Il vento d'oro (2).mid.mid"
-# 1
-# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\JoJo's Bizarre Adventure - Giorno's Theme (Golden Wind OST ).mid"
-# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\il vento d'oro.mid"
-# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Il Vento D'oro (The Golden Wind) _Giorno's Theme_ - JoJo's Bizarre Adventures.mid"
+# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\test.mid"
+file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Il Vento D'oro (The Golden Wind) _Giorno's Theme_ - JoJo's Bizarre Adventures.mid"
 
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Theme__pink_panther.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\sade-kiss_of_life.mid"
@@ -29,7 +21,7 @@ bp = Blueprint()
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Erika - German Folk Song.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\QueenGreatest_hits_Bohemian_Rhapsody.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Careless-Whisper.mid"
-file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Thomas The Tank Engine Theme (MIDI).mid"
+# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Thomas The Tank Engine Theme (MIDI).mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\ussr.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\arabesque_1_(c)oguri.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Hungarian Dance No.5.mid"
@@ -46,7 +38,7 @@ file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Thomas The 
 # Call midi_converter() to make the conversion
 midi_converter(bp, file,
                noblip=False, doglitchweld=True, dosustain=False, transpose=0,
-               color="056FAE", tryImitateInstruments=False, speed=1.0)
+               color="CC72C3", tryImitateInstruments=True, speed=1.0)
 
 print(f"Prebuild size: {len(bp.bodies[0].childs)} parts")
 # Save the creation into an existing blueprint in your lift, for example "MIDI converter output"

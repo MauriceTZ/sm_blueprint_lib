@@ -150,6 +150,8 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
                     case prog if 7 >= prog >= 0:
                         totebots[chan] = [(TotebotHead_Bass(((note-min_note) * 2 * (not doglitchweld), 0, 2 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 70), xaxis=1, zaxis=-2)
                                            if 48 >= note else
+                                           TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch((note+transpose)), 60), xaxis=1, zaxis=-2)
+                                           if 72 >= note else
                                            TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, 6 * doglitchweld + chan * 2 * (not doglitchweld)), color, (0, _midi_note_to_totebot_pitch(note+transpose), 50), xaxis=1, zaxis=-2)) for note in notes_per_channel[chan]]
 
                     case prog if 15 >= prog >= 8:
@@ -285,6 +287,11 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
                 
                 elif msg.type == "note_off" or (msg.type == "note_on" and msg.velocity == 0):
                     base_note = msg.note
+                    
+                    # IGNORAR DUPLICADOS: Si la nota ya está apagada, ignoramos este note_off fantasma
+                    if base_note not in states[msg.channel]["active_base_notes"]:
+                        continue
+                        
                     states[msg.channel]["active_base_notes"].discard(base_note)
                     if states[msg.channel]["sustain"]:
                         states[msg.channel]["sustained_notes"].add(base_note)
@@ -292,6 +299,11 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
                         
                 elif msg.type == "note_on":
                     base_note = msg.note
+                    
+                    # IGNORAR DUPLICADOS: Si la nota ya está sonando, ignoramos este note_on extra
+                    if base_note in states[msg.channel]["active_base_notes"]:
+                        continue
+                        
                     states[msg.channel]["active_base_notes"].add(base_note)
                     if base_note in states[msg.channel]["sustained_notes"]:
                         # Retriggering: si estaba sostenida, apagarla físicamente antes del note_on
@@ -301,8 +313,14 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
                         states[msg.channel]["sustained_notes"].remove(base_note)
             else:
                 if msg.type == "note_off" or (msg.type == "note_on" and msg.velocity == 0):
+                    # IGNORAR DUPLICADOS: Si la nota ya está apagada, ignoramos
+                    if msg.note not in states[msg.channel]["active_base_notes"]:
+                        continue
                     states[msg.channel]["active_base_notes"].discard(msg.note)
                 elif msg.type == "note_on":
+                    # IGNORAR DUPLICADOS: Si la nota ya está sonando, ignoramos
+                    if msg.note in states[msg.channel]["active_base_notes"]:
+                        continue
                     states[msg.channel]["active_base_notes"].add(msg.note)
 
             # LÓGICA PITCH WHEEL INTERCEPTADA
