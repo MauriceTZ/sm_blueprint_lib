@@ -26,6 +26,22 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
     length = mid.length
     all_messages = [msg for msg in _to_abstime(
         mid) if not msg.is_meta and hasattr(msg, "channel")]
+    # RATE LIMIT PITCHWHEEL EVENTS TO 40HZ (1 PER SM TICK)
+    # DAWs often export hundreds of pitch bend micro-adjustments per second. 
+    # When mapped to Scrap Mechanic's 40Hz resolution, multiple pitch changes
+    # get squashed into the exact same tick, sending multiple ON/OFF signals
+    # instantly to the XOR gates, causing extreme lag and glitches.
+    # This backwards iteration keeps only the final pitchwheel state per tick.
+    filtered_messages = []
+    last_pw_tick = {}
+    for msg in reversed(all_messages):
+        if msg.type == 'pitchwheel':
+            current_tick = math.floor(msg.time * TICKS_PER_SECOND * 1 / speed)
+            if last_pw_tick.get(msg.channel) == current_tick:
+                continue  # Drop this duplicate pitchwheel event for this tick
+            last_pw_tick[msg.channel] = current_tick
+        filtered_messages.append(msg)
+    all_messages = list(reversed(filtered_messages))
     channels = sorted(set(msg.channel for msg in all_messages))
     
     messages_per_channel = {}
@@ -89,44 +105,45 @@ def midi_converter(bp: Blueprint, midi_file: str, *, noblip=False, doglitchweld=
     percussion_table = {
         # midi percussion note to TotebotHead_Percussion equivalent
         # reference: https://soundprogramming.net/file-formats/general-midi-drum-note-numbers/
-        35: (2, 1),
-        36: (2, 1),
-        37: (0, 1),
-        38: (7, 1),
-        39: (5, 1),
-        40: (8, 1),
-        41: (0, 1),
-        42: (10, 1),
-        43: (4, 1),
-        44: (14, 1),
-        45: (2, 1),
-        46: (12, 1),
-        47: (2, 0),
-        48: (13, 0),
-        49: (20, 1),
-        50: (3, 0),
-        51: (21, 1),
-        52: (20, 1),
-        53: (12, 1),
-        54: (23, 1),
-        55: (20, 1),
-        57: (21, 1),
-        59: (21, 1),
-        60: (17, 0),
-        61: (19, 0),
-        62: (19, 0),
-        63: (19, 0),
-        64: (3, 0),
-        67: (17, 0),
-        68: (19, 0),
-        69: (13, 1),
-        80: (12, 0),
-        82: (14, 1)
+        # Note: (tote note, retro/dance, volume)
+        35: (2, 1, 30),
+        36: (2, 1, 30),
+        37: (0, 1, 30),
+        38: (7, 1, 30),
+        39: (5, 1, 30),
+        40: (8, 1, 30),
+        41: (0, 1, 30),
+        42: (10, 1, 18),
+        43: (4, 1, 30),
+        44: (14, 1, 30),
+        45: (2, 1, 30),
+        46: (12, 1, 30),
+        47: (2, 0, 30),
+        48: (13, 0, 30),
+        49: (20, 1, 30),
+        50: (3, 0, 30),
+        51: (21, 1, 30),
+        52: (20, 1, 30),
+        53: (12, 1, 30),
+        54: (23, 1, 30),
+        55: (20, 1, 30),
+        57: (21, 1, 30),
+        59: (21, 1, 30),
+        60: (17, 0, 30),
+        61: (19, 0, 30),
+        62: (19, 0, 30),
+        63: (19, 0, 30),
+        64: (3, 0, 30),
+        67: (17, 0, 30),
+        68: (19, 0, 30),
+        69: (13, 1, 30),
+        80: (12, 0, 30),
+        82: (14, 1, 30)
     }
     for chan in channels:
         if chan == 9:
             try:
-                totebots[chan] = [TotebotHead_Percussion(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (percussion_table[note][1], map_range(percussion_table[note][0]+48, 48, 72, 0, 1), 20), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
+                totebots[chan] = [TotebotHead_Percussion(((note-min_note) * 2 * (not doglitchweld), 0, chan * 2 * (not doglitchweld)), color, (percussion_table[note][1], map_range(percussion_table[note][0]+48, 48, 72, 0, 1), percussion_table[note][2]), xaxis=1, zaxis=-2) for note in notes_per_channel[chan]]
             except KeyError as e:
                 raise KeyError(f"This MIDI percussion instrument is yet to be mapped to a TotebotHead_Percussion note. -> {e.args[0]}")
         else:

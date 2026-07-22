@@ -5,11 +5,11 @@ bp = Blueprint()
 
 # Put here the path to your MIDI file, here are some examples:
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\test.mid"
-file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Il Vento D'oro (The Golden Wind) _Giorno's Theme_ - JoJo's Bizarre Adventures.mid"
+# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Il Vento D'oro (The Golden Wind) _Giorno's Theme_ - JoJo's Bizarre Adventures.mid"
 
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Theme__pink_panther.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\sade-kiss_of_life.mid"
-# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Sade - Kiss Of Life___WWW.MIDISFREE.COM.mid"
+file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Sade - Kiss Of Life___WWW.MIDISFREE.COM.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\California gurls.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Katy Perry - California Gurls Feat Snoop Dogg___WWW.MIDISFREE.COM.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\E1M1.MID"
