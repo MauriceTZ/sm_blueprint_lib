@@ -4,12 +4,13 @@ from src.sm_blueprint_lib import *
 bp = Blueprint()
 
 # Put here the path to your MIDI file, here are some examples:
+file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\tottfiy.mid"
+# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\C418 - Sweden.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\test.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Il Vento D'oro (The Golden Wind) _Giorno's Theme_ - JoJo's Bizarre Adventures.mid"
-
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Theme__pink_panther.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\sade-kiss_of_life.mid"
-file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Sade - Kiss Of Life___WWW.MIDISFREE.COM.mid"
+# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Sade - Kiss Of Life___WWW.MIDISFREE.COM.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\California gurls.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Katy Perry - California Gurls Feat Snoop Dogg___WWW.MIDISFREE.COM.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\E1M1.MID"
@@ -38,8 +39,11 @@ file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Sade - Kiss
 # Call midi_converter() to make the conversion
 midi_converter(bp, file,
                noblip=False, doglitchweld=True, dosustain=False, transpose=0,
-               color="CC72C3", tryImitateInstruments=True, speed=1.0)
+               color="000000", tryImitateInstruments=True, speed=1.0)
 
+# bp.add(t :=TotebotHead_Blip((0, 0, 0), "CC72C3", (0, 0.5, 100), xaxis=1, zaxis=-2))
+# bp.add(b := Button((0, 0, 2), "CC72CE"))
+# connect(b, t)
 print(f"Prebuild size: {len(bp.bodies[0].childs)} parts")
 # Save the creation into an existing blueprint in your lift, for example "MIDI converter output"
 save_blueprint("MIDI converter output", bp)
