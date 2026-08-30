@@ -141,6 +141,7 @@ def midi_converter(bp: Blueprint, midi_file: str, *,
         67: (17, 0, 25),
         68: (19, 0, 25),
         69: (13, 1, 25),
+        70: (14, 1, 25),
         80: (12, 0, 25),
         82: (14, 1, 25)
     }
@@ -232,6 +233,10 @@ def midi_converter(bp: Blueprint, midi_file: str, *,
                                            if 72 >= note else
                                            TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, 6 * doglitchweld + chan * 2 * (not doglitchweld)), color_blip, (0, _midi_note_to_totebot_pitch((note+transpose)), _vol(100, True)), xaxis=1, zaxis=-2)) for note in notes_per_channel[chan]]
 
+                    # case 90:
+                    #     totebots[chan] = [(TotebotHead_SynthVoice(((note-min_note) * 2 * (not doglitchweld), 0, 4 * doglitchweld + chan * 2 * (not doglitchweld)), color_synth, (1, _midi_note_to_totebot_pitch(note+transpose), _vol(100)), xaxis=1, zaxis=-2)
+                    #                        if 72 >= note else
+                    #                        TotebotHead_Blip(((note-min_note) * 2 * (not doglitchweld), 0, 6 * doglitchweld + chan * 2 * (not doglitchweld)), color_blip, (0, _midi_note_to_totebot_pitch((note+transpose)), _vol(100, True)), xaxis=1, zaxis=-2)) for note in notes_per_channel[chan]]
 
                     case unknown:
                         print(f"unknown program: {unknown}")
