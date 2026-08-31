@@ -4,6 +4,7 @@ from src.sm_blueprint_lib import *
 bp = Blueprint()
 
 # Put here the path to your MIDI file, here are some examples:
+file = r"/home/mauri/Downloads/The Andy Griffith Show Theme.mid"
 file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\The Andy Griffith Show Theme.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Michael Jackson - Beat It (FULL DONE).mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\tottfiy.mid" # doom
