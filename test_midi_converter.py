@@ -4,8 +4,12 @@ from src.sm_blueprint_lib import *
 bp = Blueprint()
 
 # Put here the path to your MIDI file, here are some examples:
-file = r"/home/mauri/Downloads/The Andy Griffith Show Theme.mid"
-file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\The Andy Griffith Show Theme.mid"
+file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Super Mario Bros. Ending Fanfare.mid"
+# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Super Mario Bros. Castle BGM.mid"
+# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Super Mario Bros. Underwater.mid"
+# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Super Mario Bros. (Overworld Theme & MIDI).mid"
+# file = r"/home/mauri/Downloads/The Andy Griffith Show Theme.mid"
+# file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\The Andy Griffith Show Theme.mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\Michael Jackson - Beat It (FULL DONE).mid"
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\tottfiy.mid" # doom
 # file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\C418 - Sweden.mid"
@@ -42,9 +46,9 @@ file = r"C:\Users\mauri\OneDrive\Documents\GeneralUser-GS\demo MIDIs\The Andy Gr
 # Call midi_converter() to make the conversion
 midi_converter(bp, file,
                noblip=False, doglitchweld=True, dosustain=False, transpose=0,
-               color="000000", tryImitateInstruments=True, speed=1.0,
+               color="000000", tryImitateInstruments=False, speed=1.0,
                rebalance_volumes=True,
-               color_percussion="8b0000", color_bass="b22222", color_synth="ff4500", color_blip="2f4f4f")
+               color_percussion="8b008b", color_bass="b222b2", color_synth="ff00ff", color_blip="2f4f2f")
 
 # bp.add(t :=TotebotHead_Blip((0, 0, 0), "CC72C3", (0, 0.5, 100), xaxis=1, zaxis=-2))
 # bp.add(b := Button((0, 0, 2), "CC72CE"))

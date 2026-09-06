@@ -29,7 +29,7 @@ def midi_converter(bp: Blueprint, midi_file: str, *,
 
     length = mid.length
     all_messages = [msg for msg in _to_abstime(
-        mid) if not msg.is_meta and hasattr(msg, "channel")]
+        mid) if not msg.is_meta and hasattr(msg, "channel") and not (hasattr(msg, "note") and msg.channel == 9 and msg.note > 87)]
     # RATE LIMIT PITCHWHEEL EVENTS TO 40HZ (1 PER SM TICK)
     # DAWs often export hundreds of pitch bend micro-adjustments per second. 
     # When mapped to Scrap Mechanic's 40Hz resolution, multiple pitch changes
@@ -110,6 +110,9 @@ def midi_converter(bp: Blueprint, midi_file: str, *,
         # midi percussion note to TotebotHead_Percussion equivalent
         # reference: https://soundprogramming.net/file-formats/general-midi-drum-note-numbers/
         # Note: (tote note, retro/dance, volume) - Volumes halved
+        27: (1,  0, 25),
+        28: (5,  1, 25),
+        31: (10, 0, 25),
         35: (2,  1, 25),
         36: (2,  1, 25),
         37: (0,  1, 25),
@@ -131,6 +134,7 @@ def midi_converter(bp: Blueprint, midi_file: str, *,
         53: (12, 1, 25),
         54: (23, 1, 25),
         55: (20, 1, 25),
+        56: (13, 0, 25),
         57: (21, 1, 25),
         59: (21, 1, 25),
         60: (17, 0, 25),
@@ -139,9 +143,11 @@ def midi_converter(bp: Blueprint, midi_file: str, *,
         63: (19, 0, 25),
         64: (3,  0, 25),
         67: (17, 0, 25),
+        66: (21, 1, 25),
         68: (19, 0, 25),
         69: (13, 1, 25),
         70: (14, 1, 25),
+        78: (23, 1, 25),
         80: (12, 0, 25),
         82: (14, 1, 25)
     }
