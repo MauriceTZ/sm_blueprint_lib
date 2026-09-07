@@ -607,6 +607,85 @@ class READROM(Instruction):
         connect(parts_list[:-1], parts_list[1:])
 
 
+class PUSH(Instruction):
+    # Combines WRITERAM (5 ticks) + ADDI (10 ticks) sequentially. Total = 15 ticks.
+    parts = ["or", "and", "and", "and", "and", "and",
+             "and", "and", "and", "and", 6, "and", "and", "and", "and"]
+    falls_through = True
+
+    @staticmethod
+    def connect(parts_list, args, hw_map, label_map):
+        reg_data_out = hw_map["get_reg"](args[0])
+        r0 = hw_map["get_reg"]("r0")
+
+        # --- 1. PUSH TO STACK (WRITERAM logic) ---
+        # Tick 0: Push r0 to internal_bus (RAM Address)
+        connect(parts_list[0], hw_map["reg_read"](r0))
+        # Tick 1: Push chosen register to internal_bus (RAM Data)
+        connect(parts_list[1], hw_map["reg_read"](reg_data_out))
+        # Tick 3: Trigger RAM Write Enable
+        connect(parts_list[3], hw_map["ram_module"][5])
+
+        # --- 2. INCREMENT STACK POINTER (ADDI r0, 1, r0 logic) ---
+        # Tick 5: Read r0 to start ADDI
+        connect(parts_list[5], hw_map["reg_read"](r0))
+        # Tick 6: Adder Mode & Mask 1
+        connect(parts_list[6], [hw_map["adder_mode_select"][3],
+                                hw_map["mask"](hw_map["internal_bus"], 1)])
+        # Tick 7: Write to adder B
+        connect(parts_list[7], hw_map["reg_write"](hw_map["reg_adder_b"]))
+        # Tick 8: Write to adder A
+        connect(parts_list[8], hw_map["reg_write"](hw_map["reg_adder_a"]))
+        # Tick 10: Adder Out Enable (after timer triggers)
+        connect(parts_list[10], hw_map["adder_out_enable"])
+        # Tick 13: Write back to r0
+        connect(parts_list[13], hw_map["reg_write"](r0))
+
+        # Wire sequential execution
+        connect(parts_list[:-1], parts_list[1:])
+
+
+class PULL(Instruction):
+    # Combines SUBI (10 ticks) + READRAM (10 ticks) sequentially. Total = 20 ticks.
+    parts = ["or", "and", "and", "and", "and", 6, "and", "and", "and", "and",
+             "and", "and", "and", "and", "and", "and", "and", "and", "and", "and"]
+    falls_through = True
+
+    @staticmethod
+    def connect(parts_list, args, hw_map, label_map):
+        reg_data_in = hw_map["get_reg"](args[0])
+        r0 = hw_map["get_reg"]("r0")
+
+        # --- 1. DECREMENT STACK POINTER (SUBI r0, 1, r0 logic) ---
+        # Tick 0: Read r0 to start SUBI
+        connect(parts_list[0], hw_map["reg_read"](r0))
+        # Tick 1: Adder Mode (SUB) & Mask 1
+        connect(parts_list[1], [hw_map["adder_mode_select"][3],
+                                hw_map["adder_mode_select"][2],
+                                hw_map["mask"](hw_map["internal_bus"], 1)])
+        # Tick 2: Write to adder B
+        connect(parts_list[2], hw_map["reg_write"](hw_map["reg_adder_b"]))
+        # Tick 3: Write to adder A
+        connect(parts_list[3], hw_map["reg_write"](hw_map["reg_adder_a"]))
+        # Tick 5: Adder Out Enable (after timer triggers)
+        connect(parts_list[5], hw_map["adder_out_enable"])
+        # Tick 8: Write back to r0
+        connect(parts_list[8], hw_map["reg_write"](r0))
+
+        # --- 2. POP FROM STACK (READRAM logic) ---
+        # Tick 10: Push new r0 to internal_bus (RAM Address)
+        connect(parts_list[10], hw_map["reg_read"](r0))
+        # Tick 13: Trigger RAM Read Enable
+        connect(parts_list[13], hw_map["ram_module"][8])
+
+        # --- 3. WRITE TO REGISTER ---
+        # Tick 18: RAM has output value to internal_bus. Read it into the destination register.
+        connect(parts_list[18], hw_map["reg_write"](reg_data_in))
+
+        # Wire sequential execution
+        connect(parts_list[:-1], parts_list[1:])
+
+
 INSTRUCTION_SET = {
     "ADD": ADD, "ADDI": ADDI,
     "SUB": SUB, "SUBI": SUBI,
@@ -618,6 +697,7 @@ INSTRUCTION_SET = {
     "WRITETRAM": WRITETRAM, "READTRAM": READTRAM,
     "PUTCHAR": PUTCHAR,
     "CALL": CALL, "RET": RET,
+    "PUSH": PUSH, "PULL": PULL, "POP": PULL,
     "READROM": READROM,
 }
 
@@ -740,29 +820,36 @@ if __name__ == "__main__":
     # --- B. Run the Parser ---
     assembly_code = """
 .segment rom
-    string0: .asciiz "Hi"
+    string0: .asciiz "Hi!"
+    string1: .asciiz "This string should not be printed."
 .segment code
 entry_point:
     SET r0, 0   # Initialize stack pointer to 0
-
     SET r3, 0   # screen index
+    SET r1, string0 # pointer string position
     loop:
-        SET r1, string0 # pointer string position
         CALL print_string
         JUMP loop
-    
+
 print_string:
+        PUSH r1         # Save string pointer
+        PUSH r2         # r2 will hold the current character
+        PUSH r4         # r4 will hold the result of the null terminator check
+print_string_loop:
         READROM r2, r1  # Read from ROM at address in r1 into r2
         SUBI r2, 1, r4  # Subtract 1 from r2 and store in r4 (check for null terminator)
         JC print_string_end_loop
-        PUTCHAR r2, r3   # Output character in r2 to screen at index in r3
-        ADDI r1, 1, r1   # Increment ROM address in r1
-        ADDI r3, 1, r3   # Increment screen index in r3
-        JUMP print_string
+        PUTCHAR r2, r3  # Output character in r2 to screen at index in r3
+        ADDI r1, 1, r1  # Increment ROM address in r1
+        ADDI r3, 1, r3  # Increment screen index in r3
+        JUMP print_string_loop
     print_string_end_loop:
+        POP r4          # Restore null terminator check result
+        POP r2          # Restore current character
+        POP r1          # Restore string pointer
         RET
 END_PROGRAM:
-    """
+"""
 
     parser = AssemblyParser()
     parsed_ast = parser.parse(assembly_code)
@@ -785,7 +872,12 @@ END_PROGRAM:
     for segment_name, segment in parsed_ast.items():
         if segment_name == "code":
             for z, stmt in enumerate(segment.statements):
-                if stmt.type == "instruction" and stmt.name in INSTRUCTION_SET:
+                if stmt.type == "instruction":
+                    # STRICT COMPILER CHECK: Throw an error if an opcode doesn't exist
+                    if stmt.name not in INSTRUCTION_SET:
+                        raise SyntaxError(
+                            f"Unknown instruction: '{stmt.name}' at line index {stmt.instruction_index}")
+
                     InstructionClass = INSTRUCTION_SET[stmt.name]
                     stmt.parts = create_instruction_parts(
                         code_initial_position + Pos(0, 0, z), InstructionClass.parts)
