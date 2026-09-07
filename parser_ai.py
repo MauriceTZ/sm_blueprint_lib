@@ -619,12 +619,12 @@ class PUSH(Instruction):
         r0 = hw_map["get_reg"]("r0")
 
         # --- 1. PUSH TO STACK (WRITERAM logic) ---
-        # Tick 0: Push r0 to internal_bus (RAM Address)
-        connect(parts_list[0], hw_map["reg_read"](r0))
-        # Tick 1: Push chosen register to internal_bus (RAM Data)
-        connect(parts_list[1], hw_map["reg_read"](reg_data_out))
-        # Tick 3: Trigger RAM Write Enable
-        connect(parts_list[3], hw_map["ram_module"][5])
+        # Tick 0: Push chosen register to internal_bus (RAM Data)
+        connect(parts_list[0], hw_map["reg_read"](reg_data_out))
+        # Tick 1: Push r0 to internal_bus (RAM Address)
+        connect(parts_list[1], hw_map["reg_read"](r0))
+        # Tick 4: Trigger RAM Write Enable
+        connect(parts_list[4], hw_map["ram_module"][5])
 
         # --- 2. INCREMENT STACK POINTER (ADDI r0, 1, r0 logic) ---
         # Tick 5: Read r0 to start ADDI
@@ -826,10 +826,14 @@ if __name__ == "__main__":
 entry_point:
     SET r0, 0   # Initialize stack pointer to 0
     SET r3, 0   # screen index
-    SET r1, string0 # pointer string position
-    loop:
-        CALL print_string
-        JUMP loop
+    SET r1, string1 # pointer string position
+
+    SET r4, 10  # garbage data to test push/pull instructions
+    SET r2, 20  # garbage data to test push/pull instructions
+loop:
+    CALL print_string
+    JUMP loop
+
 
 print_string:
         PUSH r1         # Save string pointer
@@ -843,7 +847,7 @@ print_string_loop:
         ADDI r1, 1, r1  # Increment ROM address in r1
         ADDI r3, 1, r3  # Increment screen index in r3
         JUMP print_string_loop
-    print_string_end_loop:
+print_string_end_loop:
         POP r4          # Restore null terminator check result
         POP r2          # Restore current character
         POP r1          # Restore string pointer
