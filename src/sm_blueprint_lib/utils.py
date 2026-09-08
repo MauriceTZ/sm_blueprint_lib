@@ -460,6 +460,16 @@ def delete_blueprint(name):
                 os.remove(bp+"/"+file)
             os.rmdir(bp)
 
+def int_to_hex(int):
+    """converts an integer to an hex value.
+    Args:
+        int (int): Integer value
+
+    Returns:
+        hex (str): hex value of the integer.
+    """
+    return ("%06X" % int)[::-1]
+
 def rgb_to_hex(rgb):
     """converts an RGB value to an hex value.
     Args:
