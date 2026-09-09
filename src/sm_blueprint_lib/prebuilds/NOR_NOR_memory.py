@@ -76,14 +76,17 @@ def nor_counter_register(bp: Blueprint,
     inc_carries = []
     dec_borrows = []
 
+    # Shift pulse generators to the right of the register to ensure all X coordinates are positive
+    pulse_gen_x_offset = bit_length * 2
+
     if with_increment:
         # Pulse Generator
-        inc_p_pos = pos + (-4, 4, 0)
-        inc_input = LogicGate(inc_p_pos, "FF0000", 1)  # OR
-        inc_timer = Timer(inc_p_pos + (1, 0, 0), "000000",
-                          (0, 3))  # TIMER (3 Ticks)
-        inc_xor = LogicGate(inc_p_pos + (2, 0, 0), "0000FF", 2)  # XOR
-        inc_and = LogicGate(inc_p_pos + (3, 0, 0), "00FF00", 0)  # AND
+        inc_p_pos = pos + (pulse_gen_x_offset, 4, 0)
+        inc_input = LogicGate(inc_p_pos, "FF0000", 1, xaxis=-2, zaxis=-1)  # OR
+        inc_timer = Timer(inc_p_pos + (0, 1, 0), "000000",
+                          (0, 3), xaxis=-2, zaxis=-1)  # TIMER (3 Ticks)
+        inc_xor = LogicGate(inc_p_pos + (0, 2, 0), "0000FF", 2, xaxis=-2, zaxis=-1)  # XOR
+        inc_and = LogicGate(inc_p_pos + (0, 3, 0), "00FF00", 0, xaxis=-2, zaxis=-1)  # AND
 
         connect(inc_input, [inc_timer, inc_xor, inc_and])
         connect(inc_timer, inc_xor)
@@ -99,14 +102,14 @@ def nor_counter_register(bp: Blueprint,
             x_pos = pos + (j*2, 0, 0)
 
             # First Layer: ANDS (Enable/Write layer)
-            l1 = LogicGate(x_pos + (0, 4, 0), "00FF00", 0)
+            l1 = LogicGate(x_pos + (0, 4, 0), "00FF00", 0, xaxis=-2, zaxis=-1)
             connect(inc_and, l1)
             connect(l1, inputs[j])
             inc_layer1.append(l1)
 
             # Second Layer: XORS, except LSB is an AND (Next State layer)
             l2 = LogicGate(x_pos + (0, 5, 0), "0000FF" if j >
-                           0 else "000000", 2 if j > 0 else 0)
+                           0 else "000000", 2 if j > 0 else 0, xaxis=-2, zaxis=-1)
             if j > 0:
                 connect(cells[j][4], l2)  # Timers -> Second (except LSB)
             connect(l2, l1)  # Second -> First
@@ -114,7 +117,7 @@ def nor_counter_register(bp: Blueprint,
 
             # Third Layer: ANDS, except LSB is a NOR acting as a NOT (Carry layer)
             l3 = LogicGate(x_pos + (0, 6, 0), "000000" if j >
-                           0 else "FF0000", 0 if j > 0 else 4)
+                           0 else "FF0000", 0 if j > 0 else 4, xaxis=-2, zaxis=-1)
             if j == 0:
                 connect(cells[j][4], l3)  # Timers LSB -> Third LSB
             else:
@@ -130,12 +133,12 @@ def nor_counter_register(bp: Blueprint,
 
     if with_decrement:
         # Pulse Generator
-        dec_p_pos = pos + (-4, 7, 0)
-        dec_input = LogicGate(dec_p_pos, "FF0000", 1)  # OR
-        dec_timer = Timer(dec_p_pos + (1, 0, 0), "000000",
-                          (0, 3))  # TIMER (3 Ticks)
-        dec_xor = LogicGate(dec_p_pos + (2, 0, 0), "0000FF", 2)  # XOR
-        dec_and = LogicGate(dec_p_pos + (3, 0, 0), "00FF00", 0)  # AND
+        dec_p_pos = pos + (pulse_gen_x_offset + 1, 4, 0)
+        dec_input = LogicGate(dec_p_pos, "FF0000", 1, xaxis=-2, zaxis=-1)  # OR
+        dec_timer = Timer(dec_p_pos + (0, 1, 0), "000000",
+                          (0, 3), xaxis=-2, zaxis=-1)  # TIMER (3 Ticks)
+        dec_xor = LogicGate(dec_p_pos + (0, 2, 0), "0000FF", 2, xaxis=-2, zaxis=-1)  # XOR
+        dec_and = LogicGate(dec_p_pos + (0, 3, 0), "00FF00", 0, xaxis=-2, zaxis=-1)  # AND
 
         connect(dec_input, [dec_timer, dec_xor, dec_and])
         connect(dec_timer, dec_xor)
@@ -151,21 +154,21 @@ def nor_counter_register(bp: Blueprint,
             x_pos = pos + (j*2, 0, 0)
 
             # First Layer: ANDS (Enable/Write layer)
-            l1 = LogicGate(x_pos + (0, 7, 0), "00FF00", 0)
+            l1 = LogicGate(x_pos + (0, 7, 0), "00FF00", 0, xaxis=-2, zaxis=-1)
             connect(dec_and, l1)
             connect(l1, inputs[j])
             dec_layer1.append(l1)
 
             # Second Layer: XORS, except LSB is an AND (Next State layer)
             l2 = LogicGate(x_pos + (0, 8, 0), "0000FF" if j >
-                           0 else "000000", 2 if j > 0 else 0)
+                           0 else "000000", 2 if j > 0 else 0, xaxis=-2, zaxis=-1)
             if j > 0:
                 connect(cells[j][4], l2)  # Timers -> Second (except LSB)
             connect(l2, l1)  # Second -> First
             dec_layer2.append(l2)
 
             # Third Layer: NORS (Borrow layer - all previous bits must be 0)
-            l3 = LogicGate(x_pos + (0, 9, 0), "FF0000", 4)
+            l3 = LogicGate(x_pos + (0, 9, 0), "FF0000", 4, xaxis=-2, zaxis=-1)
             if j == 0:
                 connect(cells[j][4], l3)  # Timers LSB -> Third LSB
             else:
