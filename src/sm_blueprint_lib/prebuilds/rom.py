@@ -72,7 +72,7 @@ def rom(
             continue
 
         g0 = LogicGate(
-            pos + (-2-i//(page_size[1]), i % (page_size[1]) - 1, 0), "000000", 0)
+            pos + (-2-i//(page_size[1]-1), i % (page_size[1]-1), 0), "000000", 0)
         page_writers.append(g0)
 
         for j, d in enumerate(reversed(data_batch)):

@@ -41,7 +41,8 @@ def nor_register(bp: Blueprint, bit_length: int, pos: Pos | Sequence = (0, 0, 0)
     write_enable = [LogicGate(pos + (bit_length * 2, 3, 0), "FFFFFF", 1, xaxis=-2, zaxis=-1),
                     LogicGate(pos + (bit_length * 2, 2, 0), "888888", 4, xaxis=-2, zaxis=-1)]
 
-    read_enable = LogicGate(pos + (bit_length * 2 + 1, 3, 0), "FFFFFF", 1, xaxis=-2, zaxis=-1)
+    read_enable = LogicGate(pos + (bit_length * 2 + 1, 3, 0),
+                            "FFFFFF", 1, xaxis=-2, zaxis=-1)
 
     # Connect everything
     connect(write_enable[0], write_enable[1])
@@ -57,6 +58,136 @@ def nor_register(bp: Blueprint, bit_length: int, pos: Pos | Sequence = (0, 0, 0)
     bp.add(write_enable)
     bp.add(read_enable)
     return cells, inputs, write_enable, read_enable
+
+
+def nor_counter_register(bp: Blueprint,
+                         bit_length: int,
+                         with_increment=True,
+                         with_decrement=True,
+                         pos: Pos | Sequence = (0, 0, 0)):
+    pos = check_pos(pos)
+
+    # 1. Base Register
+    r = nor_register(bp, bit_length, pos)
+    cells, inputs, write_enable, read_enable = r
+
+    inc_input = None
+    dec_input = None
+    inc_carries = []
+    dec_borrows = []
+
+    if with_increment:
+        # Pulse Generator
+        inc_p_pos = pos + (-4, 4, 0)
+        inc_input = LogicGate(inc_p_pos, "FF0000", 1)  # OR
+        inc_timer = Timer(inc_p_pos + (1, 0, 0), "000000",
+                          (0, 3))  # TIMER (3 Ticks)
+        inc_xor = LogicGate(inc_p_pos + (2, 0, 0), "0000FF", 2)  # XOR
+        inc_and = LogicGate(inc_p_pos + (3, 0, 0), "00FF00", 0)  # AND
+
+        connect(inc_input, [inc_timer, inc_xor, inc_and])
+        connect(inc_timer, inc_xor)
+        connect(inc_xor, inc_and)
+        connect(inc_and, write_enable[0])
+        bp.add([inc_input, inc_timer, inc_xor, inc_and])
+
+        inc_layer1 = []
+        inc_layer2 = []
+        inc_layer3 = []
+
+        for j in range(bit_length):
+            x_pos = pos + (j*2, 0, 0)
+
+            # First Layer: ANDS (Enable/Write layer)
+            l1 = LogicGate(x_pos + (0, 4, 0), "00FF00", 0)
+            connect(inc_and, l1)
+            connect(l1, inputs[j])
+            inc_layer1.append(l1)
+
+            # Second Layer: XORS, except LSB is an AND (Next State layer)
+            l2 = LogicGate(x_pos + (0, 5, 0), "0000FF" if j >
+                           0 else "000000", 2 if j > 0 else 0)
+            if j > 0:
+                connect(cells[j][4], l2)  # Timers -> Second (except LSB)
+            connect(l2, l1)  # Second -> First
+            inc_layer2.append(l2)
+
+            # Third Layer: ANDS, except LSB is a NOR acting as a NOT (Carry layer)
+            l3 = LogicGate(x_pos + (0, 6, 0), "000000" if j >
+                           0 else "FF0000", 0 if j > 0 else 4)
+            if j == 0:
+                connect(cells[j][4], l3)  # Timers LSB -> Third LSB
+            else:
+                for x in range(j):
+                    connect(cells[x][4], l3)  # Timers N -> N+1..M
+            connect(l3, l2)  # Third -> Second
+            inc_carries.append(l3)
+            inc_layer3.append(l3)
+
+        bp.add(inc_layer1)
+        bp.add(inc_layer2)
+        bp.add(inc_layer3)
+
+    if with_decrement:
+        # Pulse Generator
+        dec_p_pos = pos + (-4, 7, 0)
+        dec_input = LogicGate(dec_p_pos, "FF0000", 1)  # OR
+        dec_timer = Timer(dec_p_pos + (1, 0, 0), "000000",
+                          (0, 3))  # TIMER (3 Ticks)
+        dec_xor = LogicGate(dec_p_pos + (2, 0, 0), "0000FF", 2)  # XOR
+        dec_and = LogicGate(dec_p_pos + (3, 0, 0), "00FF00", 0)  # AND
+
+        connect(dec_input, [dec_timer, dec_xor, dec_and])
+        connect(dec_timer, dec_xor)
+        connect(dec_xor, dec_and)
+        connect(dec_and, write_enable[0])
+        bp.add([dec_input, dec_timer, dec_xor, dec_and])
+
+        dec_layer1 = []
+        dec_layer2 = []
+        dec_layer3 = []
+
+        for j in range(bit_length):
+            x_pos = pos + (j*2, 0, 0)
+
+            # First Layer: ANDS (Enable/Write layer)
+            l1 = LogicGate(x_pos + (0, 7, 0), "00FF00", 0)
+            connect(dec_and, l1)
+            connect(l1, inputs[j])
+            dec_layer1.append(l1)
+
+            # Second Layer: XORS, except LSB is an AND (Next State layer)
+            l2 = LogicGate(x_pos + (0, 8, 0), "0000FF" if j >
+                           0 else "000000", 2 if j > 0 else 0)
+            if j > 0:
+                connect(cells[j][4], l2)  # Timers -> Second (except LSB)
+            connect(l2, l1)  # Second -> First
+            dec_layer2.append(l2)
+
+            # Third Layer: NORS (Borrow layer - all previous bits must be 0)
+            l3 = LogicGate(x_pos + (0, 9, 0), "FF0000", 4)
+            if j == 0:
+                connect(cells[j][4], l3)  # Timers LSB -> Third LSB
+            else:
+                for x in range(j):
+                    connect(cells[x][4], l3)  # Timers N -> N+1..M
+            connect(l3, l2)  # Third -> Second
+            dec_borrows.append(l3)
+            dec_layer3.append(l3)
+
+        bp.add(dec_layer1)
+        bp.add(dec_layer2)
+        bp.add(dec_layer3)
+
+    # Return signature matches the old XOR counter_register
+    if with_increment and with_decrement:
+        return r, inc_carries, inc_input, dec_borrows, dec_input
+    elif with_increment:
+        return r, inc_carries, inc_input
+    elif with_decrement:
+        return r, dec_borrows, dec_input
+    else:
+        return r
 
 
 def nor_ram(bp: Blueprint, bit_length: int, num_address: int, pos: Pos | Sequence = (0, 0, 0)):

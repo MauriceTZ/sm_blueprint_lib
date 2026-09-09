@@ -15,12 +15,16 @@ from src.sm_blueprint_lib.prebuilds.register import register, counter_register
 from src.sm_blueprint_lib.prebuilds.ram import ram
 from src.sm_blueprint_lib.prebuilds.timer_ram_multiclient import timer_ram_multiclient
 from src.sm_blueprint_lib.prebuilds.screens.timer_character_screen import timer_character_screen
-from src.sm_blueprint_lib.prebuilds.NOR_NOR_memory import nor_ram, nor_register
+from src.sm_blueprint_lib.prebuilds.NOR_NOR_memory import nor_ram, nor_register, nor_counter_register
 
 bp = Blueprint()
-nor_ram(bp, bit_length=16, num_address=32)
-simple_adder_subtractor(bp, bit_length=16, pos=(0, 10, 0))
-nor_register(bp, bit_length=16, pos=(0, 15, 0))
-nor_register(bp, bit_length=16, pos=(0, 20, 0))
-rom(bp, page_size=(16, 8), data=[1, 2, 3], pos=(0, 25, 0))
+DATA_SIZE = 8
+ADDRESS_SIZE = 16
+nor_ram(bp, bit_length=DATA_SIZE, num_address=32)
+simple_adder_subtractor(bp, bit_length=DATA_SIZE, pos=(0, 10, 0))
+nor_register(bp, bit_length=DATA_SIZE, pos=(0, 15, 0))
+nor_register(bp, bit_length=DATA_SIZE, pos=(0, 20, 0))
+rom(bp, page_size=(DATA_SIZE, 8), data=list(range(300)), pos=(0, 25, 0))
+nor_counter_register(bp, bit_length=DATA_SIZE, pos=(0, 35, 0))
+counter_register(bp, bit_length=DATA_SIZE, pos=(0, 50, 0))
 save_blueprint("cpu output", bp)
