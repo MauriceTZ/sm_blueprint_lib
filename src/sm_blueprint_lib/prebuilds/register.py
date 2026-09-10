@@ -11,16 +11,21 @@ def register(bp: Blueprint,
              OE=True,
              pos: Pos | Sequence = (0, 0, 0)):
     pos = check_pos(pos)
-    write = LogicGate(pos + (-1, 2 if OE else 1, 0), "FF0000", 1)
+
+    # Shifted X from -1 to 0
+    write = LogicGate(pos + (0, 2 if OE else 1, 0), "FF0000", 1)
+
     if OE:
-        output_enable = LogicGate(pos + (-1, 0, 0), "FF0000", 1)
+        # Shifted X from -1 to 0
+        output_enable = LogicGate(pos + (0, 0, 0), "FF0000", 1)
         arr = ndarray((bit_length, 4), LogicGate)
         for x in range(bit_length):
+            # Shifted all cell X coordinates from x to x + 1
             arr[x] = [
-                l0 := LogicGate(pos + (x, 0, 0), "000000"),
-                l1 := LogicGate(pos + (x, 1, 0), "0000FF", 2),
-                l2 := LogicGate(pos + (x, 2, 0), "000000"),
-                l3 := LogicGate(pos + (x, 3, 0), "FF0000", 2),
+                l0 := LogicGate(pos + (x + 1, 0, 0), "000000"),
+                l1 := LogicGate(pos + (x + 1, 1, 0), "0000FF", 2),
+                l2 := LogicGate(pos + (x + 1, 2, 0), "000000"),
+                l3 := LogicGate(pos + (x + 1, 3, 0), "FF0000", 2),
             ]
             l3.connect(l2).connect(l1).connect(l1).connect(l3)
             l1.connect(l0)
@@ -30,13 +35,15 @@ def register(bp: Blueprint,
     else:
         arr = ndarray((bit_length, 3), LogicGate)
         for x in range(bit_length):
+            # Shifted all cell X coordinates from x to x + 1
             arr[x] = [
-                l0 := LogicGate(pos + (x, 0, 0), "0000FF", 2),
-                l1 := LogicGate(pos + (x, 1, 0), "000000"),
-                l2 := LogicGate(pos + (x, 2, 0), "FF0000", 2),
+                l0 := LogicGate(pos + (x + 1, 0, 0), "0000FF", 2),
+                l1 := LogicGate(pos + (x + 1, 1, 0), "000000"),
+                l2 := LogicGate(pos + (x + 1, 2, 0), "FF0000", 2),
             ]
             l2.connect(l1).connect(l0).connect(l0).connect(l2)
             write.connect(l1)
+
     bp.add(arr, write)
     if OE:
         return arr, write, output_enable
@@ -56,13 +63,16 @@ def counter_register(bp: Blueprint,
     if with_decrement:
         cdec = counter_decrement(bp,
                                  bit_length=bit_length,
-                                 pos=pos+(0, OE, 1),
+                                 # Shifted X by +1 to align with shifted register and fix counter's internal -1 pin
+                                 pos=pos+(1, OE, 1),
                                  precreated_swxors=r[0][:, int(OE)])
     if with_increment:
         cinc = counter(bp,
                        bit_length=bit_length,
-                       pos=pos+(0, OE, 1+with_decrement),
+                       # Shifted X by +1 to align with shifted register and fix counter's internal -1 pin
+                       pos=pos+(1, OE, 1+with_decrement),
                        precreated_swxors=r[0][:, int(OE)])
+
     if with_increment and with_decrement:
         return r, cinc[0][:, 1], cinc[1], cdec[0][:, 1], cdec[1]
     elif with_increment:
