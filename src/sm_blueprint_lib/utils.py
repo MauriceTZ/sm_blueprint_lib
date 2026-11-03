@@ -389,7 +389,7 @@ def make_new_blueprint(name, blueprint = None, description="#{STEAM_WORKSHOP_NO_
                                 "type": "Blueprint",
                                 "version": 0},indent=4))
 
-    if blueprint is not None:
+    if blueprint is None:
         blueprint = Blueprint()
     save_blueprint(name,blueprint)
     return str(id)
