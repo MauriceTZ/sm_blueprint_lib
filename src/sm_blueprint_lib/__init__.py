@@ -17,4 +17,12 @@ from .rot import *
 from .bases import *
 from .blocks import *
 
-from .preview import *
+# The 3D preview module pulls in pygame / moderngl / imgui. Make it optional
+# so headless use cases (e.g. running the simulator in CI) don't require the
+# graphics stack to be installed.
+try:
+    from .preview import *
+except ImportError:
+    pass
+
+from .simulator import Simulator, MutualGateConnectionError
