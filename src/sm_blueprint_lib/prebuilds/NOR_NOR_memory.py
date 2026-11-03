@@ -264,6 +264,8 @@ def nor_ram(bp: Blueprint, bit_length: int, num_address: int, pos: Pos | Sequenc
     #                                   LogicGate(pos + (bit_length * 2 + i + 2, 0, 0), "888800", 4, xaxis=-2, zaxis=-1)])
 
     # Connect everything
+    for bit_input, bit_inverted in selector_binary:
+        connect(bit_input, bit_inverted)
     for i in range(num_address):
         for j in range(bit_length):
             connect(selectors_write[i][0], cells[i][j][1])
