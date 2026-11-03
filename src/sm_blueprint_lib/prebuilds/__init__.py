@@ -16,3 +16,4 @@ from .finite_state_machine import *
 from .screens.timer_character_screen import *
 from .bitwise_alu import *
 from .NOR_NOR_memory import *
+from .xor_rom import *

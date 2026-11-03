@@ -205,6 +205,23 @@ counter_outputs, counter_count = sm.counter(bp, bit_length=4)
 adder_outputs = sm.simple_adder_subtractor(bp, bit_length=8)
 ```
 
+#### XOR ROM (lookup tables)
+Turns any table into logic that answers in 2 or 3 ticks, using as few gates as it can find. Give it a
+list (one value per address) or a function of the address:
+
+```python
+rom = sm.xor_rom(bp, [3, 1, 4, 1, 5, 9, 2, 6])                       # 8 digits of pi
+rom = sm.xor_rom(bp, lambda x: (x & 15) * (x >> 4), address_bits=8)  # 4-bit x 4-bit multiplier
+sm.connect(my_switches, rom.address)   # least significant bit first
+sm.connect(rom.data, my_lights)
+print(rom.gates, rom.ticks)
+```
+
+Trade speed for size with `max_ticks` (default 2). `sm.xor_rom_options(data, address_bits=8)` gives the
+gate count per speed without building anything, e.g. popcount of 8 bits is 94 gates at 2 ticks and
+35 at 3. Each output bit is one XOR gate fed by shared AND/NOR terms of the address; at 3 ticks
+a layer of XOR/XNOR gates in front can re-code the address first. Up to 12 address bits.
+
 ### MIDI file converter
 To convert MIDI files please take a look at `test_midi_converter.py` for more information.
 [You can check some files that I converted while making this part of the library if interested... click here](https://steamcommunity.com/sharedfiles/filedetails/?id=3684436665)
