@@ -36,7 +36,7 @@ bp = sm.Blueprint()
 # Add logic gates with different configurations
 and_gate = sm.LogicGate(pos=(0, 0, 0), color="ff0000", controller="and")
 or_gate = sm.LogicGate(pos=(2, 0, 0), color=sm.PAINT_COLOR.Blue, controller="or")
-timer = sm.Timer(pos=(4, 0, 0), color="00ff00", delay=(1, 0))  # 1 second delay
+timer = sm.Timer(pos=(4, 0, 0), color="00ff00", controller=(1, 0))  # 1 second delay
 
 # Connect components
 sm.connect(and_gate, or_gate)
@@ -100,7 +100,7 @@ or_gate = sm.LogicGate(pos=(1, 0, 0), controller=1)  # 0=and, 1=or, 2=xor, 3=nan
 xor_gate = sm.LogicGate(pos=(2, 0, 0), controller=sm.LogicGateController(mode="xor"))
 
 # Timers and sensors
-timer = sm.Timer(pos=(0, 1, 0), delay=(2, 5))  # 2 seconds, 5 ticks
+timer = sm.Timer(pos=(0, 1, 0), color="00ff00", controller=(2, 5))  # 2 seconds, 5 ticks
 sensor = sm.Sensor(pos=(1, 1, 0))
 button = sm.Button(pos=(2, 1, 0))
 ```
@@ -290,7 +290,7 @@ sm.save_blueprint("logic_demo", bp)
 bp = sm.Blueprint()
 
 loop = [
-    sm.Timer(pos=(0, 0, 0), delay=(1, 0)),  # 1 second timer
+    sm.Timer(pos=(0, 0, 0), color="00ff00", controller=(1, 0)),  # 1 second timer
     sm.LogicGate(pos=(2, 0, 0), controller="not"),
     sm.Light(pos=(4, 0, 0))
 ]

@@ -11,6 +11,11 @@ from ..prebuilds.decoder import decoder
 def ram(bp: Blueprint, bit_length: int, num_address: int, pos: Pos | Sequence = (0, 0, 0),
         address_divisor=1,
         pre_arr=None, pre_inputs=None, pre_outputs=None):
+    """RAM built from XOR memory cells.
+
+    Writing needs a one-tick pulse on write_enable: each cell flips while write is on, so holding it
+    on keeps toggling the selected word. Set the address and data first, then pulse write_enable.
+    """
     pos = check_pos(pos)
 
     arr = pre_arr if pre_arr is not None else ndarray(
