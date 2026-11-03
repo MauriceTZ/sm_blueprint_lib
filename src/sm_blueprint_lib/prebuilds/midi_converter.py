@@ -1,8 +1,6 @@
 import math
 from pprint import pp
 
-from mido import MidiFile, tick2second
-from mido.midifiles.tracks import _to_abstime
 import numpy as np
 
 from ..blueprint import Blueprint
@@ -17,6 +15,10 @@ def midi_converter(bp: Blueprint, midi_file: str, *,
                    transpose=0, color="00FFFF",
                    tryImitateInstruments=True, speed=1.0, rebalance_volumes=True,
                    color_percussion="00FFFF", color_bass="00FFFF", color_synth="00FFFF", color_blip="00FFFF"):
+    # mido is optional, only needed for MIDI conversion
+    from mido import MidiFile
+    from mido.midifiles.tracks import _to_abstime
+
     mid = MidiFile(midi_file, clip=True)
     # tempo = 500000
     # for i, track in enumerate(mid.tracks):
